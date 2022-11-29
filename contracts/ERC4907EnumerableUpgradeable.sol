@@ -40,9 +40,27 @@ contract ERC4907EnumerableUpgradeable is Initializable, ERC4907Upgradeable {
     * @dev See {ERC4907Upgradeable-setUser}
     */
     function setUser(uint256 tokenId, address user, uint64 expires) public virtual override {
-        // TODO call _beforeTokenUse
+        _beforeTokenUse(user, tokenId);
 
         ERC4907Upgradeable.setUser(tokenId, user, expires);
+    }
+
+    /**
+     * @dev Hook that is called before any token use.
+     *
+     * Calling conditions:
+     *
+     * - When `user` is zero, `tokenId` will be returned to its owner
+     * - When `user` is non-zero, `tokenId` will be borrowed to `user`
+     */
+    function _beforeTokenUse(address user, uint256 tokenId) internal {
+        if (user == address(0)) {
+            _removeTokenFromAllUsedTokensEnumeration(tokenId);
+            _removeTokenFromUserEnumeration(user, tokenId);
+        } else {
+            _addTokenToAllUsedTokensEnumeration(tokenId);
+            _addTokenToUserEnumeration(user, tokenId);
+        }
     }
 
     /**
