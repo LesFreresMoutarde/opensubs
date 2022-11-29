@@ -65,4 +65,32 @@ contract ERC4907EnumerableUpgradeable is Initializable, ERC4907Upgradeable {
         _allUsedTokensIndex[tokenId] = _allUsedTokens.length;
         _allUsedTokens.push(tokenId);
     }
+
+    /**
+     * @dev Private function to remove a token from this extension's usership-tracking data structures. Note that
+     * while the token is not assigned a new user, the `_usedTokensIndex` mapping is _not_ updated: this allows for
+     * gas optimizations e.g. when performing a transfer operation (avoiding double writes).
+     * This has O(1) time complexity, but alters the order of the _usedTokens array.
+     * @param user address representing the previous user of the given token ID
+     * @param tokenId uint256 ID of the token to be removed from the tokens list of the given address
+     */
+    function _removeTokenFromUserEnumeration(address user, uint256 tokenId) private {
+        // To prevent a gap in user's tokens array, we store the last token in the index of the token to delete, and
+        // then delete the last slot (swap and pop).
+
+        uint256 lastTokenIndex = usedBalanceOf(user) - 1;
+        uint256 tokenIndex = _usedTokensIndex[tokenId];
+
+        // When the token to delete is the last token, the swap operation is unnecessary
+        if (tokenIndex != lastTokenIndex) {
+            uint256 lastTokenId = _usedTokens[user][lastTokenIndex];
+
+            _usedTokens[user][tokenIndex] = lastTokenId; // Move the last token to the slot of the to-delete token
+            _usedTokensIndex[lastTokenId] = tokenIndex; // Update the moved token's index
+        }
+
+        // This also deletes the contents at the last position of the array
+        delete _usedTokensIndex[tokenId];
+        delete _usedTokens[user][lastTokenIndex];
+    }
 }
