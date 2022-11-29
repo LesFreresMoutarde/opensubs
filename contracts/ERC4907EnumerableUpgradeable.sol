@@ -25,7 +25,7 @@ contract ERC4907EnumerableUpgradeable is Initializable, ERC4907Upgradeable {
     /**
      * @dev Initializes the contract by calling ERC4907Upgradeable initializer.
      */
-    function initialize(string calldata name_, string calldata symbol_) internal onlyInitializing {
+    function __ERC4907Enumerable_init(string calldata name_, string calldata symbol_) internal onlyInitializing {
         ERC4907Upgradeable.__ERC4907_init(name_, symbol_);
     }
 
