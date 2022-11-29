@@ -44,4 +44,16 @@ contract ERC4907EnumerableUpgradeable is Initializable, ERC4907Upgradeable {
 
         ERC4907Upgradeable.setUser(tokenId, user, expires);
     }
+
+    /**
+     * @dev Private function to add a token to this extension's ownership-tracking data structures.
+     * @param user address representing the new user of the given token ID
+     * @param tokenId uint256 ID of the token to be added to the tokens list of the given address
+     */
+    function _addTokenToUserEnumeration(address user, uint256 tokenId) private {
+        uint256 length = usedBalanceOf(user);
+
+        _usedTokens[user][length] = tokenId;
+        _usedTokensIndex[tokenId] = length;
+    }
 }
