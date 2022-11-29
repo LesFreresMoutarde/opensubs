@@ -15,6 +15,9 @@ contract ERC4907Upgradeable is Initializable, ERC721Upgradeable, IERC4907 {
 
     mapping(uint256 => UserInfo) internal _users;
 
+    /**
+     * @dev Initializes the contract by calling ERC721Upgradeable initializer.
+     */
     function __ERC4907_init(string calldata name_, string calldata symbol_) internal onlyInitializing {
         ERC721Upgradeable.__ERC721_init(name_, symbol_);
     }
