@@ -93,4 +93,29 @@ contract ERC4907EnumerableUpgradeable is Initializable, ERC4907Upgradeable {
         delete _usedTokensIndex[tokenId];
         delete _usedTokens[user][lastTokenIndex];
     }
+
+    /**
+     * @dev Private function to remove a token from this extension's token tracking data structures.
+     * This has O(1) time complexity, but alters the order of the _allUsedTokens array.
+     * @param tokenId uint256 ID of the token to be removed from the tokens list
+     */
+    function _removeTokenFromAllUsedTokensEnumeration(uint256 tokenId) private {
+        // To prevent a gap in the tokens array, we store the last token in the index of the token to delete, and
+        // then delete the last slot (swap and pop).
+
+        uint256 lastTokenIndex = _allUsedTokens.length - 1;
+        uint256 tokenIndex = _allUsedTokensIndex[tokenId];
+
+        // When the token to delete is the last token, the swap operation is unnecessary. However, since this occurs so
+        // rarely (when the last token is the one to delete) that we still do the swap here to avoid the gas cost of adding
+        // an 'if' statement (like in _removeTokenFromUserEnumeration)
+        uint256 lastTokenId = _allUsedTokens[lastTokenIndex];
+
+        _allUsedTokens[tokenIndex] = lastTokenId; // Move the last token to the slot of the to-delete token
+        _allUsedTokensIndex[lastTokenId] = tokenIndex; // Update the moved token's index
+
+        // This also deletes the contents at the last position of the array
+        delete _allUsedTokensIndex[tokenId];
+        _allUsedTokens.pop();
+    }
 }
