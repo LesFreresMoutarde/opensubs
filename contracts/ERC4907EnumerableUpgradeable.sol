@@ -28,4 +28,11 @@ contract ERC4907EnumerableUpgradeable is Initializable, ERC4907Upgradeable {
     function initialize(string calldata name_, string calldata symbol_) internal onlyInitializing {
         ERC4907Upgradeable.__ERC4907_init(name_, symbol_);
     }
+
+    /**
+    * @dev Returns the number of used tokens in user's account
+    */
+    function usedBalanceOf(address user) public view returns (uint256) {
+        return _usedBalances[user];
+    }
 }
