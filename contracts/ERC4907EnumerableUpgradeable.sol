@@ -56,4 +56,13 @@ contract ERC4907EnumerableUpgradeable is Initializable, ERC4907Upgradeable {
         _usedTokens[user][length] = tokenId;
         _usedTokensIndex[tokenId] = length;
     }
+
+    /**
+     * @dev Private function to add a token to this extension's token tracking data structures.
+     * @param tokenId uint256 ID of the token to be added to the tokens list
+     */
+    function _addTokenToAllUsedTokensEnumeration(uint256 tokenId) private {
+        _allUsedTokensIndex[tokenId] = _allUsedTokens.length;
+        _allUsedTokens.push(tokenId);
+    }
 }
