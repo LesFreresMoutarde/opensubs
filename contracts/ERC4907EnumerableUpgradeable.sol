@@ -35,4 +35,13 @@ contract ERC4907EnumerableUpgradeable is Initializable, ERC4907Upgradeable {
     function usedBalanceOf(address user) public view returns (uint256) {
         return _usedBalances[user];
     }
+
+    /**
+    * @dev See {ERC4907Upgradeable-setUser}
+    */
+    function setUser(uint256 tokenId, address user, uint64 expires) public virtual override {
+        // TODO call _beforeTokenUse
+
+        ERC4907Upgradeable.setUser(tokenId, user, expires);
+    }
 }
