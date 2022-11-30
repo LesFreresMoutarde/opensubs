@@ -40,15 +40,19 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
         return super.supportsInterface(interfaceId);
     }
 
-    function transferFrom(address from, address to, uint256 tokenId) public override(ERC721Upgradeable, IERC721Upgradeable) {
+    function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint256 batchSize) internal override(ERC4907Upgradeable, ERC721EnumerableUpgradeable) {
+        super._beforeTokenTransfer(from, to, tokenId, batchSize);
+    }
+
+    function transferFrom(address, address, uint256) public override(ERC721Upgradeable, IERC721Upgradeable) {
         revert("Not allowed");
     }
 
-    function safeTransferFrom(address, address to, uint256 tokenId) public override(ERC721Upgradeable, IERC721Upgradeable) {
+    function safeTransferFrom(address, address, uint256) public override(ERC721Upgradeable, IERC721Upgradeable) {
         revert("Not allowed");
     }
 
-    function safeTransferFrom(address, address to, uint256 tokenId, bytes memory) public virtual override(ERC721Upgradeable, IERC721Upgradeable) {
+    function safeTransferFrom(address, address, uint256, bytes memory) public virtual override(ERC721Upgradeable, IERC721Upgradeable) {
         revert("Not allowed");
     }
 }
