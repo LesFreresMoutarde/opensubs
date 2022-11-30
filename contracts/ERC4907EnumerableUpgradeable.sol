@@ -25,7 +25,7 @@ contract ERC4907EnumerableUpgradeable is Initializable, ERC4907Upgradeable {
     /**
      * @dev Initializes the contract by calling ERC4907Upgradeable initializer.
      */
-    function initialize(string calldata name_, string calldata symbol_) internal onlyInitializing {
+    function __ERC4907Enumerable_init(string calldata name_, string calldata symbol_) internal onlyInitializing {
         ERC4907Upgradeable.__ERC4907_init(name_, symbol_);
     }
 
@@ -42,7 +42,13 @@ contract ERC4907EnumerableUpgradeable is Initializable, ERC4907Upgradeable {
     function setUser(uint256 tokenId, address user, uint64 expires) public virtual override {
         _beforeTokenUse(user, tokenId);
 
-        ERC4907Upgradeable.setUser(tokenId, user, expires);
+        if (user != address(0)) {
+            _usedBalances[user]++;
+        } else {
+            _usedBalances[userOf(tokenId)]--;
+        }
+
+        super.setUser(tokenId, user, expires);
     }
 
     /**
