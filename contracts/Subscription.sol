@@ -19,7 +19,6 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
         require(user != ownerOf(tokenId), "Cannot use your own token");
         require(block.timestamp >= userExpires(tokenId), "Already used");
 
-
         super.setUser(tokenId, user, expires);
     }
 
