@@ -63,14 +63,4 @@ contract ERC4907Upgradeable is Initializable, IERC4907, ERC721Upgradeable {
     function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
         return interfaceId == type(IERC4907).interfaceId || super.supportsInterface(interfaceId);
     }
-
-    function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint256) internal virtual override {
-        super._beforeTokenTransfer(from, to, tokenId, 1);
-
-        if (from != to && _users[tokenId].user != address(0)) {
-            delete _users[tokenId];
-
-            emit UpdateUser(tokenId, address(0), 0);
-        }
-    }
 }

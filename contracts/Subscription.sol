@@ -4,15 +4,24 @@ pragma solidity 0.8.17;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 import "./ERC4907EnumerableUpgradeable.sol";
 
 contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721EnumerableUpgradeable {
+    using CountersUpgradeable for CountersUpgradeable.Counter;
+
+    CountersUpgradeable.Counter private _tokenIds;
 
     mapping(uint256 => uint256) private _expirations;
 
     function initialize(string calldata name_, string calldata symbol_) public initializer {
         ERC4907EnumerableUpgradeable.__ERC4907Enumerable_init(name_, symbol_);
+    }
+
+    function mint() public {
+        _safeMint(msg.sender, _tokenIds.current());
+
+        _tokenIds.increment();
     }
 
     function setUser(uint256 tokenId, address user, uint64 expires) public override {
@@ -40,19 +49,19 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
         return super.supportsInterface(interfaceId);
     }
 
-    function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint256 batchSize) internal override(ERC4907Upgradeable, ERC721EnumerableUpgradeable) {
+    function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint256 batchSize) internal override(ERC721Upgradeable, ERC721EnumerableUpgradeable) {
         super._beforeTokenTransfer(from, to, tokenId, batchSize);
     }
 
-    function transferFrom(address, address, uint256) public override(ERC721Upgradeable, IERC721Upgradeable) {
+    function transferFrom(address, address, uint256) public pure override(ERC721Upgradeable, IERC721Upgradeable) {
         revert("Not allowed");
     }
 
-    function safeTransferFrom(address, address, uint256) public override(ERC721Upgradeable, IERC721Upgradeable) {
+    function safeTransferFrom(address, address, uint256) public pure override(ERC721Upgradeable, IERC721Upgradeable) {
         revert("Not allowed");
     }
 
-    function safeTransferFrom(address, address, uint256, bytes memory) public virtual override(ERC721Upgradeable, IERC721Upgradeable) {
+    function safeTransferFrom(address, address, uint256, bytes memory) public pure override(ERC721Upgradeable, IERC721Upgradeable) {
         revert("Not allowed");
     }
 }
