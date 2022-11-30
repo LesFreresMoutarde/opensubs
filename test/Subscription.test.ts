@@ -76,5 +76,24 @@ describe("Subscription smart contract test", () => {
             await expect(connectedSubscription.setUser(tokenId, otherAccounts[1].address, expires))
                 .to.be.revertedWith("Expired timestamp");
         });
+
+        it("Should update used balances", async () => {
+            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
+
+            const tokenId = 0;
+
+            const currentTimestamp = Math.floor(Date.now() / 1000);
+            const expires = currentTimestamp + 20; // 20 seconds more
+
+            const connectedSubscription = subscription.connect(otherAccounts[0]);
+
+            expect(await connectedSubscription.usedBalanceOf(otherAccounts[1].address)).to.equal(0);
+
+            await connectedSubscription.setUser(tokenId, otherAccounts[1].address, expires);
+
+            expect(await connectedSubscription.usedBalanceOf(otherAccounts[1].address)).to.equal(1);
+        });
+
+
     });
 });
