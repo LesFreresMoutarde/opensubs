@@ -6,7 +6,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "./IERC4907.sol";
 
-contract ERC4907Upgradeable is Initializable, ERC721Upgradeable, IERC4907 {
+contract ERC4907Upgradeable is Initializable, IERC4907, ERC721Upgradeable {
 
     struct UserInfo {
         address user;   // address of user role
@@ -64,7 +64,7 @@ contract ERC4907Upgradeable is Initializable, ERC721Upgradeable, IERC4907 {
         return interfaceId == type(IERC4907).interfaceId || super.supportsInterface(interfaceId);
     }
 
-    function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal virtual {
+    function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint256) internal virtual override {
         super._beforeTokenTransfer(from, to, tokenId, 1);
 
         if (from != to && _users[tokenId].user != address(0)) {
