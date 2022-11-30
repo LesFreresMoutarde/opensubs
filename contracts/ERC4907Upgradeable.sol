@@ -13,7 +13,7 @@ contract ERC4907Upgradeable is Initializable, IERC4907, ERC721Upgradeable {
         uint64 expires; // unix timestamp, user expires
     }
 
-    mapping (uint256  => UserInfo) internal _users;
+    mapping(uint256 => UserInfo) internal _users;
 
     /**
      * @dev Initializes the contract by calling ERC721Upgradeable initializer.
@@ -30,7 +30,7 @@ contract ERC4907Upgradeable is Initializable, IERC4907, ERC721Upgradeable {
     function setUser(uint256 tokenId, address user, uint64 expires) public virtual {
         require(_isApprovedOrOwner(msg.sender, tokenId), "ERC4907: transfer caller is not owner nor approved");
 
-        UserInfo storage info =  _users[tokenId];
+        UserInfo storage info = _users[tokenId];
 
         info.user = user;
 
@@ -43,9 +43,9 @@ contract ERC4907Upgradeable is Initializable, IERC4907, ERC721Upgradeable {
     /// @dev The zero address indicates that there is no user or the user is expired
     /// @param tokenId The NFT to get the user address for
     /// @return The user address for this NFT
-    function userOf(uint256 tokenId) public view virtual returns(address) {
-        if( uint256(_users[tokenId].expires) >=  block.timestamp) {
-            return  _users[tokenId].user;
+    function userOf(uint256 tokenId) public view virtual returns (address) {
+        if (uint256(_users[tokenId].expires) >= block.timestamp) {
+            return _users[tokenId].user;
         } else {
             return address(0);
         }
@@ -55,7 +55,7 @@ contract ERC4907Upgradeable is Initializable, IERC4907, ERC721Upgradeable {
     /// @dev The zero value indicates that there is no user
     /// @param tokenId The NFT to get the user expires for
     /// @return The user expires for this NFT
-    function userExpires(uint256 tokenId) public view virtual returns(uint256) {
+    function userExpires(uint256 tokenId) public view virtual returns (uint256) {
         return _users[tokenId].expires;
     }
 
