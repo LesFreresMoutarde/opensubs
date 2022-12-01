@@ -294,6 +294,9 @@ describe("Subscription smart contract test", () => {
             expect(await connectedSubscription.tokenOfUserByIndex(otherAccounts[1].address, 1)).to.equal(2);
             expect(await connectedSubscription.tokenOfUserByIndex(otherAccounts[1].address, 2)).to.equal(3);
             expect(await connectedSubscription.tokenOfUserByIndex(otherAccounts[1].address, 3)).to.equal(4);
+
+            expect(connectedSubscription.tokenOfUserByIndex(otherAccounts[1].address, 4))
+                .to.be.revertedWith("ERC4907Enumerable: user index out of bounds");
         });
 
         it("Should properly update user enumeration when last token of his enumeration gets reclaimed", async () => {
@@ -313,6 +316,9 @@ describe("Subscription smart contract test", () => {
             expect(await connectedSubscription.tokenOfUserByIndex(otherAccounts[1].address, 1)).to.equal(2);
             expect(await connectedSubscription.tokenOfUserByIndex(otherAccounts[1].address, 2)).to.equal(3);
             expect(await connectedSubscription.tokenOfUserByIndex(otherAccounts[1].address, 3)).to.equal(4);
+
+            expect(connectedSubscription.tokenOfUserByIndex(otherAccounts[1].address, 4))
+                .to.be.revertedWith("ERC4907Enumerable: user index out of bounds");
         });
 
         it("Should properly update user enumeration when intermediate token of his enumeration gets reclaimed", async () => {
@@ -332,6 +338,9 @@ describe("Subscription smart contract test", () => {
             expect(await connectedSubscription.tokenOfUserByIndex(otherAccounts[1].address, 1)).to.equal(2);
             expect(await connectedSubscription.tokenOfUserByIndex(otherAccounts[1].address, 2)).to.equal(5);
             expect(await connectedSubscription.tokenOfUserByIndex(otherAccounts[1].address, 3)).to.equal(4);
+
+            expect(connectedSubscription.tokenOfUserByIndex(otherAccounts[1].address, 4))
+                .to.be.revertedWith("ERC4907Enumerable: user index out of bounds");
         });
 
     });
