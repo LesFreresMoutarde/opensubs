@@ -343,5 +343,26 @@ describe("Subscription smart contract test", () => {
                 .to.be.revertedWith("ERC4907Enumerable: user index out of bounds");
         });
 
+        it("Should properly update user enumeration even if all tokens of his enumeration have been reclaimed", async () => {
+            const {subscription, otherAccounts, expires} = await loadFixture(deploySubscriptionFixtureAndMintMultiple);
+
+            await time.increaseTo(expires + 30)
+
+            const connectedSubscription = subscription.connect(otherAccounts[0]);
+
+            await connectedSubscription.setUser(1, ethers.constants.AddressZero, 0);
+            await connectedSubscription.setUser(2, ethers.constants.AddressZero, 0);
+            await connectedSubscription.setUser(3, ethers.constants.AddressZero, 0);
+            await connectedSubscription.setUser(4, ethers.constants.AddressZero, 0);
+            await connectedSubscription.setUser(5, ethers.constants.AddressZero, 0);
+
+            const userBalance = await connectedSubscription.usedBalanceOf(otherAccounts[1].address);
+
+            expect(userBalance).to.equal(0);
+
+            expect(connectedSubscription.tokenOfUserByIndex(otherAccounts[1].address, 0))
+                .to.be.revertedWith("ERC4907Enumerable: user index out of bounds");
+        });
+
     });
 });
