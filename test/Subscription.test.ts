@@ -85,7 +85,7 @@ describe("Subscription smart contract test", () => {
                 await connectedSubscription.setUser(tokenIds[i], otherAccounts[4].address, expires);
             }
 
-            return {subscription, owner, otherAccounts};
+            return {subscription, owner, otherAccounts, expires};
         }
 
         it("Should set user", async () => {
