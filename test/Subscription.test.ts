@@ -157,5 +157,21 @@ describe("Subscription smart contract test", () => {
             await expect(connectedSubscription.setUser(tokenId, otherAccounts[2].address, expires + 200))
                 .to.be.revertedWith("Already used");
         })
+
+        it("Should revert if token does not exist", async () => {
+            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
+
+            const tokenId = 2;
+
+            const currentTimestamp = await time.latest();
+
+            const expires = currentTimestamp + 2000;
+
+            const connectedSubscription = subscription.connect(otherAccounts[0]);
+
+            await expect(connectedSubscription.setUser(tokenId, otherAccounts[1].address, expires))
+                .to.be.revertedWith("ERC721: invalid token ID");
+        })
+
     });
 });
