@@ -141,5 +141,21 @@ describe("Subscription smart contract test", () => {
                 .to.be.revertedWith("Cannot use your own token");
         })
 
+        it("Should revert if token is already used", async () => {
+            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
+
+            const tokenId = 1;
+
+            const currentTimestamp = await time.latest();
+
+            const expires = currentTimestamp + 2000;
+
+            const connectedSubscription = subscription.connect(otherAccounts[0]);
+
+            await connectedSubscription.setUser(tokenId, otherAccounts[1].address, expires);
+
+            await expect(connectedSubscription.setUser(tokenId, otherAccounts[2].address, expires + 200))
+                .to.be.revertedWith("Already used");
+        })
     });
 });
