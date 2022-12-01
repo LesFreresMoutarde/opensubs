@@ -120,6 +120,26 @@ describe("Subscription smart contract test", () => {
             expect(expirationTime).to.equal(expires);
         });
 
+        it("Should set user from approved account", async () => {
+            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
+
+            const tokenId = 1;
+
+            const currentTimestamp = await time.latest();
+
+            const expires = currentTimestamp + 20; // 20 seconds more
+
+            const tokenOwnerConnectedSubscription = subscription.connect(otherAccounts[0]);
+
+            await tokenOwnerConnectedSubscription.approve(otherAccounts[2].address, tokenId);
+
+            const approvedConnectedSubscription = subscription.connect(otherAccounts[2]);
+
+            await expect(approvedConnectedSubscription.setUser(tokenId, otherAccounts[1].address, expires))
+                .to.emit(approvedConnectedSubscription, "UpdateUser")
+                .withArgs(tokenId, otherAccounts[1].address, expires);
+        });
+
         it("Should set user to 0 after owner reclaims his token", async () => {
             const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
 
