@@ -76,7 +76,7 @@ contract ERC4907EnumerableUpgradeable is Initializable, ERC4907Upgradeable {
     function _beforeTokenUse(address user, uint256 tokenId) internal {
         if (user == address(0)) {
             _removeTokenFromAllUsedTokensEnumeration(tokenId);
-            _removeTokenFromUserEnumeration(user, tokenId);
+            _removeTokenFromUserEnumeration(userOf(tokenId), tokenId);
         } else {
             _addTokenToAllUsedTokensEnumeration(tokenId);
             _addTokenToUserEnumeration(user, tokenId);
