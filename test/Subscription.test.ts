@@ -171,7 +171,26 @@ describe("Subscription smart contract test", () => {
 
             await expect(connectedSubscription.setUser(tokenId, otherAccounts[1].address, expires))
                 .to.be.revertedWith("ERC721: invalid token ID");
-        })
+        });
 
+        it("Should add token id to user's enumeration", async () => {
+            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
+
+            const tokenId = 1;
+
+            const currentTimestamp = await time.latest();
+
+            const expires = currentTimestamp + 2000;
+
+            const connectedSubscription = subscription.connect(otherAccounts[0]);
+
+            await connectedSubscription.setUser(tokenId, otherAccounts[1].address, expires);
+
+            const balanceOfNewUser = await connectedSubscription.usedBalanceOf(otherAccounts[1].address);
+
+            const token = await connectedSubscription.tokenOfUserByIndex(otherAccounts[1].address, balanceOfNewUser.sub(1));
+
+            expect(token).to.equal(tokenId);
+        });
     });
 });
