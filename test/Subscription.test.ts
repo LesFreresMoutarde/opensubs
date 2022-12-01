@@ -111,21 +111,19 @@ describe("Subscription smart contract test", () => {
             expect(expirationTime).to.equal(0);
         });
 
-        it("Should update used balances", async () => {
+        it("Should revert if expiration timestamp has passed", async () => {
             const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
 
-            const tokenId = 0;
+            const tokenId = 1;
 
-            const currentTimestamp = Math.floor(Date.now() / 1000);
-            const expires = currentTimestamp + 20; // 20 seconds more
+            const currentTimestamp = await time.latest();
+
+            const expires = currentTimestamp - 20; // 20 seconds less
 
             const connectedSubscription = subscription.connect(otherAccounts[0]);
 
-            expect(await connectedSubscription.usedBalanceOf(otherAccounts[1].address)).to.equal(0);
-
-            await connectedSubscription.setUser(tokenId, otherAccounts[1].address, expires);
-
-            expect(await connectedSubscription.usedBalanceOf(otherAccounts[1].address)).to.equal(1);
+            await expect(connectedSubscription.setUser(tokenId, otherAccounts[1].address, expires))
+                .to.be.revertedWith("Expired timestamp");
         });
 
 
