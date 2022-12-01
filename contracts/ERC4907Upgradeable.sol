@@ -38,7 +38,11 @@ contract ERC4907Upgradeable is Initializable, IERC4907, ERC721Upgradeable {
 
         info.user = user;
 
-        info.expires = expires;
+        if (user == address(0)) {
+            info.expires = 0;
+        } else {
+            info.expires = expires;
+        }
 
         emit UpdateUser(tokenId, user, expires);
     }
