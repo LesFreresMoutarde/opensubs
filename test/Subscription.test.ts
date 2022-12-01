@@ -29,11 +29,11 @@ describe("Subscription smart contract test", () => {
 
             await expect(connectedSubscription.mint())
                 .to.emit(connectedSubscription, "Transfer")
-                .withArgs(ethers.constants.AddressZero, otherAccounts[0].address, 0);
+                .withArgs(ethers.constants.AddressZero, otherAccounts[0].address, 1);
 
             await expect(connectedSubscription.mint())
                 .to.emit(connectedSubscription, "Transfer")
-                .withArgs(ethers.constants.AddressZero, otherAccounts[0].address, 1);
+                .withArgs(ethers.constants.AddressZero, otherAccounts[0].address, 2);
         });
     });
 
