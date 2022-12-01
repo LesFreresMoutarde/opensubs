@@ -16,6 +16,7 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
 
     function initialize(string calldata name_, string calldata symbol_) public initializer {
         ERC4907EnumerableUpgradeable.__ERC4907Enumerable_init(name_, symbol_);
+        _tokenIds.increment();
     }
 
     function mint() public {
