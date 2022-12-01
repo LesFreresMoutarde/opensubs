@@ -133,7 +133,7 @@ describe("Subscription smart contract test", () => {
 
             await connectedSubscription.setUser(tokenId, otherAccounts[1].address, expires);
 
-            await time.increase(expires + 15);
+            await time.increaseTo(expires + 15);
 
             await connectedSubscription.setUser(tokenId, ethers.constants.AddressZero, 42);
 
@@ -263,7 +263,7 @@ describe("Subscription smart contract test", () => {
                 for (let i = 0; i < balance.toBigInt(); i++) {
                     const tokenId = await connectedSubscription.tokenOfUserByIndex(address, i);
 
-                    expect(tokenId).to.equal(mappingAddressToTokenIds[address][i])
+                    expect(tokenId).to.equal(mappingAddressToTokenIds[address][i]);
                 }
             }
         })
