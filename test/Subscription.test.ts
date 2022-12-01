@@ -140,6 +140,21 @@ describe("Subscription smart contract test", () => {
                 .withArgs(tokenId, otherAccounts[1].address, expires);
         });
 
+        it("Should revert if account is neither token owner nor approved", async () => {
+            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
+
+            const tokenId = 1;
+
+            const currentTimestamp = await time.latest();
+
+            const expires = currentTimestamp + 20; // 20 seconds more
+
+            const notApprovedConnectedSubscription = subscription.connect(otherAccounts[2]);
+
+            await expect(notApprovedConnectedSubscription.setUser(tokenId, otherAccounts[1].address, expires))
+                .to.be.revertedWith("ERC4907: transfer caller is not owner nor approved");
+        });
+
         it("Should set user to 0 after owner reclaims his token", async () => {
             const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
 
