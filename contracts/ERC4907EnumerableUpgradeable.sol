@@ -37,6 +37,15 @@ contract ERC4907EnumerableUpgradeable is Initializable, ERC4907Upgradeable {
     }
 
     /**
+     * @dev Returns a token ID used by `user` at a given `index` of its token list.
+     * Use along with {usedBalanceOf} to enumerate all of ``user``'s tokens.
+     */
+    function tokenOfUserByIndex(address user, uint256 index) public view returns (uint256) {
+        require(index < usedBalanceOf(user), "ERC4907Enumerable: user index out of bounds");
+        return _usedTokens[user][index];
+    }
+
+    /**
     * @dev See {ERC4907Upgradeable-setUser}
     */
     function setUser(uint256 tokenId, address user, uint64 expires) public virtual override {
