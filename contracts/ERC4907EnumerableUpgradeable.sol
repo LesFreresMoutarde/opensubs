@@ -42,11 +42,16 @@ contract ERC4907EnumerableUpgradeable is Initializable, ERC4907Upgradeable {
      */
     function tokenOfUserByIndex(address user, uint256 index) public view returns (uint256) {
         require(index < usedBalanceOf(user), "ERC4907Enumerable: user index out of bounds");
-        return _usedTokens[user][index];
+
+        uint256 tokenId = _usedTokens[user][index];
+
+        assert(tokenId != 0);
+
+        return tokenId;
     }
 
-    /**
-    * @dev See {ERC4907Upgradeable-setUser}
+/**
+* @dev See {ERC4907Upgradeable-setUser}
     */
     function setUser(uint256 tokenId, address user, uint64 expires) public virtual override {
         _beforeTokenUse(user, tokenId);
@@ -112,6 +117,7 @@ contract ERC4907EnumerableUpgradeable is Initializable, ERC4907Upgradeable {
         // then delete the last slot (swap and pop).
 
         uint256 lastTokenIndex = usedBalanceOf(user) - 1;
+
         uint256 tokenIndex = _usedTokensIndex[tokenId];
 
         // When the token to delete is the last token, the swap operation is unnecessary
