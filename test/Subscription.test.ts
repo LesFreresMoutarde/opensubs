@@ -1,6 +1,7 @@
 import {ethers, upgrades} from "hardhat";
 import { expect } from "chai";
 import {loadFixture} from "@nomicfoundation/hardhat-network-helpers";
+import { time } from "@nomicfoundation/hardhat-network-helpers";
 import {Subscription} from "../typechain-types";
 
 describe("Subscription smart contract test", () => {
@@ -51,16 +52,33 @@ describe("Subscription smart contract test", () => {
         it("Should set user", async () => {
             const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
 
-            const tokenId = 0;
+            const tokenId = 1;
 
-            const currentTimestamp = Math.floor(Date.now() / 1000);
+            const currentTimestamp = await time.latest();
+
             const expires = currentTimestamp + 20; // 20 seconds more
 
             const connectedSubscription = subscription.connect(otherAccounts[0]);
 
+            const currentUserOfMintedToken = await connectedSubscription.userOf(tokenId);
+
+            expect(currentUserOfMintedToken).to.equal(ethers.constants.AddressZero);
+
             await expect(connectedSubscription.setUser(tokenId, otherAccounts[1].address, expires))
                 .to.emit(connectedSubscription, "UpdateUser")
                 .withArgs(tokenId, otherAccounts[1].address, expires);
+
+            const newUserOfMintedToken = await connectedSubscription.userOf(tokenId);
+
+            expect(newUserOfMintedToken).to.equal(otherAccounts[1].address);
+
+            const usedBalanceOfNewUser = await connectedSubscription.usedBalanceOf(otherAccounts[1].address);
+
+            expect(usedBalanceOfNewUser).to.equal(1);
+
+            const expirationTime = await connectedSubscription.userExpires(tokenId);
+
+            expect(expirationTime).to.equal(expires);
         });
 
         it("Should revert if expiration timestamp has passed", async () => {
