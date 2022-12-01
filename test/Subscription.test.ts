@@ -3,6 +3,7 @@ import { expect } from "chai";
 import {loadFixture} from "@nomicfoundation/hardhat-network-helpers";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
 import {Subscription} from "../typechain-types";
+import {BigNumber} from "ethers";
 
 describe("Subscription smart contract test", () => {
     async function deploySubscriptionFixture() {
@@ -45,6 +46,44 @@ describe("Subscription smart contract test", () => {
             const connectedSubscription = subscription.connect(otherAccounts[0]);
 
             await connectedSubscription.mint();
+
+            return {subscription, owner, otherAccounts};
+        }
+
+        async function deploySubscriptionFixtureAndMintMultiple() {
+            const {subscription, owner, otherAccounts} = await loadFixture(deploySubscriptionFixture);
+
+            const connectedSubscription = subscription.connect(otherAccounts[0]);
+
+            const tokenIds = [...Array(20).keys()].map(item => item+1);
+
+            for (let i = 0; i < tokenIds.length; i++) {
+                await connectedSubscription.mint();
+            }
+
+            const currentTimestamp = await time.latest();
+
+            const expires = currentTimestamp + 2000;
+
+            let i: number = 0;
+
+            // Add 5 tokens to each address
+
+            for (i; i < 5; i++) {
+                await connectedSubscription.setUser(tokenIds[i], otherAccounts[1].address, expires);
+            }
+
+            for (i; i < 10; i++) {
+                await connectedSubscription.setUser(tokenIds[i], otherAccounts[2].address, expires);
+            }
+
+            for (i; i < 15; i++) {
+                await connectedSubscription.setUser(tokenIds[i], otherAccounts[3].address, expires);
+            }
+
+            for (i; i < 20; i++) {
+                await connectedSubscription.setUser(tokenIds[i], otherAccounts[4].address, expires);
+            }
 
             return {subscription, owner, otherAccounts};
         }
