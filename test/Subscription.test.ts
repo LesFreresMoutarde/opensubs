@@ -81,18 +81,34 @@ describe("Subscription smart contract test", () => {
             expect(expirationTime).to.equal(expires);
         });
 
-        it("Should revert if expiration timestamp has passed", async () => {
+        it("Should set user to 0 after owner reclaims his token", async () => {
             const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
 
-            const tokenId = 0;
+            const tokenId = 1;
 
-            const currentTimestamp = Math.floor(Date.now() / 1000);
-            const expires = currentTimestamp - 20; // 20 seconds less
+            const currentTimestamp = await time.latest();
+
+            const expires = currentTimestamp + (3600 * 24 * 7); // 1 week of renting
 
             const connectedSubscription = subscription.connect(otherAccounts[0]);
 
-            await expect(connectedSubscription.setUser(tokenId, otherAccounts[1].address, expires))
-                .to.be.revertedWith("Expired timestamp");
+            await connectedSubscription.setUser(tokenId, otherAccounts[1].address, expires);
+
+            await time.increase(expires + 15);
+
+            await connectedSubscription.setUser(tokenId, ethers.constants.AddressZero, 42);
+
+            const usedBalanceOfPreviousUser = await connectedSubscription.usedBalanceOf(otherAccounts[1].address);
+
+            expect(usedBalanceOfPreviousUser).to.equal(0);
+
+            const newUserOfMintedToken = await connectedSubscription.userOf(tokenId);
+
+            expect(newUserOfMintedToken).to.equal(ethers.constants.AddressZero);
+
+            const expirationTime = await connectedSubscription.userExpires(tokenId);
+
+            expect(expirationTime).to.equal(0);
         });
 
         it("Should update used balances", async () => {
