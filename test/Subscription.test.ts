@@ -126,6 +126,20 @@ describe("Subscription smart contract test", () => {
                 .to.be.revertedWith("Expired timestamp");
         });
 
+        it("Should revert if token's owner tries to become user of his token", async () => {
+            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
+
+            const tokenId = 1;
+
+            const currentTimestamp = await time.latest();
+
+            const expires = currentTimestamp + 200;
+
+            const connectedSubscription = subscription.connect(otherAccounts[0]);
+
+            await expect(connectedSubscription.setUser(tokenId, otherAccounts[0].address, expires))
+                .to.be.revertedWith("Cannot use your own token");
+        })
 
     });
 });
