@@ -231,5 +231,41 @@ describe("Subscription smart contract test", () => {
 
             expect(token).to.equal(tokenId);
         });
+
+        it("Should add multiples tokens for each account", async () => {
+            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMintMultiple);
+
+            const mappingAddressToTokenIds = {
+                [otherAccounts[1].address]: [1,2,3,4,5],
+                [otherAccounts[2].address]: [6,7,8,9,10],
+                [otherAccounts[3].address]: [11,12,13,14,15],
+                [otherAccounts[4].address]: [16,17,18,19,20]
+            };
+
+            const connectedSubscription = subscription.connect(otherAccounts[0]);
+
+            // Read usedBalances of each address
+
+            const usedBalances: {[key: string]: BigNumber} = {};
+
+            for (let i = 1; i <= 4; i++) {
+                const usedBalance = await connectedSubscription.usedBalanceOf(otherAccounts[i].address)
+
+                expect(usedBalance).to.equal(5);
+
+                usedBalances[otherAccounts[i].address] = usedBalance;
+            }
+
+            // Enumerate tokens of each address
+
+            for (const [address, balance] of Object.entries(usedBalances)) {
+
+                for (let i = 0; i < balance.toBigInt(); i++) {
+                    const tokenId = await connectedSubscription.tokenOfUserByIndex(address, i);
+
+                    expect(tokenId).to.equal(mappingAddressToTokenIds[address][i])
+                }
+            }
+        })
     });
 });
