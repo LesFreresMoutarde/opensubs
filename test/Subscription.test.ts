@@ -50,7 +50,7 @@ describe("Subscription smart contract test", () => {
             return {subscription, owner, otherAccounts};
         }
 
-        async function deploySubscriptionFixtureAndMintMultiple() {
+        async function deploySubscriptionFixtureAndMintMultipleAndSetUsers() {
             const {subscription, owner, otherAccounts} = await loadFixture(deploySubscriptionFixture);
 
             const connectedSubscription = subscription.connect(otherAccounts[0]);
@@ -253,7 +253,7 @@ describe("Subscription smart contract test", () => {
         });
 
         it("Should add multiples tokens for each account", async () => {
-            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMintMultiple);
+            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMintMultipleAndSetUsers);
 
             const mappingAddressToTokenIds = {
                 [otherAccounts[1].address]: [1,2,3,4,5],
@@ -289,7 +289,7 @@ describe("Subscription smart contract test", () => {
         });
 
         it("Should revert if reading a token at out of bounds index in user enumeration", async () => {
-            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMintMultiple);
+            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMintMultipleAndSetUsers);
 
             const connectedSubscription = await subscription.connect(otherAccounts[0]);
 
@@ -298,7 +298,7 @@ describe("Subscription smart contract test", () => {
         });
 
         it("Should properly update user enumeration when first token of his enumeration gets reclaimed", async () => {
-            const {subscription, otherAccounts, expires} = await loadFixture(deploySubscriptionFixtureAndMintMultiple);
+            const {subscription, otherAccounts, expires} = await loadFixture(deploySubscriptionFixtureAndMintMultipleAndSetUsers);
 
             await time.increaseTo(expires + 30)
 
@@ -320,7 +320,7 @@ describe("Subscription smart contract test", () => {
         });
 
         it("Should properly update user enumeration when last token of his enumeration gets reclaimed", async () => {
-            const {subscription, otherAccounts, expires} = await loadFixture(deploySubscriptionFixtureAndMintMultiple);
+            const {subscription, otherAccounts, expires} = await loadFixture(deploySubscriptionFixtureAndMintMultipleAndSetUsers);
 
             await time.increaseTo(expires + 30)
 
@@ -342,7 +342,7 @@ describe("Subscription smart contract test", () => {
         });
 
         it("Should properly update user enumeration when intermediate token of his enumeration gets reclaimed", async () => {
-            const {subscription, otherAccounts, expires} = await loadFixture(deploySubscriptionFixtureAndMintMultiple);
+            const {subscription, otherAccounts, expires} = await loadFixture(deploySubscriptionFixtureAndMintMultipleAndSetUsers);
 
             await time.increaseTo(expires + 30)
 
@@ -364,7 +364,7 @@ describe("Subscription smart contract test", () => {
         });
 
         it("Should properly update user enumeration even if all tokens of his enumeration have been reclaimed", async () => {
-            const {subscription, otherAccounts, expires} = await loadFixture(deploySubscriptionFixtureAndMintMultiple);
+            const {subscription, otherAccounts, expires} = await loadFixture(deploySubscriptionFixtureAndMintMultipleAndSetUsers);
 
             await time.increaseTo(expires + 30)
 
