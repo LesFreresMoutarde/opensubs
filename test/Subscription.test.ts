@@ -305,5 +305,25 @@ describe("Subscription smart contract test", () => {
             expect(await connectedSubscription.tokenOfUserByIndex(otherAccounts[1].address, 2)).to.equal(3);
             expect(await connectedSubscription.tokenOfUserByIndex(otherAccounts[1].address, 3)).to.equal(4);
         });
+
+        it("Should properly update user enumeration when intermediate token of his enumeration gets reclaimed", async () => {
+            const {subscription, otherAccounts, expires} = await loadFixture(deploySubscriptionFixtureAndMintMultiple);
+
+            await time.increaseTo(expires + 30)
+
+            const connectedSubscription = subscription.connect(otherAccounts[0]);
+
+            await connectedSubscription.setUser(3, ethers.constants.AddressZero, 0);
+
+            const userBalance = await connectedSubscription.usedBalanceOf(otherAccounts[1].address);
+
+            expect(userBalance).to.equal(4);
+
+            expect(await connectedSubscription.tokenOfUserByIndex(otherAccounts[1].address, 0)).to.equal(1);
+            expect(await connectedSubscription.tokenOfUserByIndex(otherAccounts[1].address, 1)).to.equal(2);
+            expect(await connectedSubscription.tokenOfUserByIndex(otherAccounts[1].address, 2)).to.equal(5);
+            expect(await connectedSubscription.tokenOfUserByIndex(otherAccounts[1].address, 3)).to.equal(4);
+        });
+
     });
 });
