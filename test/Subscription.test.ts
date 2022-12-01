@@ -268,6 +268,15 @@ describe("Subscription smart contract test", () => {
             }
         });
 
+        it("Should revert if reading a token at out of bounds index in user enumeration", async () => {
+            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMintMultiple);
+
+            const connectedSubscription = await subscription.connect(otherAccounts[0]);
+
+            expect(connectedSubscription.tokenOfUserByIndex(otherAccounts[1].address, 5))
+                .to.be.revertedWith("ERC4907Enumerable: user index out of bounds");
+        });
+
         it("Should properly update user enumeration when first token of his enumeration gets reclaimed", async () => {
             const {subscription, otherAccounts, expires} = await loadFixture(deploySubscriptionFixtureAndMintMultiple);
 
