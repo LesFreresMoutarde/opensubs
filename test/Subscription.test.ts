@@ -139,7 +139,7 @@ describe("Subscription smart contract test", () => {
 
             await expect(connectedSubscription.setUser(tokenId, otherAccounts[0].address, expires))
                 .to.be.revertedWith("Cannot use your own token");
-        })
+        });
 
         it("Should revert if token is already used", async () => {
             const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
@@ -156,7 +156,7 @@ describe("Subscription smart contract test", () => {
 
             await expect(connectedSubscription.setUser(tokenId, otherAccounts[2].address, expires + 200))
                 .to.be.revertedWith("Already used");
-        })
+        });
 
         it("Should revert if token does not exist", async () => {
             const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
