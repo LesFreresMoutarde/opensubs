@@ -133,7 +133,7 @@ describe("Subscription smart contract test", () => {
 
             await connectedSubscription.setUser(tokenId, otherAccounts[1].address, expires);
 
-            await time.increaseTo(expires + 15);
+            await time.increaseTo(expires + 30);
 
             await connectedSubscription.setUser(tokenId, ethers.constants.AddressZero, 42);
 
