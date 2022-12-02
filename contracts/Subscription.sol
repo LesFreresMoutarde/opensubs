@@ -84,8 +84,12 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
 
         require(rentingConditions.createdAt != 0, "Not available for renting");
 
-        // TODO get price from chainlink
-        uint256 price = 1 ether;
+        // Chainlink returns amount of wei for 1 USD
+        (,int256 exchangeRateFromChainlink,,,) = priceFeed.latestRoundData();
+
+        assert(exchangeRateFromChainlink > 0);
+
+        uint256 rentingPrice = (uint256(exchangeRateFromChainlink) * rentingConditions.price) / 100;
 
         uint256 expires = block.timestamp + RENTING_REQUEST_TIMEOUT;
 
@@ -93,11 +97,11 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
 
         _rentingRequestIds.increment();
 
-        RentingRequest memory rentingRequest = RentingRequest(tokenId, price, expires);
+        RentingRequest memory rentingRequest = RentingRequest(tokenId, rentingPrice, expires);
 
         _rentingRequests[requestId] = rentingRequest;
 
-        emit RentingRequestCreated(requestId, price, expires);
+        emit RentingRequestCreated(requestId, rentingPrice, expires);
     }
 
     function validateRequest(uint256 requestId) public payable {
