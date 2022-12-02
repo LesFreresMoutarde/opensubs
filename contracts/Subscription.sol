@@ -2,6 +2,7 @@
 
 pragma solidity 0.8.17;
 
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
@@ -22,6 +23,8 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
         uint256 price; // Renting price in wei
         uint256 expires; // Expiration timestamp of the request
     }
+
+    AggregatorV3Interface internal priceFeed;
 
     CountersUpgradeable.Counter private _tokenIds;
 
@@ -48,13 +51,16 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
         string calldata name_,
         string calldata symbol_,
         address contentProvider_,
-        address marketplaceProvider_
+        address marketplaceProvider_,
+        address priceFeedAddress_
     ) public initializer {
         ERC4907EnumerableUpgradeable.__ERC4907Enumerable_init(name_, symbol_);
         Marketplace.__Marketplace_init();
 
         _contentProvider = contentProvider_;
         _marketplaceProvider = marketplaceProvider_;
+
+        priceFeed = AggregatorV3Interface(priceFeedAddress_);
 
         _tokenIds.increment();
         _rentingRequestIds.increment();
