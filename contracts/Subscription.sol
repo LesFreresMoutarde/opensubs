@@ -14,9 +14,11 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
 
     uint256 private constant RENTING_REQUEST_TIMEOUT = 120; // Number of seconds a request is valid
 
-    uint256 private constant CONTENT_PROVIDER_COMMISSION_PERCENTAGE = 15; // 15%
+    uint8 private constant CONTENT_PROVIDER_RENTING_COMMISSION_PERCENTAGE = 15; // 15%
 
-    uint256 private constant MARKETPLACE_PROVIDER_COMMISSION_PERCENTAGE = 15; // 15%
+    uint8 private constant MARKETPLACE_PROVIDER_RENTING_COMMISSION_PERCENTAGE = 15; // 15%
+
+    uint8 private constant MARKETPLACE_PROVIDER_MINT_COMMISSION_PERCENTAGE = 5; // 5%
 
     struct RentingRequest {
         uint256 tokenId;
@@ -36,6 +38,12 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
     // Mapping from renting request ID to the renting request data
     mapping(uint256 => RentingRequest) private _rentingRequests;
 
+    // The price of a minted subscription in $ cents for 30 days
+    uint32 public contentSubscriptionPrice;
+
+    // The allowed slippage when a subscription is minted or rented in wei
+    uint256 private _allowedSlippage = 0.000001 ether; // 10^12 wei
+
     // The address of the entity providing content or service
     address private _contentProvider;
 
@@ -50,6 +58,7 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
     function initialize(
         string calldata name_,
         string calldata symbol_,
+        uint32 contentSubscriptionPrice_,
         address contentProvider_,
         address marketplaceProvider_,
         address priceFeedAddress_
@@ -57,6 +66,7 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
         ERC4907EnumerableUpgradeable.__ERC4907Enumerable_init(name_, symbol_);
         Marketplace.__Marketplace_init();
 
+        contentSubscriptionPrice = contentSubscriptionPrice_;
         _contentProvider = contentProvider_;
         _marketplaceProvider = marketplaceProvider_;
 
@@ -66,8 +76,30 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
         _rentingRequestIds.increment();
     }
 
-    function mint() public {
-        _safeMint(msg.sender, _tokenIds.current());
+    function mint() public payable {
+        // Chainlink returns amount of wei for 1 USD
+        (,int256 exchangeRateFromChainlink,,,) = priceFeed.latestRoundData();
+
+        assert(exchangeRateFromChainlink > 0);
+
+        uint256 mintingPrice = (uint256(exchangeRateFromChainlink) * contentSubscriptionPrice) / 100;
+
+        uint256 minMintingPrice = mintingPrice - _allowedSlippage;
+        uint256 maxMintingPrice = mintingPrice + _allowedSlippage;
+
+        require(msg.value >= minMintingPrice && msg.value <= maxMintingPrice, "Too much slippage");
+
+        uint256 marketplaceProviderCommission = msg.value * MARKETPLACE_PROVIDER_MINT_COMMISSION_PERCENTAGE / 100;
+        uint256 contentProviderRevenue = msg.value - marketplaceProviderCommission;
+
+        balances[_marketplaceProvider] += marketplaceProviderCommission;
+        balances[_contentProvider] += contentProviderRevenue;
+
+        uint256 tokenId = _tokenIds.current();
+
+        _expirations[tokenId] = block.timestamp + 30 days;
+
+        _safeMint(msg.sender, tokenId);
 
         _tokenIds.increment();
     }
@@ -114,8 +146,8 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
 
         address tokenOwner = ownerOf(rentingRequest.tokenId);
 
-        uint256 contentProviderCommission = msg.value * CONTENT_PROVIDER_COMMISSION_PERCENTAGE / 100;
-        uint256 marketplaceProviderCommission = msg.value * MARKETPLACE_PROVIDER_COMMISSION_PERCENTAGE / 100;
+        uint256 contentProviderCommission = msg.value * CONTENT_PROVIDER_RENTING_COMMISSION_PERCENTAGE / 100;
+        uint256 marketplaceProviderCommission = msg.value * MARKETPLACE_PROVIDER_RENTING_COMMISSION_PERCENTAGE / 100;
         uint256 tokenOwnerRevenue = msg.value - (contentProviderCommission + marketplaceProviderCommission);
 
         balances[_contentProvider] += contentProviderCommission;
