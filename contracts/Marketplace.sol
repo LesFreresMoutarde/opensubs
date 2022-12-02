@@ -13,7 +13,7 @@ contract Marketplace is Initializable, ERC721Upgradeable {
     }
 
     // Mapping from token  to renting conditions
-    mapping(uint256 => RentingConditions) private _rentingConditions;
+    mapping(uint256 => RentingConditions) internal _rentingConditions;
 
     // Array with all token IDs available for renting
     uint256[] private _allAvailableForRenting;
