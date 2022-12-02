@@ -48,7 +48,7 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
         return _expirations[tokenId];
     }
 
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC4907Upgradeable, ERC721EnumerableUpgradeable) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC4907Upgradeable, ERC721Upgradeable, ERC721EnumerableUpgradeable) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 
