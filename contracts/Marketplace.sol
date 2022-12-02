@@ -35,6 +35,13 @@ contract Marketplace is Initializable, ERC721Upgradeable {
         _addTokenToAvailableTokensEnumeration(tokenId);
     }
 
+    function cancelOfferForRent(uint256 tokenId) public {
+        require(_isApprovedOrOwner(_msgSender(), tokenId), "Caller is not token owner or approved");
+
+        delete _rentingConditions[tokenId];
+        _removeTokenFromAvailableTokensEnumeration(tokenId);
+    }
+
     function getAvailableTokenCount() public view returns (uint256) {
         return _allAvailableForRenting.length;
     }
