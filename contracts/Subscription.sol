@@ -73,6 +73,28 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
         super.setUser(tokenId, user, expires);
     }
 
+    function initiateRequest(uint256 tokenId) public {
+        RentingConditions memory rentingConditions = _rentingConditions[tokenId];
+
+        require(rentingConditions.createdAt != 0, "Not available for renting");
+
+        // TODO get price from chainlink
+        uint256 price = 1 ether;
+
+        uint256 expires = block.timestamp + RENTING_REQUEST_TIMEOUT;
+
+        uint256 requestId = _rentingRequestIds.current();
+
+        _rentingRequestIds.increment();
+
+        RentingRequest memory rentingRequest = RentingRequest(tokenId, price, expires);
+
+        _rentingRequests[requestId] = rentingRequest;
+
+        emit RentingRequestCreated(requestId, price, expires);
+    }
+
+
     function withdraw() public {
         uint256 value = balances[msg.sender];
 
