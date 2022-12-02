@@ -30,11 +30,19 @@ contract ERC4907Upgradeable is Initializable, IERC4907, ERC721Upgradeable {
     function setUser(uint256 tokenId, address user, uint64 expires) public virtual {
         require(_isApprovedOrOwner(msg.sender, tokenId), "ERC4907: transfer caller is not owner nor approved");
 
+        if (user != address(0)) {
+            require(expires > block.timestamp, "Expired timestamp");
+        }
+
         UserInfo storage info = _users[tokenId];
 
         info.user = user;
 
-        info.expires = expires;
+        if (user == address(0)) {
+            info.expires = 0;
+        } else {
+            info.expires = expires;
+        }
 
         emit UpdateUser(tokenId, user, expires);
     }
@@ -62,15 +70,5 @@ contract ERC4907Upgradeable is Initializable, IERC4907, ERC721Upgradeable {
     /// @dev See {IERC165-supportsInterface}.
     function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
         return interfaceId == type(IERC4907).interfaceId || super.supportsInterface(interfaceId);
-    }
-
-    function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint256) internal virtual override {
-        super._beforeTokenTransfer(from, to, tokenId, 1);
-
-        if (from != to && _users[tokenId].user != address(0)) {
-            delete _users[tokenId];
-
-            emit UpdateUser(tokenId, address(0), 0);
-        }
     }
 }
