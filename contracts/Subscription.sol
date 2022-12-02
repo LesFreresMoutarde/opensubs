@@ -18,25 +18,14 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
 
     uint8 private constant MARKETPLACE_PROVIDER_RENTING_COMMISSION_PERCENTAGE = 15; // 15%
 
-    uint8 private constant MARKETPLACE_PROVIDER_MINT_COMMISSION_PERCENTAGE = 5; // 5%
-
-    struct RentingRequest {
-        uint256 tokenId;
-        uint256 price; // Renting price in wei
-        uint256 expires; // Expiration timestamp of the request
-    }
+    uint8 private constant MARKETPLACE_PROVIDER_MINT_COMMISSION_PERCENTAGE = 2; // 2%
 
     AggregatorV3Interface internal priceFeed;
 
     CountersUpgradeable.Counter private _tokenIds;
 
-    CountersUpgradeable.Counter private _rentingRequestIds;
-
     // Mapping from tokenId to subscription expiration timestamp
     mapping(uint256 => uint256) private _expirations;
-
-    // Mapping from renting request ID to the renting request data
-    mapping(uint256 => RentingRequest) private _rentingRequests;
 
     // The price of a minted subscription in $ cents for 30 days
     uint32 public contentSubscriptionPrice;
@@ -52,8 +41,6 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
 
     // Mapping from address to balance in wei
     mapping(address => uint256) public balances;
-
-    event RentingRequestCreated(uint256 requestId, uint256 price, uint256 expires);
 
     function initialize(
         string calldata name_,
@@ -73,7 +60,6 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
         priceFeed = AggregatorV3Interface(priceFeedAddress_);
 
         _tokenIds.increment();
-        _rentingRequestIds.increment();
     }
 
     function mint() public payable {
@@ -108,10 +94,14 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
         require(user != ownerOf(tokenId), "Cannot use your own token");
         require(block.timestamp >= userExpires(tokenId), "Already used");
 
+        _checkRentingPrice(tokenId);
+        _dispatchCommissions(tokenId);
+        _removeTokenFromAvailableTokensEnumeration(tokenId);
+
         super.setUser(tokenId, user, expires);
     }
 
-    function initiateRequest(uint256 tokenId) public {
+    function _checkRentingPrice(uint256 tokenId) private {
         RentingConditions memory rentingConditions = _rentingConditions[tokenId];
 
         require(rentingConditions.createdAt != 0, "Not available for renting");
@@ -123,28 +113,14 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
 
         uint256 rentingPrice = (uint256(exchangeRateFromChainlink) * rentingConditions.price) / 100;
 
-        uint256 expires = block.timestamp + RENTING_REQUEST_TIMEOUT;
+        uint256 minRentingPrice = rentingPrice - _allowedSlippage;
+        uint256 maxRentingPrice = rentingPrice + _allowedSlippage;
 
-        uint256 requestId = _rentingRequestIds.current();
-
-        _rentingRequestIds.increment();
-
-        RentingRequest memory rentingRequest = RentingRequest(tokenId, rentingPrice, expires);
-
-        _rentingRequests[requestId] = rentingRequest;
-
-        emit RentingRequestCreated(requestId, rentingPrice, expires);
+        require(msg.value >= minRentingPrice && msg.value <= maxRentingPrice, "Too much slippage");
     }
 
-    function validateRequest(uint256 requestId) public payable {
-        RentingRequest memory rentingRequest = _rentingRequests[requestId];
-
-        require(rentingRequest.expires > block.timestamp, "Invalid or expired request");
-        require(rentingRequest.price == msg.value, "Invalid ETH amount");
-
-        RentingConditions memory rentingConditions = getRentingConditions(rentingRequest.tokenId);
-
-        address tokenOwner = ownerOf(rentingRequest.tokenId);
+    function _dispatchCommissions(uint256 tokenId) private {
+        address tokenOwner = ownerOf(tokenId);
 
         uint256 contentProviderCommission = msg.value * CONTENT_PROVIDER_RENTING_COMMISSION_PERCENTAGE / 100;
         uint256 marketplaceProviderCommission = msg.value * MARKETPLACE_PROVIDER_RENTING_COMMISSION_PERCENTAGE / 100;
@@ -153,12 +129,6 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
         balances[_contentProvider] += contentProviderCommission;
         balances[_marketplaceProvider] += marketplaceProviderCommission;
         balances[tokenOwner] += tokenOwnerRevenue;
-
-        _removeTokenFromAvailableTokensEnumeration(rentingRequest.tokenId);
-
-        setUser(rentingRequest.tokenId, msg.sender, uint64(block.timestamp + rentingConditions.duration));
-
-        delete _rentingRequests[requestId];
     }
 
     function withdraw() public {
