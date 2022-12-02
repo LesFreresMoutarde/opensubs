@@ -94,6 +94,30 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
         emit RentingRequestCreated(requestId, price, expires);
     }
 
+    function validateRequest(uint256 requestId) public payable {
+        RentingRequest memory rentingRequest = _rentingRequests[requestId];
+
+        require(rentingRequest.expires > block.timestamp, "Invalid or expired request");
+        require(rentingRequest.price == msg.value, "Invalid ETH amount");
+
+        RentingConditions memory rentingConditions = getRentingConditions(rentingRequest.tokenId);
+
+        address tokenOwner = ownerOf(rentingRequest.tokenId);
+
+        uint256 contentProviderCommission = msg.value * CONTENT_PROVIDER_COMMISSION_PERCENTAGE / 100;
+        uint256 marketplaceProviderCommission = msg.value * MARKETPLACE_PROVIDER_COMMISSION_PERCENTAGE / 100;
+        uint256 tokenOwnerRevenue = msg.value - (contentProviderCommission + marketplaceProviderCommission);
+
+        balances[_contentProvider] += contentProviderCommission;
+        balances[_marketplaceProvider] += marketplaceProviderCommission;
+        balances[tokenOwner] += tokenOwnerRevenue;
+
+        _removeTokenFromAvailableTokensEnumeration(rentingRequest.tokenId);
+
+        setUser(rentingRequest.tokenId, msg.sender, uint64(block.timestamp + rentingConditions.duration));
+
+        delete _rentingRequests[requestId];
+    }
 
     function withdraw() public {
         uint256 value = balances[msg.sender];
