@@ -6,8 +6,9 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 import "./ERC4907EnumerableUpgradeable.sol";
+import "./Marketplace.sol";
 
-contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721EnumerableUpgradeable {
+contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721EnumerableUpgradeable, Marketplace {
     using CountersUpgradeable for CountersUpgradeable.Counter;
 
     CountersUpgradeable.Counter private _tokenIds;
@@ -16,6 +17,7 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
 
     function initialize(string calldata name_, string calldata symbol_) public initializer {
         ERC4907EnumerableUpgradeable.__ERC4907Enumerable_init(name_, symbol_);
+        Marketplace.__Marketplace_init();
         _tokenIds.increment();
     }
 
@@ -46,7 +48,7 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
         return _expirations[tokenId];
     }
 
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC4907Upgradeable, ERC721EnumerableUpgradeable) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC4907Upgradeable, ERC721Upgradeable, ERC721EnumerableUpgradeable) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 
