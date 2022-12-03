@@ -65,7 +65,7 @@ describe("Subscription smart contract test", () => {
 
         const subscription = await upgrades.deployProxy(
             Subscription,
-            ["Fakeflix", "FLX", 1549, netflix.address, marketplace.address, chainlinkGoerliPriceFeedForEthUsdAddress],
+            ["Fakeflix", "FLX", 1549, 100, netflix.address, marketplace.address, chainlinkGoerliPriceFeedForEthUsdAddress],
             { initializer: 'initialize', kind: 'transparent'}
         ) as Subscription;
 
