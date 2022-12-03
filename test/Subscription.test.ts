@@ -98,6 +98,46 @@ describe("Subscription smart contract test", () => {
                 .to.emit(connectedSubscription, "Transfer")
                 .withArgs(ethers.constants.AddressZero, otherAccounts[0].address, 2);
         });
+
+        it("Should mint a token when value sent is higher than required one but still in slippage interval", async () => {
+            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixture);
+
+            const connectedSubscription = subscription.connect(otherAccounts[0]);
+
+            const provider = ethers.getDefaultProvider("http://localhost:8545");
+
+            const priceFeed = new ethers.Contract(chainlinkGoerliPriceFeedForEthUsdAddress, aggregatorV3InterfaceABI, provider);
+
+            const roundData = await priceFeed.latestRoundData()
+
+            const contentSubscriptionPrice = await connectedSubscription.contentSubscriptionPrice();
+
+            const amountToSend = Math.floor(roundData.answer * contentSubscriptionPrice / 100);
+
+            await expect(connectedSubscription.mint({value: amountToSend + 10000}))
+                .to.emit(connectedSubscription, "Transfer")
+                .withArgs(ethers.constants.AddressZero, otherAccounts[0].address, 1);
+        })
+
+        it("Should mint a token when value sent is lower than required one but still in slippage interval", async () => {
+            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixture);
+
+            const connectedSubscription = subscription.connect(otherAccounts[0]);
+
+            const provider = ethers.getDefaultProvider("http://localhost:8545");
+
+            const priceFeed = new ethers.Contract(chainlinkGoerliPriceFeedForEthUsdAddress, aggregatorV3InterfaceABI, provider);
+
+            const roundData = await priceFeed.latestRoundData()
+
+            const contentSubscriptionPrice = await connectedSubscription.contentSubscriptionPrice();
+
+            const amountToSend = Math.floor(roundData.answer * contentSubscriptionPrice / 100);
+
+            await expect(connectedSubscription.mint({value: amountToSend - 10000}))
+                .to.emit(connectedSubscription, "Transfer")
+                .withArgs(ethers.constants.AddressZero, otherAccounts[0].address, 1);
+        })
     });
 
     describe("Renting", async () => {
