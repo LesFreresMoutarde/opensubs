@@ -193,7 +193,17 @@ describe("Subscription smart contract test", () => {
 
             const connectedSubscription = subscription.connect(otherAccounts[0]);
 
-            await connectedSubscription.mint();
+            const provider = ethers.getDefaultProvider("http://localhost:8545");
+
+            const priceFeed = new ethers.Contract(chainlinkGoerliPriceFeedForEthUsdAddress, aggregatorV3InterfaceABI, provider);
+
+            const roundData = await priceFeed.latestRoundData();
+
+            const contentSubscriptionPrice = await connectedSubscription.contentSubscriptionPrice();
+
+            const amountToSend = Math.floor(roundData.answer * contentSubscriptionPrice / 100);
+
+            await connectedSubscription.mint({value: amountToSend});
 
             return {subscription, owner, netflix, marketplace, otherAccounts};
         }
@@ -203,10 +213,20 @@ describe("Subscription smart contract test", () => {
 
             const connectedSubscription = subscription.connect(otherAccounts[0]);
 
+            const provider = ethers.getDefaultProvider("http://localhost:8545");
+
+            const priceFeed = new ethers.Contract(chainlinkGoerliPriceFeedForEthUsdAddress, aggregatorV3InterfaceABI, provider);
+
+            const roundData = await priceFeed.latestRoundData();
+
+            const contentSubscriptionPrice = await connectedSubscription.contentSubscriptionPrice();
+
+            const amountToSend = Math.floor(roundData.answer * contentSubscriptionPrice / 100);
+
             const tokenIds = [...Array(20).keys()].map(item => item+1);
 
             for (let i = 0; i < tokenIds.length; i++) {
-                await connectedSubscription.mint();
+                await connectedSubscription.mint({value: amountToSend});
             }
 
             const currentTimestamp = await time.latest();
