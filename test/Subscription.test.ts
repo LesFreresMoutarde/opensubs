@@ -500,6 +500,27 @@ describe("Subscription smart contract test", () => {
                 .to.emit(connectedSubscription, "UpdateUser");
         });
 
+        it("Should revert if no value is passed at renting", async () => {
+            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
+
+            const tokenId = 1;
+
+            // Offer for rent
+
+            const connectedSubscription = subscription.connect(otherAccounts[0]);
+
+            const minPrice = await connectedSubscription.minRentPrice();
+
+            await connectedSubscription.offerForRent(tokenId,  minPrice * 5, 3600);
+
+            // Get renting conditions
+
+            const userConnectedSubscription = subscription.connect(otherAccounts[1]);
+
+            await expect(userConnectedSubscription.rent(tokenId))
+                .to.be.revertedWith("No value received");
+        });
+
         //TODO when setUser fully tested
         it("Should revert when trying to cancel an offer for a token which is already used", async () => {
 
