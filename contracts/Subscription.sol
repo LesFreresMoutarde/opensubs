@@ -113,6 +113,8 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
     }
 
     function _checkRentingPrice(uint256 tokenId) private {
+        require(msg.value > 0, "No value received");
+
         RentingConditions memory rentingConditions = _rentingConditions[tokenId];
 
         require(rentingConditions.createdAt != 0, "Not available for renting");
