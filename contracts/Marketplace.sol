@@ -4,10 +4,11 @@ pragma solidity 0.8.17;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
+import "./ERC4907EnumerableUpgradeable.sol";
 
-contract Marketplace is Initializable, ERC721Upgradeable {
+contract Marketplace is Initializable, ERC4907EnumerableUpgradeable {
     struct RentingConditions {
-        uint128 price; // Renting price in $ cents
+        uint32 price; // Renting price in $ cents
         uint128 duration; // Renting duration in seconds
         uint256 createdAt;
     }
@@ -15,18 +16,23 @@ contract Marketplace is Initializable, ERC721Upgradeable {
     // Mapping from token  to renting conditions
     mapping(uint256 => RentingConditions) internal _rentingConditions;
 
+    // The minimum price an owner can set for a renting
+    uint32 private _minRentPrice;
+
     // Array with all token IDs available for renting
     uint256[] private _allAvailableForRenting;
 
     // Mapping from token ID to position in the allAvailable array
     mapping(uint256 => uint256) private _allAvailableForRentingIndex;
 
-    function __Marketplace_init() internal onlyInitializing {
-
+    function __Marketplace_init(uint32 minRentPrice_) internal onlyInitializing {
+        _minRentPrice = minRentPrice_;
     }
 
-    function offerForRent(uint256 tokenId, uint128 price, uint128 duration) public {
+    function offerForRent(uint256 tokenId, uint32 price, uint128 duration) public {
         require(_isApprovedOrOwner(_msgSender(), tokenId), "Caller is not token owner or approved");
+        require(userOf(tokenId) == address(0), "Already used");
+        require(price >= _minRentPrice, "Price too low");
 
         RentingConditions memory rentingConditions = RentingConditions(price, duration, block.timestamp);
 
