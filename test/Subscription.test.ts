@@ -61,17 +61,17 @@ describe("Subscription smart contract test", () => {
     async function deploySubscriptionFixture() {
         const Subscription = await ethers.getContractFactory("Subscription");
 
+        const [owner, netflix, marketplace, ...otherAccounts] = await ethers.getSigners();
+
         const subscription = await upgrades.deployProxy(
             Subscription,
-            ["Fakeflix", "FLX"],
+            ["Fakeflix", "FLX", 1549, netflix.address, marketplace.address, chainlinkGoerliPriceFeedForEthUsdAddress],
             { initializer: 'initialize', kind: 'transparent'}
         ) as Subscription;
 
         await subscription.deployed();
 
-        const [owner, ...otherAccounts] = await ethers.getSigners();
-
-        return {subscription, owner, otherAccounts};
+        return {subscription, owner, netflix, marketplace, otherAccounts};
     }
 
     // TODO MINT WITH ETH VALUE ONLY
