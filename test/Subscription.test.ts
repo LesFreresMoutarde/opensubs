@@ -74,18 +74,27 @@ describe("Subscription smart contract test", () => {
         return {subscription, owner, netflix, marketplace, otherAccounts};
     }
 
-    // TODO MINT WITH ETH VALUE ONLY
     describe("Mint", async () => {
         it("Should mint a token", async () => {
             const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixture);
 
             const connectedSubscription = subscription.connect(otherAccounts[0]);
 
-            await expect(connectedSubscription.mint())
+            const provider = ethers.getDefaultProvider("http://localhost:8545");
+
+            const priceFeed = new ethers.Contract(chainlinkGoerliPriceFeedForEthUsdAddress, aggregatorV3InterfaceABI, provider);
+
+            const roundData = await priceFeed.latestRoundData()
+
+            const contentSubscriptionPrice = await connectedSubscription.contentSubscriptionPrice();
+
+            const amountToSend = Math.floor(roundData.answer * contentSubscriptionPrice / 100);
+
+            await expect(connectedSubscription.mint({value: amountToSend}))
                 .to.emit(connectedSubscription, "Transfer")
                 .withArgs(ethers.constants.AddressZero, otherAccounts[0].address, 1);
 
-            await expect(connectedSubscription.mint())
+            await expect(connectedSubscription.mint({value: amountToSend}))
                 .to.emit(connectedSubscription, "Transfer")
                 .withArgs(ethers.constants.AddressZero, otherAccounts[0].address, 2);
         });
