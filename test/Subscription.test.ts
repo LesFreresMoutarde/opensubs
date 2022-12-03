@@ -288,6 +288,37 @@ describe("Subscription smart contract test", () => {
                 .withArgs(tokenId);
         });
 
+        it("Should revert when not approved address for a token tries to create offer for rent", async () => {
+            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
+
+            const tokenId = 1;
+
+            const approvedConnectedSubscription = subscription.connect(otherAccounts[2]);
+
+            const minPrice = await approvedConnectedSubscription.minRentPrice();
+
+            await expect(approvedConnectedSubscription.offerForRent(tokenId,  minPrice * 5,3600))
+                .to.be.revertedWith("Caller is not token owner or approved");
+        });
+
+        it("Should revert when minimal renting price is not reached by msg.value", async () => {
+            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
+
+            const tokenId = 1;
+
+            const connectedSubscription = subscription.connect(otherAccounts[0]);
+
+            const minPrice = await connectedSubscription.minRentPrice();
+
+            await expect(connectedSubscription.offerForRent(tokenId,  minPrice - 1,3600))
+                .to.be.revertedWith("Price too low");
+        });
+
+        //TODO when setUser fully tested
+        it("Should revert when token is already used", async () => {
+
+        });
+
         it("Should set user", async () => {
             const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
 
