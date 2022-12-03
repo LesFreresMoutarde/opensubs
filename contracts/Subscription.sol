@@ -30,8 +30,8 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
     // The price of a minted subscription in $ cents for 30 days
     uint32 public contentSubscriptionPrice;
 
-    // The allowed slippage when a subscription is minted or rented in wei
-    uint256 private _allowedSlippage = 0.000001 ether; // 10^12 wei
+    // The allowed slippage when a subscription is minted or rented per ‰ (1000)
+    uint8 private _allowedSlippage = 5;
 
     // The address of the entity providing content or service
     address private _contentProvider;
@@ -70,8 +70,8 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
 
         uint256 mintingPrice = (uint256(exchangeRateFromChainlink) * contentSubscriptionPrice) / 100;
 
-        uint256 minMintingPrice = mintingPrice - _allowedSlippage;
-        uint256 maxMintingPrice = mintingPrice + _allowedSlippage;
+        uint256 minMintingPrice = mintingPrice * (1000 - _allowedSlippage) / 1000;
+        uint256 maxMintingPrice = mintingPrice * (1000 + _allowedSlippage) / 1000;
 
         require(msg.value >= minMintingPrice && msg.value <= maxMintingPrice, "Too much slippage");
 
@@ -113,8 +113,8 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
 
         uint256 rentingPrice = (uint256(exchangeRateFromChainlink) * rentingConditions.price) / 100;
 
-        uint256 minRentingPrice = rentingPrice - _allowedSlippage;
-        uint256 maxRentingPrice = rentingPrice + _allowedSlippage;
+        uint256 minRentingPrice = rentingPrice * (1000 - _allowedSlippage) / 1000;
+        uint256 maxRentingPrice = rentingPrice * (1000 + _allowedSlippage) / 1000;
 
         require(msg.value >= minRentingPrice && msg.value <= maxRentingPrice, "Too much slippage");
     }
