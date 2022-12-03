@@ -109,6 +109,8 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
         _dispatchCommissions(tokenId);
         _removeTokenFromAvailableTokensEnumeration(tokenId);
 
+        delete _rentingConditions[tokenId];
+
         // Identical to super.setUser but without checking that msg.sender is the token owner
 
         _beforeTokenUse(user, tokenId);
