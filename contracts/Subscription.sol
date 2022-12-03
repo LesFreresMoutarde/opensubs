@@ -92,12 +92,12 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
     }
 
     // Wrapper for setUser function called by a user who wants to use a token proposed for rental
-    function rent(uint256 tokenId, address user) public payable {
+    function rent(uint256 tokenId) public payable {
         RentingConditions memory rentingConditions = _rentingConditions[tokenId];
 
         uint64 expires = uint64(block.timestamp + rentingConditions.duration);
 
-        setUser(tokenId, user, expires);
+        setUser(tokenId, msg.sender, expires);
     }
 
     // This function must not be called directly because it is not payable but it needs to receive an ETH value
