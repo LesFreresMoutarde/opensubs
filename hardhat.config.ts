@@ -11,6 +11,9 @@ const config: HardhatUserConfig = {
   defaultNetwork: "localhost",
   networks: {
     hardhat: {
+      forking: {
+        url: `https://goerli.infura.io/v3/${process.env.INFURA_KEY}`
+      },
   /* Uncomment the line below if metamask fix has to be done in hardhat */
   //     chainId: 1337
     },

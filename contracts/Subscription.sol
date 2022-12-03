@@ -2,6 +2,7 @@
 
 pragma solidity 0.8.17;
 
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
@@ -13,25 +14,24 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
 
     uint256 private constant RENTING_REQUEST_TIMEOUT = 120; // Number of seconds a request is valid
 
-    uint256 private constant CONTENT_PROVIDER_COMMISSION_PERCENTAGE = 15; // 15%
+    uint8 private constant CONTENT_PROVIDER_RENTING_COMMISSION_PERCENTAGE = 15; // 15%
 
-    uint256 private constant MARKETPLACE_PROVIDER_COMMISSION_PERCENTAGE = 15; // 15%
+    uint8 private constant MARKETPLACE_PROVIDER_RENTING_COMMISSION_PERCENTAGE = 15; // 15%
 
-    struct RentingRequest {
-        uint256 tokenId;
-        uint256 price; // Renting price in wei
-        uint256 expires; // Expiration timestamp of the request
-    }
+    uint8 private constant MARKETPLACE_PROVIDER_MINT_COMMISSION_PERCENTAGE = 2; // 2%
+
+    AggregatorV3Interface internal priceFeed;
 
     CountersUpgradeable.Counter private _tokenIds;
-
-    CountersUpgradeable.Counter private _rentingRequestIds;
 
     // Mapping from tokenId to subscription expiration timestamp
     mapping(uint256 => uint256) private _expirations;
 
-    // Mapping from renting request ID to the renting request data
-    mapping(uint256 => RentingRequest) private _rentingRequests;
+    // The price of a minted subscription in $ cents for 30 days
+    uint32 public contentSubscriptionPrice;
+
+    // The allowed slippage when a subscription is minted or rented per ‰ (1000)
+    uint8 private _allowedSlippage = 5;
 
     // The address of the entity providing content or service
     address private _contentProvider;
@@ -42,26 +42,50 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
     // Mapping from address to balance in wei
     mapping(address => uint256) public balances;
 
-    event RentingRequestCreated(uint256 requestId, uint256 price, uint256 expires);
-
     function initialize(
         string calldata name_,
         string calldata symbol_,
+        uint32 contentSubscriptionPrice_,
         address contentProvider_,
-        address marketplaceProvider_
+        address marketplaceProvider_,
+        address priceFeedAddress_
     ) public initializer {
         ERC4907EnumerableUpgradeable.__ERC4907Enumerable_init(name_, symbol_);
         Marketplace.__Marketplace_init();
 
+        contentSubscriptionPrice = contentSubscriptionPrice_;
         _contentProvider = contentProvider_;
         _marketplaceProvider = marketplaceProvider_;
 
+        priceFeed = AggregatorV3Interface(priceFeedAddress_);
+
         _tokenIds.increment();
-        _rentingRequestIds.increment();
     }
 
-    function mint() public {
-        _safeMint(msg.sender, _tokenIds.current());
+    function mint() public payable {
+        // Chainlink returns amount of wei for 1 USD
+        (,int256 exchangeRateFromChainlink,,,) = priceFeed.latestRoundData();
+
+        assert(exchangeRateFromChainlink > 0);
+
+        uint256 mintingPrice = (uint256(exchangeRateFromChainlink) * contentSubscriptionPrice) / 100;
+
+        uint256 minMintingPrice = mintingPrice * (1000 - _allowedSlippage) / 1000;
+        uint256 maxMintingPrice = mintingPrice * (1000 + _allowedSlippage) / 1000;
+
+        require(msg.value >= minMintingPrice && msg.value <= maxMintingPrice, "Too much slippage");
+
+        uint256 marketplaceProviderCommission = msg.value * MARKETPLACE_PROVIDER_MINT_COMMISSION_PERCENTAGE / 100;
+        uint256 contentProviderRevenue = msg.value - marketplaceProviderCommission;
+
+        balances[_marketplaceProvider] += marketplaceProviderCommission;
+        balances[_contentProvider] += contentProviderRevenue;
+
+        uint256 tokenId = _tokenIds.current();
+
+        _expirations[tokenId] = block.timestamp + 30 days;
+
+        _safeMint(msg.sender, tokenId);
 
         _tokenIds.increment();
     }
@@ -70,53 +94,41 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
         require(user != ownerOf(tokenId), "Cannot use your own token");
         require(block.timestamp >= userExpires(tokenId), "Already used");
 
+        _checkRentingPrice(tokenId);
+        _dispatchCommissions(tokenId);
+        _removeTokenFromAvailableTokensEnumeration(tokenId);
+
         super.setUser(tokenId, user, expires);
     }
 
-    function initiateRequest(uint256 tokenId) public {
+    function _checkRentingPrice(uint256 tokenId) private {
         RentingConditions memory rentingConditions = _rentingConditions[tokenId];
 
         require(rentingConditions.createdAt != 0, "Not available for renting");
 
-        // TODO get price from chainlink
-        uint256 price = 1 ether;
+        // Chainlink returns amount of wei for 1 USD
+        (,int256 exchangeRateFromChainlink,,,) = priceFeed.latestRoundData();
 
-        uint256 expires = block.timestamp + RENTING_REQUEST_TIMEOUT;
+        assert(exchangeRateFromChainlink > 0);
 
-        uint256 requestId = _rentingRequestIds.current();
+        uint256 rentingPrice = (uint256(exchangeRateFromChainlink) * rentingConditions.price) / 100;
 
-        _rentingRequestIds.increment();
+        uint256 minRentingPrice = rentingPrice * (1000 - _allowedSlippage) / 1000;
+        uint256 maxRentingPrice = rentingPrice * (1000 + _allowedSlippage) / 1000;
 
-        RentingRequest memory rentingRequest = RentingRequest(tokenId, price, expires);
-
-        _rentingRequests[requestId] = rentingRequest;
-
-        emit RentingRequestCreated(requestId, price, expires);
+        require(msg.value >= minRentingPrice && msg.value <= maxRentingPrice, "Too much slippage");
     }
 
-    function validateRequest(uint256 requestId) public payable {
-        RentingRequest memory rentingRequest = _rentingRequests[requestId];
+    function _dispatchCommissions(uint256 tokenId) private {
+        address tokenOwner = ownerOf(tokenId);
 
-        require(rentingRequest.expires > block.timestamp, "Invalid or expired request");
-        require(rentingRequest.price == msg.value, "Invalid ETH amount");
-
-        RentingConditions memory rentingConditions = getRentingConditions(rentingRequest.tokenId);
-
-        address tokenOwner = ownerOf(rentingRequest.tokenId);
-
-        uint256 contentProviderCommission = msg.value * CONTENT_PROVIDER_COMMISSION_PERCENTAGE / 100;
-        uint256 marketplaceProviderCommission = msg.value * MARKETPLACE_PROVIDER_COMMISSION_PERCENTAGE / 100;
+        uint256 contentProviderCommission = msg.value * CONTENT_PROVIDER_RENTING_COMMISSION_PERCENTAGE / 100;
+        uint256 marketplaceProviderCommission = msg.value * MARKETPLACE_PROVIDER_RENTING_COMMISSION_PERCENTAGE / 100;
         uint256 tokenOwnerRevenue = msg.value - (contentProviderCommission + marketplaceProviderCommission);
 
         balances[_contentProvider] += contentProviderCommission;
         balances[_marketplaceProvider] += marketplaceProviderCommission;
         balances[tokenOwner] += tokenOwnerRevenue;
-
-        _removeTokenFromAvailableTokensEnumeration(rentingRequest.tokenId);
-
-        setUser(rentingRequest.tokenId, msg.sender, uint64(block.timestamp + rentingConditions.duration));
-
-        delete _rentingRequests[requestId];
     }
 
     function withdraw() public {
