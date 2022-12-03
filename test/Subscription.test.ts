@@ -314,11 +314,6 @@ describe("Subscription smart contract test", () => {
                 .to.be.revertedWith("Price too low");
         });
 
-        //TODO when setUser fully tested
-        it("Should revert when token is already used", async () => {
-
-        });
-
         it("Should emit event when offer for rent is cancelled", async () => {
             const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
 
@@ -350,16 +345,26 @@ describe("Subscription smart contract test", () => {
 
             await expect(notApprovedSubscription.cancelOfferForRent(tokenId))
                 .to.be.revertedWith("Caller is not token owner or approved");
-        })
+        });
 
-        it("Should set user", async () => {
+        it("Should revert if setUser function is called directly", async () => {
             const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
 
             const tokenId = 1;
 
+            const connectedSubscription = subscription.connect(otherAccounts[0]);
+
+            const minPrice = await connectedSubscription.minRentPrice();
+
+            await connectedSubscription.offerForRent(tokenId,  minPrice * 5,3600);
+
             const currentTimestamp = await time.latest();
 
             const expires = currentTimestamp + 20; // 20 seconds more
+
+            await expect(connectedSubscription.setUser(tokenId, otherAccounts[1].address, expires))
+                .to.be.revertedWith("No value received");
+        });
 
             const connectedSubscription = subscription.connect(otherAccounts[0]);
 
@@ -382,6 +387,11 @@ describe("Subscription smart contract test", () => {
             const expirationTime = await connectedSubscription.userExpires(tokenId);
 
             expect(expirationTime).to.equal(expires);
+        });
+
+        //TODO when setUser fully tested
+        it("Should revert when trying to cancel an offer for a token which is already used", async () => {
+
         });
 
         it("Should set user from approved account", async () => {
