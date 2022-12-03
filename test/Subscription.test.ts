@@ -256,6 +256,38 @@ describe("Subscription smart contract test", () => {
             return {subscription, owner, netflix, marketplace, otherAccounts, expires};
         }
 
+        it("Should emit event when offer for rent is successfully created by owner", async () => {
+            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
+
+            const tokenId = 1;
+
+            const connectedSubscription = subscription.connect(otherAccounts[0]);
+
+            const minPrice = await connectedSubscription.minRentPrice();
+
+            await expect(connectedSubscription.offerForRent(tokenId,  minPrice * 5,3600))
+                .to.emit(connectedSubscription, 'RentOfferCreated')
+                .withArgs(tokenId);
+        });
+
+        it("Should emit event when offer for rent is successfully created by approved address", async () => {
+            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
+
+            const tokenId = 1;
+
+            const connectedSubscription = subscription.connect(otherAccounts[0]);
+
+            await connectedSubscription.approve(otherAccounts[2].address, tokenId);
+
+            const approvedConnectedSubscription = subscription.connect(otherAccounts[2]);
+
+            const minPrice = await approvedConnectedSubscription.minRentPrice();
+
+            await expect(approvedConnectedSubscription.offerForRent(tokenId,  minPrice * 5,3600))
+                .to.emit(approvedConnectedSubscription, 'RentOfferCreated')
+                .withArgs(tokenId);
+        });
+
         it("Should set user", async () => {
             const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
 
