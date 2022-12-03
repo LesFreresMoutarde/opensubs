@@ -46,12 +46,13 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
         string calldata name_,
         string calldata symbol_,
         uint32 contentSubscriptionPrice_,
+        uint32 minRentPrice_,
         address contentProvider_,
         address marketplaceProvider_,
         address priceFeedAddress_
     ) public initializer {
         ERC4907EnumerableUpgradeable.__ERC4907Enumerable_init(name_, symbol_);
-        Marketplace.__Marketplace_init();
+        Marketplace.__Marketplace_init(minRentPrice_);
 
         contentSubscriptionPrice = contentSubscriptionPrice_;
         _contentProvider = contentProvider_;
@@ -157,7 +158,7 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
         return _expirations[tokenId];
     }
 
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC4907Upgradeable, ERC721Upgradeable, ERC721EnumerableUpgradeable) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC4907Upgradeable, ERC721EnumerableUpgradeable) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 
