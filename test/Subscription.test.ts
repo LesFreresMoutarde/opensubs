@@ -139,6 +139,52 @@ describe("Subscription smart contract test", () => {
                 .withArgs(ethers.constants.AddressZero, otherAccounts[0].address, 1);
         });
 
+        it("Should revert when no value is passed at mint", async () => {
+            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixture);
+
+            const connectedSubscription = subscription.connect(otherAccounts[0]);
+
+            await expect(connectedSubscription.mint())
+                .to.be.revertedWith("Too much slippage");
+        });
+
+        it("Should revert when value passed at mint is higher than expected in slippage interval", async () => {
+            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixture);
+
+            const connectedSubscription = subscription.connect(otherAccounts[0]);
+
+            const provider = ethers.getDefaultProvider("http://localhost:8545");
+
+            const priceFeed = new ethers.Contract(chainlinkGoerliPriceFeedForEthUsdAddress, aggregatorV3InterfaceABI, provider);
+
+            const roundData = await priceFeed.latestRoundData();
+
+            const contentSubscriptionPrice = await connectedSubscription.contentSubscriptionPrice();
+
+            const amountToSend = Math.floor(roundData.answer * contentSubscriptionPrice / 100);
+
+            await expect(connectedSubscription.mint({value: amountToSend * 2}))
+                .to.be.revertedWith("Too much slippage");
+        });
+
+        it("Should revert when value passed at mint is lower than expected in slippage interval", async () => {
+            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixture);
+
+            const connectedSubscription = subscription.connect(otherAccounts[0]);
+
+            const provider = ethers.getDefaultProvider("http://localhost:8545");
+
+            const priceFeed = new ethers.Contract(chainlinkGoerliPriceFeedForEthUsdAddress, aggregatorV3InterfaceABI, provider);
+
+            const roundData = await priceFeed.latestRoundData();
+
+            const contentSubscriptionPrice = await connectedSubscription.contentSubscriptionPrice();
+
+            const amountToSend = Math.floor(roundData.answer * contentSubscriptionPrice / 100);
+
+            await expect(connectedSubscription.mint({value: amountToSend / 2}))
+                .to.be.revertedWith("Too much slippage");
+        });
     });
 
     describe("Renting", async () => {
