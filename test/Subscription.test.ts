@@ -84,7 +84,7 @@ describe("Subscription smart contract test", () => {
 
             const priceFeed = new ethers.Contract(chainlinkGoerliPriceFeedForEthUsdAddress, aggregatorV3InterfaceABI, provider);
 
-            const roundData = await priceFeed.latestRoundData()
+            const roundData = await priceFeed.latestRoundData();
 
             const contentSubscriptionPrice = await connectedSubscription.contentSubscriptionPrice();
 
@@ -108,7 +108,7 @@ describe("Subscription smart contract test", () => {
 
             const priceFeed = new ethers.Contract(chainlinkGoerliPriceFeedForEthUsdAddress, aggregatorV3InterfaceABI, provider);
 
-            const roundData = await priceFeed.latestRoundData()
+            const roundData = await priceFeed.latestRoundData();
 
             const contentSubscriptionPrice = await connectedSubscription.contentSubscriptionPrice();
 
@@ -117,7 +117,7 @@ describe("Subscription smart contract test", () => {
             await expect(connectedSubscription.mint({value: amountToSend + 10000}))
                 .to.emit(connectedSubscription, "Transfer")
                 .withArgs(ethers.constants.AddressZero, otherAccounts[0].address, 1);
-        })
+        });
 
         it("Should mint a token when value sent is lower than required one but still in slippage interval", async () => {
             const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixture);
@@ -128,7 +128,7 @@ describe("Subscription smart contract test", () => {
 
             const priceFeed = new ethers.Contract(chainlinkGoerliPriceFeedForEthUsdAddress, aggregatorV3InterfaceABI, provider);
 
-            const roundData = await priceFeed.latestRoundData()
+            const roundData = await priceFeed.latestRoundData();
 
             const contentSubscriptionPrice = await connectedSubscription.contentSubscriptionPrice();
 
@@ -137,7 +137,8 @@ describe("Subscription smart contract test", () => {
             await expect(connectedSubscription.mint({value: amountToSend - 10000}))
                 .to.emit(connectedSubscription, "Transfer")
                 .withArgs(ethers.constants.AddressZero, otherAccounts[0].address, 1);
-        })
+        });
+
     });
 
     describe("Renting", async () => {
