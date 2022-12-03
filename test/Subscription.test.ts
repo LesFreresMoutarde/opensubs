@@ -631,6 +631,19 @@ describe("Subscription smart contract test", () => {
             expect(newRentingConditions.createdAt).equal(0);
         });
 
+        it("Should revert when trying to rent a token which is not proposed for rental", async () => {
+            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
+
+            const tokenId = 1;
+
+            // Do NOT offer for rent
+
+            const userConnectedSubscription = subscription.connect(otherAccounts[1]);
+
+            await expect(userConnectedSubscription.rent(tokenId, {value: 42}))
+                .to.be.revertedWith("Not available for renting");
+        });
+
         it("Should set user from approved account", async () => {
             const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
 
