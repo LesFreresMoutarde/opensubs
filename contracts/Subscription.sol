@@ -18,7 +18,7 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
 
     uint8 private constant MARKETPLACE_PROVIDER_RENTING_COMMISSION_PERCENTAGE = 15; // 15%
 
-    uint8 private constant MARKETPLACE_PROVIDER_MINT_COMMISSION_PERCENTAGE = 2; // 2%
+    uint8 private constant MARKETPLACE_PROVIDER_MINT_COMMISSION_PERMILLE = 25; // 2.5%
 
     AggregatorV3Interface internal priceFeed;
 
@@ -76,7 +76,7 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
 
         require(msg.value >= minMintingPrice && msg.value <= maxMintingPrice, "Too much slippage");
 
-        uint256 marketplaceProviderCommission = msg.value * MARKETPLACE_PROVIDER_MINT_COMMISSION_PERCENTAGE / 100;
+        uint256 marketplaceProviderCommission = msg.value * MARKETPLACE_PROVIDER_MINT_COMMISSION_PERMILLE / 1000;
         uint256 contentProviderRevenue = msg.value - marketplaceProviderCommission;
 
         balances[_marketplaceProvider] += marketplaceProviderCommission;
