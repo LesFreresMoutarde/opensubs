@@ -99,6 +99,42 @@ describe("Subscription smart contract test", () => {
                 .withArgs(ethers.constants.AddressZero, otherAccounts[0].address, 2);
         });
 
+        it("Should update balances when a token is minted", async () => {
+            const {subscription, netflix, marketplace, otherAccounts} = await loadFixture(deploySubscriptionFixture);
+
+            const connectedSubscription = subscription.connect(otherAccounts[0]);
+
+            const provider = ethers.getDefaultProvider("http://localhost:8545");
+
+            const priceFeed = new ethers.Contract(chainlinkGoerliPriceFeedForEthUsdAddress, aggregatorV3InterfaceABI, provider);
+
+            const roundData = await priceFeed.latestRoundData();
+
+            const contentSubscriptionPrice = await connectedSubscription.contentSubscriptionPrice();
+
+            const amountToSend = Math.floor(roundData.answer * contentSubscriptionPrice / 100);
+
+            // Check balances before minting
+
+            const netflixBalanceBeforeRenting = await subscription.balances(netflix.address);
+            const marketplaceBalanceBeforeRenting = await subscription.balances(marketplace.address);
+
+            // Send transaction to mint token
+
+            await connectedSubscription.mint({value: amountToSend});
+
+            // Check balances after minting
+
+            const marketplaceCommission = Math.floor(amountToSend * 0.025);
+            const netflixRevenue = amountToSend - marketplaceCommission;
+
+            const marketplaceBalanceAfterRenting = await subscription.balances(marketplace.address);
+            const netflixBalanceAfterRenting = await subscription.balances(netflix.address);
+
+            expect(marketplaceBalanceAfterRenting).equal(marketplaceBalanceBeforeRenting.add(marketplaceCommission));
+            expect(netflixBalanceAfterRenting).equal(netflixBalanceBeforeRenting.add(netflixRevenue));
+        });
+
         it("Should mint a token when value sent is higher than required one but still in slippage interval", async () => {
             const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixture);
 
