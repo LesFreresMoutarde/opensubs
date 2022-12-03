@@ -430,6 +430,76 @@ describe("Subscription smart contract test", () => {
             expect(expirationTime).to.equal(expires);
         });
 
+        it("Should rent a token when value sent is lower than required one but still in slippage interval", async () => {
+            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
+
+            const tokenId = 1;
+
+            // Offer for rent
+
+            const connectedSubscription = subscription.connect(otherAccounts[0]);
+
+            const minPrice = await connectedSubscription.minRentPrice();
+
+            await connectedSubscription.offerForRent(tokenId,  minPrice * 5, 3600);
+
+            // Get renting conditions
+
+            const userConnectedSubscription = subscription.connect(otherAccounts[1]);
+
+            const rentingConditions = await userConnectedSubscription.getRentingConditions(tokenId);
+
+            // Compute ETH amount to send from subscription renting conditions
+
+            const provider = ethers.getDefaultProvider("http://localhost:8545");
+
+            const priceFeed = new ethers.Contract(chainlinkGoerliPriceFeedForEthUsdAddress, aggregatorV3InterfaceABI, provider);
+
+            const roundData = await priceFeed.latestRoundData();
+
+            const rentingPrice = rentingConditions.price
+
+            const amountToSend = Math.floor(roundData.answer * rentingPrice / 100);
+
+            await expect(userConnectedSubscription.rent(tokenId, {value: amountToSend - 10000}))
+                .to.emit(connectedSubscription, "UpdateUser");
+        });
+
+        it("Should rent a token when value sent is higher than required one but still in slippage interval", async () => {
+            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
+
+            const tokenId = 1;
+
+            // Offer for rent
+
+            const connectedSubscription = subscription.connect(otherAccounts[0]);
+
+            const minPrice = await connectedSubscription.minRentPrice();
+
+            await connectedSubscription.offerForRent(tokenId,  minPrice * 5, 3600);
+
+            // Get renting conditions
+
+            const userConnectedSubscription = subscription.connect(otherAccounts[1]);
+
+            const rentingConditions = await userConnectedSubscription.getRentingConditions(tokenId);
+
+            // Compute ETH amount to send from subscription renting conditions
+
+            const provider = ethers.getDefaultProvider("http://localhost:8545");
+
+            const priceFeed = new ethers.Contract(chainlinkGoerliPriceFeedForEthUsdAddress, aggregatorV3InterfaceABI, provider);
+
+            const roundData = await priceFeed.latestRoundData();
+
+            const rentingPrice = rentingConditions.price
+
+            const amountToSend = Math.floor(roundData.answer * rentingPrice / 100);
+
+            await expect(userConnectedSubscription.rent(tokenId, {value: amountToSend + 10000}))
+                .to.emit(connectedSubscription, "UpdateUser");
+        });
+
         //TODO when setUser fully tested
         it("Should revert when trying to cancel an offer for a token which is already used", async () => {
 
