@@ -102,16 +102,26 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
         setUser(tokenId, msg.sender, expires);
     }
 
-    // This function must not be called directly because it is not payable but it needs to receive an ETH value
+    // Wrapper for setUser function called by a token owner who wants to reclaim his token after a rental
+    function reclaim(uint256 tokenId) public {
+        setUser(tokenId, address(0), 0);
+    }
+
+    // This function must not be called directly to rent a token
+    // because it is not payable but it needs to receive an ETH value
     function setUser(uint256 tokenId, address user, uint64 expires) public override {
         require(user != ownerOf(tokenId), "Cannot use your own token");
         require(block.timestamp >= userExpires(tokenId), "Already used");
 
-        _checkRentingPrice(tokenId);
-        _dispatchCommissions(tokenId);
-        _removeTokenFromAvailableTokensEnumeration(tokenId);
+        if (user == address(0)) {
+            require(_isApprovedOrOwner(_msgSender(), tokenId), "Caller is not token owner or approved");
+        } else {
+            _checkRentingPrice(tokenId);
+            _dispatchCommissions(tokenId);
+            _removeTokenFromAvailableTokensEnumeration(tokenId);
 
-        delete _rentingConditions[tokenId];
+            delete _rentingConditions[tokenId];
+        }
 
         // Identical to super.setUser but without checking that msg.sender is the token owner
 
