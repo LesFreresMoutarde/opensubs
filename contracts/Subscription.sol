@@ -31,7 +31,7 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
     uint32 public contentSubscriptionPrice;
 
     // The allowed slippage when a subscription is minted or rented per ‰ (1000)
-    uint8 private _allowedSlippage = 5;
+    uint8 private _allowedSlippage;
 
     // The address of the entity providing content or service
     address private _contentProvider;
@@ -56,8 +56,8 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
         contentSubscriptionPrice = contentSubscriptionPrice_;
         _contentProvider = contentProvider_;
         _marketplaceProvider = marketplaceProvider_;
-
         priceFeed = AggregatorV3Interface(priceFeedAddress_);
+        _allowedSlippage = 5;
 
         _tokenIds.increment();
     }
