@@ -25,6 +25,10 @@ contract Marketplace is Initializable, ERC4907EnumerableUpgradeable {
     // Mapping from token ID to position in the allAvailable array
     mapping(uint256 => uint256) private _allAvailableForRentingIndex;
 
+    event RentOfferCreated(uint256 tokenId);
+
+    event RentOfferCancelled(uint256 tokenId);
+
     function __Marketplace_init(uint32 minRentPrice_) internal onlyInitializing {
         _minRentPrice = minRentPrice_;
     }
@@ -39,6 +43,8 @@ contract Marketplace is Initializable, ERC4907EnumerableUpgradeable {
         _rentingConditions[tokenId] = rentingConditions;
 
         _addTokenToAvailableTokensEnumeration(tokenId);
+
+        emit RentOfferCreated(tokenId);
     }
 
     function cancelOfferForRent(uint256 tokenId) public {
@@ -46,6 +52,8 @@ contract Marketplace is Initializable, ERC4907EnumerableUpgradeable {
 
         delete _rentingConditions[tokenId];
         _removeTokenFromAvailableTokensEnumeration(tokenId);
+
+        emit RentOfferCancelled(tokenId);
     }
 
     function getAvailableTokenCount() public view returns (uint256) {
