@@ -95,6 +95,8 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
     function rent(uint256 tokenId) public payable {
         RentingConditions memory rentingConditions = _rentingConditions[tokenId];
 
+        require(rentingConditions.createdAt != 0, "Not available for renting");
+
         uint64 expires = uint64(block.timestamp + rentingConditions.duration);
 
         setUser(tokenId, msg.sender, expires);
@@ -142,8 +144,6 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
         require(msg.value > 0, "No value received");
 
         RentingConditions memory rentingConditions = _rentingConditions[tokenId];
-
-        require(rentingConditions.createdAt != 0, "Not available for renting");
 
         // Chainlink returns amount of wei for 1 USD
         (,int256 exchangeRateFromChainlink,,,) = priceFeed.latestRoundData();
