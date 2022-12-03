@@ -644,6 +644,64 @@ describe("Subscription smart contract test", () => {
                 .to.be.revertedWith("Not available for renting");
         });
 
+        it("Should update balances when a token is rented", async () => {
+            const {subscription, netflix, marketplace, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
+
+            const tokenId = 1;
+
+            // Offer for rent
+
+            const connectedSubscription = subscription.connect(otherAccounts[0]);
+
+            const minPrice = await connectedSubscription.minRentPrice();
+
+            const askingPrice = minPrice * 5;
+
+            await connectedSubscription.offerForRent(tokenId,  askingPrice, 3600);
+
+            // Get renting conditions
+
+            const userConnectedSubscription = subscription.connect(otherAccounts[1]);
+
+            const rentingConditions = await userConnectedSubscription.getRentingConditions(tokenId);
+
+            // Compute ETH amount to send from subscription renting conditions
+
+            const provider = ethers.getDefaultProvider("http://localhost:8545");
+
+            const priceFeed = new ethers.Contract(chainlinkGoerliPriceFeedForEthUsdAddress, aggregatorV3InterfaceABI, provider);
+
+            const roundData = await priceFeed.latestRoundData();
+
+            const rentingPrice = rentingConditions.price
+
+            const amountToSend = Math.floor(roundData.answer * rentingPrice / 100);
+
+            // Check balances before renting
+
+            const netflixBalanceBeforeRenting = await subscription.balances(netflix.address);
+            const marketplaceBalanceBeforeRenting = await subscription.balances(marketplace.address);
+            const tokenOnwerBalanceBeforeRenting = await subscription.balances(otherAccounts[0].address);
+
+            // Send transaction to rent token
+
+            await userConnectedSubscription.rent(tokenId, {value: amountToSend});
+
+            // Check balances after renting
+
+            const netflixCommission = Math.floor(amountToSend * 0.15);
+            const marketplaceCommission = Math.floor(amountToSend * 0.15);
+            const tokenOwnerRevenue = amountToSend - netflixCommission - marketplaceCommission;
+
+            const netflixBalanceAfterRenting = await subscription.balances(netflix.address);
+            const marketplaceBalanceAfterRenting = await subscription.balances(marketplace.address);
+            const tokenOnwerBalanceAfterRenting = await subscription.balances(otherAccounts[0].address);
+
+            expect(netflixBalanceAfterRenting).equal(netflixBalanceBeforeRenting.add(netflixCommission));
+            expect(marketplaceBalanceAfterRenting).equal(marketplaceBalanceBeforeRenting.add(marketplaceCommission));
+            expect(tokenOnwerBalanceAfterRenting).equal(tokenOnwerBalanceBeforeRenting.add(tokenOwnerRevenue));
+        });
+
         it("Should set user from approved account", async () => {
             const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
 
