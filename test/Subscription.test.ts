@@ -366,13 +366,54 @@ describe("Subscription smart contract test", () => {
                 .to.be.revertedWith("No value received");
         });
 
+        it("Should emit event when token is rented", async () => {
+            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
+
+            const tokenId = 1;
+
+            // Offer for rent
+
             const connectedSubscription = subscription.connect(otherAccounts[0]);
+
+            const minPrice = await connectedSubscription.minRentPrice();
+
+            await connectedSubscription.offerForRent(tokenId,  minPrice * 5, 3600);
+
+            // Get renting conditions
+
+            const userConnectedSubscription = subscription.connect(otherAccounts[1]);
+
+            const rentingConditions = await userConnectedSubscription.getRentingConditions(tokenId);
+
+            // Compute ETH amount to send from subscription renting conditions
+
+            const provider = ethers.getDefaultProvider("http://localhost:8545");
+
+            const priceFeed = new ethers.Contract(chainlinkGoerliPriceFeedForEthUsdAddress, aggregatorV3InterfaceABI, provider);
+
+            const roundData = await priceFeed.latestRoundData();
+
+            const rentingPrice = rentingConditions.price
+
+            const amountToSend = Math.floor(roundData.answer * rentingPrice / 100);
+
+            const currentTimestamp = await time.latest();
+            const blockTime = 20;
+
+            // Force next block timestamp to guess renting expiration time
+            time.setNextBlockTimestamp(currentTimestamp + blockTime);
+
+            const expires = BigNumber.from(currentTimestamp)
+                .add(blockTime)
+                .add(rentingConditions.duration);
+
+            // Send transaction to rent token
 
             const currentUserOfMintedToken = await connectedSubscription.userOf(tokenId);
 
             expect(currentUserOfMintedToken).to.equal(ethers.constants.AddressZero);
 
-            await expect(connectedSubscription.setUser(tokenId, otherAccounts[1].address, expires))
+            await expect(userConnectedSubscription.rent(tokenId, {value: amountToSend}))
                 .to.emit(connectedSubscription, "UpdateUser")
                 .withArgs(tokenId, otherAccounts[1].address, expires);
 
