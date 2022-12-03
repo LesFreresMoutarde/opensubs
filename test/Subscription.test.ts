@@ -102,17 +102,17 @@ describe("Subscription smart contract test", () => {
 
     describe("Renting", async () => {
         async function deploySubscriptionFixtureAndMint() {
-            const {subscription, owner, otherAccounts} = await loadFixture(deploySubscriptionFixture);
+            const {subscription, owner, netflix, marketplace, otherAccounts} = await loadFixture(deploySubscriptionFixture);
 
             const connectedSubscription = subscription.connect(otherAccounts[0]);
 
             await connectedSubscription.mint();
 
-            return {subscription, owner, otherAccounts};
+            return {subscription, owner, netflix, marketplace, otherAccounts};
         }
 
         async function deploySubscriptionFixtureAndMintMultipleAndSetUsers() {
-            const {subscription, owner, otherAccounts} = await loadFixture(deploySubscriptionFixture);
+            const {subscription, owner, netflix, marketplace, otherAccounts} = await loadFixture(deploySubscriptionFixture);
 
             const connectedSubscription = subscription.connect(otherAccounts[0]);
 
@@ -146,7 +146,7 @@ describe("Subscription smart contract test", () => {
                 await connectedSubscription.setUser(tokenIds[i], otherAccounts[4].address, expires);
             }
 
-            return {subscription, owner, otherAccounts, expires};
+            return {subscription, owner, netflix, marketplace, otherAccounts, expires};
         }
 
         it("Should set user", async () => {
