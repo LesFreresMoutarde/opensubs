@@ -319,6 +319,39 @@ describe("Subscription smart contract test", () => {
 
         });
 
+        it("Should emit event when offer for rent is cancelled", async () => {
+            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
+
+            const tokenId = 1;
+
+            const connectedSubscription = subscription.connect(otherAccounts[0]);
+
+            const minPrice = await connectedSubscription.minRentPrice();
+
+            await connectedSubscription.offerForRent(tokenId,  minPrice + 1000,3600);
+
+            await expect(connectedSubscription.cancelOfferForRent(tokenId))
+                .to.emit(connectedSubscription, 'RentOfferCancelled')
+                .withArgs(tokenId);
+        });
+
+        it("Should revert when not approved address tries to cancel offer for rent", async () => {
+            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
+
+            const tokenId = 1;
+
+            const connectedSubscription = subscription.connect(otherAccounts[0]);
+
+            const minPrice = await connectedSubscription.minRentPrice();
+
+            await connectedSubscription.offerForRent(tokenId,  minPrice + 1000,3600);
+
+            const notApprovedSubscription = subscription.connect(otherAccounts[2]);
+
+            await expect(notApprovedSubscription.cancelOfferForRent(tokenId))
+                .to.be.revertedWith("Caller is not token owner or approved");
+        })
+
         it("Should set user", async () => {
             const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
 
