@@ -91,6 +91,16 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
         _tokenIds.increment();
     }
 
+    // Wrapper for setUser function called by a user who wants to use a token proposed for rental
+    function rent(uint256 tokenId, address user) public payable {
+        RentingConditions memory rentingConditions = _rentingConditions[tokenId];
+
+        uint64 expires = uint64(block.timestamp + rentingConditions.duration);
+
+        setUser(tokenId, user, expires);
+    }
+
+    // This function must not be called directly because it is not payable but it needs to receive an ETH value
     function setUser(uint256 tokenId, address user, uint64 expires) public override {
         require(user != ownerOf(tokenId), "Cannot use your own token");
         require(block.timestamp >= userExpires(tokenId), "Already used");
