@@ -182,7 +182,7 @@ describe("Subscription smart contract test", () => {
 
             const amountToSend = Math.floor(roundData.answer * contentSubscriptionPrice / 100);
 
-            await expect(connectedSubscription.mint({value: amountToSend / 2}))
+            await expect(connectedSubscription.mint({value: Math.floor(amountToSend / 2)}))
                 .to.be.revertedWith("Too much slippage");
         });
     });
@@ -521,7 +521,7 @@ describe("Subscription smart contract test", () => {
                 .to.be.revertedWith("No value received");
         });
 
-        it("Should rent a token when value sent is lower than allowed slippage", async () => {
+        it("Should revert when value sent is lower than allowed slippage", async () => {
             const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
 
             const tokenId = 1;
@@ -552,11 +552,11 @@ describe("Subscription smart contract test", () => {
 
             const amountToSend = Math.floor(roundData.answer * rentingPrice / 100);
 
-            await expect(userConnectedSubscription.rent(tokenId, {value: amountToSend / 2}))
+            await expect(userConnectedSubscription.rent(tokenId, {value: Math.floor(amountToSend / 2)}))
                 .to.be.revertedWith("Too much slippage");
         });
 
-        it("Should rent a token when value sent is higher than allowed slippage", async () => {
+        it("Should revert when value sent is higher than allowed slippage", async () => {
             const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
 
             const tokenId = 1;
