@@ -54,8 +54,7 @@ contract Marketplace is Initializable, ERC4907EnumerableUpgradeable {
     function cancelOfferForRent(uint256 tokenId) public {
         require(_isApprovedOrOwner(_msgSender(), tokenId), "Caller is not token owner or approved");
 
-        delete _rentingConditions[tokenId];
-        _removeTokenFromAvailableTokensEnumeration(tokenId);
+        _deleteRentingConditions(tokenId);
 
         emit RentOfferCancelled(tokenId);
     }
@@ -70,6 +69,11 @@ contract Marketplace is Initializable, ERC4907EnumerableUpgradeable {
 
     function getRentingConditions(uint256 tokenId) public view returns (RentingConditions memory) {
         return _rentingConditions[tokenId];
+    }
+
+    function _deleteRentingConditions(uint256 tokenId) internal {
+        delete _rentingConditions[tokenId];
+        _removeTokenFromAvailableTokensEnumeration(tokenId);
     }
 
     /**

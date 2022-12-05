@@ -119,9 +119,7 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
         } else {
             _checkRentingPrice(tokenId);
             _dispatchCommissions(tokenId);
-            _removeTokenFromAvailableTokensEnumeration(tokenId);
-
-            delete _rentingConditions[tokenId];
+            _deleteRentingConditions(tokenId);
         }
 
         super.setUser(tokenId, user, expires);
