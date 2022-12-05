@@ -257,39 +257,46 @@ describe("Subscription smart contract test", () => {
 
             const contentSubscriptionPrice = await connectedSubscription.contentSubscriptionPrice();
 
-            const amountToSend = Math.floor(roundData.answer * contentSubscriptionPrice / 100);
+            const amountToSendForMint = Math.floor(roundData.answer * contentSubscriptionPrice / 100);
 
             const tokenIds = [...Array(20).keys()].map(item => item+1);
 
+            const rentalPrice = 1000; // $10
+            const rentalDuration = 3600; // 1h
+
             for (let i = 0; i < tokenIds.length; i++) {
-                await connectedSubscription.mint({value: amountToSend});
+                await connectedSubscription.mint({value: amountToSendForMint});
+                await connectedSubscription.offerForRent(tokenIds[i], rentalPrice, rentalDuration);
             }
-
-            const currentTimestamp = await time.latest();
-
-            const expires = currentTimestamp + 2000;
 
             let i: number = 0;
 
+            const amountToSendForRental = Math.floor(roundData.answer * rentalPrice / 100);
+
             // Add 5 tokens to each address
 
+            const account1ConnectedSubscription = subscription.connect(otherAccounts[1]);
+            const account2ConnectedSubscription = subscription.connect(otherAccounts[2]);
+            const account3ConnectedSubscription = subscription.connect(otherAccounts[3]);
+            const account4ConnectedSubscription = subscription.connect(otherAccounts[4]);
+
             for (i; i < 5; i++) {
-                await connectedSubscription.setUser(tokenIds[i], otherAccounts[1].address, expires);
+                await account1ConnectedSubscription.rent(tokenIds[i], {value: amountToSendForRental});
             }
 
             for (i; i < 10; i++) {
-                await connectedSubscription.setUser(tokenIds[i], otherAccounts[2].address, expires);
+                await account2ConnectedSubscription.rent(tokenIds[i], {value: amountToSendForRental});
             }
 
             for (i; i < 15; i++) {
-                await connectedSubscription.setUser(tokenIds[i], otherAccounts[3].address, expires);
+                await account3ConnectedSubscription.rent(tokenIds[i], {value: amountToSendForRental});
             }
 
             for (i; i < 20; i++) {
-                await connectedSubscription.setUser(tokenIds[i], otherAccounts[4].address, expires);
+                await account4ConnectedSubscription.rent(tokenIds[i], {value: amountToSendForRental});
             }
 
-            return {subscription, owner, netflix, marketplace, otherAccounts, expires};
+            return {subscription, owner, netflix, marketplace, otherAccounts};
         }
 
         it("Should emit event when offer for rent is successfully created by owner", async () => {
