@@ -738,6 +738,58 @@ describe("Subscription smart contract test", () => {
             expect(tokenOnwerBalanceAfterRenting).equal(tokenOnwerBalanceBeforeRenting.add(tokenOwnerRevenue));
         });
 
+        it("Should emit event when a token is reclaimed by its owner", async () => {
+            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
+
+            const tokenId = 1;
+
+            const rentDuration = 3600;
+
+            // Offer for rent
+
+            const tokenOwnerConnectedSubscription = subscription.connect(otherAccounts[0]);
+
+            const minPrice = await tokenOwnerConnectedSubscription.minRentPrice();
+
+            await tokenOwnerConnectedSubscription.offerForRent(tokenId,  minPrice * 5, 3600);
+
+            // Get renting conditions
+
+            const userConnectedSubscription = subscription.connect(otherAccounts[1]);
+
+            const rentingConditions = await userConnectedSubscription.getRentingConditions(tokenId);
+
+            // Compute ETH amount to send from subscription renting conditions
+
+            const provider = ethers.getDefaultProvider("http://localhost:8545");
+
+            const priceFeed = new ethers.Contract(chainlinkGoerliPriceFeedForEthUsdAddress, aggregatorV3InterfaceABI, provider);
+
+            const roundData = await priceFeed.latestRoundData();
+
+            const rentingPrice = rentingConditions.price
+
+            const amountToSend = Math.floor(roundData.answer * rentingPrice / 100);
+
+            // Send transaction to rent token
+
+            await userConnectedSubscription.rent(tokenId, {value: amountToSend});
+
+            // Move forward in time
+
+            await time.increaseTo(await time.latest() + rentDuration + 100);
+
+            // Reclaim token
+
+            await expect(tokenOwnerConnectedSubscription.reclaim(tokenId))
+                .to.emit(tokenOwnerConnectedSubscription, "UpdateUser")
+                .withArgs(tokenId, ethers.constants.AddressZero, 0);
+
+            const tokenUser = await tokenOwnerConnectedSubscription.userOf(tokenId);
+
+            expect(tokenUser).to.equal(ethers.constants.AddressZero);
+        });
+
         it("Should set user from approved account", async () => {
             const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
 
