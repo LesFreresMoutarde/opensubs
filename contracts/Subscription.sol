@@ -18,7 +18,7 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
 
     uint8 private constant MARKETPLACE_PROVIDER_RENTING_COMMISSION_PERCENTAGE = 15; // 15%
 
-    uint8 private constant MARKETPLACE_PROVIDER_MINT_COMMISSION_PERCENTAGE = 2; // 2%
+    uint8 private constant MARKETPLACE_PROVIDER_MINT_COMMISSION_PERMILLE = 25; // 2.5%
 
     AggregatorV3Interface internal priceFeed;
 
@@ -31,7 +31,7 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
     uint32 public contentSubscriptionPrice;
 
     // The allowed slippage when a subscription is minted or rented per ‰ (1000)
-    uint8 private _allowedSlippage = 5;
+    uint8 private _allowedSlippage;
 
     // The address of the entity providing content or service
     address private _contentProvider;
@@ -46,18 +46,20 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
         string calldata name_,
         string calldata symbol_,
         uint32 contentSubscriptionPrice_,
+        uint32 minRentPrice_,
+        uint32 minRentDuration_,
         address contentProvider_,
         address marketplaceProvider_,
         address priceFeedAddress_
     ) public initializer {
         ERC4907EnumerableUpgradeable.__ERC4907Enumerable_init(name_, symbol_);
-        Marketplace.__Marketplace_init();
+        Marketplace.__Marketplace_init(minRentPrice_, minRentDuration_);
 
         contentSubscriptionPrice = contentSubscriptionPrice_;
         _contentProvider = contentProvider_;
         _marketplaceProvider = marketplaceProvider_;
-
         priceFeed = AggregatorV3Interface(priceFeedAddress_);
+        _allowedSlippage = 5;
 
         _tokenIds.increment();
     }
@@ -75,7 +77,7 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
 
         require(msg.value >= minMintingPrice && msg.value <= maxMintingPrice, "Too much slippage");
 
-        uint256 marketplaceProviderCommission = msg.value * MARKETPLACE_PROVIDER_MINT_COMMISSION_PERCENTAGE / 100;
+        uint256 marketplaceProviderCommission = msg.value * MARKETPLACE_PROVIDER_MINT_COMMISSION_PERMILLE / 1000;
         uint256 contentProviderRevenue = msg.value - marketplaceProviderCommission;
 
         balances[_marketplaceProvider] += marketplaceProviderCommission;
@@ -90,21 +92,43 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
         _tokenIds.increment();
     }
 
+    // Wrapper for setUser function called by a user who wants to use a token proposed for rental
+    function rent(uint256 tokenId) public payable {
+        RentingConditions memory rentingConditions = _rentingConditions[tokenId];
+
+        require(rentingConditions.createdAt != 0, "Not available for renting");
+
+        uint64 expires = uint64(block.timestamp + rentingConditions.duration);
+
+        setUser(tokenId, msg.sender, expires);
+    }
+
+    // Wrapper for setUser function called by a token owner who wants to reclaim his token after a rental
+    function reclaim(uint256 tokenId) public {
+        setUser(tokenId, address(0), 0);
+    }
+
+    // This function must not be called directly to rent a token
+    // because it is not payable but it needs to receive an ETH value
     function setUser(uint256 tokenId, address user, uint64 expires) public override {
         require(user != ownerOf(tokenId), "Cannot use your own token");
         require(block.timestamp >= userExpires(tokenId), "Already used");
 
-        _checkRentingPrice(tokenId);
-        _dispatchCommissions(tokenId);
-        _removeTokenFromAvailableTokensEnumeration(tokenId);
+        if (user == address(0)) {
+            require(_isApprovedOrOwner(_msgSender(), tokenId), "Caller is not token owner or approved");
+        } else {
+            _checkRentingPrice(tokenId);
+            _dispatchCommissions(tokenId);
+            _deleteRentingConditions(tokenId);
+        }
 
         super.setUser(tokenId, user, expires);
     }
 
     function _checkRentingPrice(uint256 tokenId) private {
-        RentingConditions memory rentingConditions = _rentingConditions[tokenId];
+        require(msg.value > 0, "No value received");
 
-        require(rentingConditions.createdAt != 0, "Not available for renting");
+        RentingConditions memory rentingConditions = _rentingConditions[tokenId];
 
         // Chainlink returns amount of wei for 1 USD
         (,int256 exchangeRateFromChainlink,,,) = priceFeed.latestRoundData();
@@ -157,7 +181,7 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
         return _expirations[tokenId];
     }
 
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC4907Upgradeable, ERC721Upgradeable, ERC721EnumerableUpgradeable) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC4907Upgradeable, ERC721EnumerableUpgradeable) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 
