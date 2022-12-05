@@ -1,6 +1,7 @@
 import {useEffect, useState} from "react";
 import {providers} from "ethers";
 import ConnectButton from "./common/ConnectButton";
+import {autoLogin} from "../utils/ProviderUtils";
 
 function OpenSubsApp() {
 
@@ -9,11 +10,21 @@ function OpenSubsApp() {
     const [address, setAddress] = useState('');
 
     useEffect(() => {
-        if (window.ethereum) {
-            setProvider(new providers.Web3Provider(window.ethereum));
-        } else {
-            setProvider(null);
-        }
+        (async () => {
+            if (window.ethereum) {
+                const web3Provider = new providers.Web3Provider(window.ethereum);
+
+                setProvider(new providers.Web3Provider(window.ethereum));
+
+                const loggedAddress = await autoLogin(web3Provider);
+
+                if (loggedAddress) {
+                    setAddress(loggedAddress);
+                }
+            } else {
+                setProvider(null);
+            }
+        })();
     }, []);
 
     if (provider === undefined) {
