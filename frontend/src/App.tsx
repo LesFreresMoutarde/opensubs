@@ -1,24 +1,23 @@
 import React from 'react';
-import logo from './logo.svg';
+import {Route, Routes} from "react-router-dom";
+import Portal from "./components/Portal";
+import FakeflixApp from "./components/FakeflixApp";
+import SpooftifyApp from "./components/SpooftifyApp";
+import ErrorPage from "./components/ErrorPage";
+import OpenSubsApp from "./components/OpenSubsApp";
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    return (
+        <>
+            <Routes>
+                <Route path="/" element={<Portal/>}/>
+                <Route path="fakeflix" element={<FakeflixApp/>}/>
+                <Route path="spooftify" element={<SpooftifyApp/>}/>
+                <Route path="opensubs" element={<OpenSubsApp/>}/>
+                <Route path="*" element={<ErrorPage/>}/>
+            </Routes>
+        </>
+    );
 }
 
 export default App;
