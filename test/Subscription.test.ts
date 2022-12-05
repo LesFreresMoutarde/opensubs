@@ -680,6 +680,45 @@ describe("Subscription smart contract test", () => {
                 .to.be.revertedWith("Not available for renting");
         });
 
+        it("Should revert when token owner tries to rent his own token", async () => {
+            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
+
+            const tokenId = 1;
+
+            // Offer for rent
+
+            const connectedSubscription = subscription.connect(otherAccounts[0]);
+
+            const minPrice = await connectedSubscription.minRentPrice();
+
+            await connectedSubscription.offerForRent(tokenId,  minPrice * 5, 3600);
+
+            // Get renting conditions
+
+            const rentingConditions = await connectedSubscription.getRentingConditions(tokenId);
+
+            // Compute ETH amount to send from subscription renting conditions
+
+            const provider = ethers.getDefaultProvider("http://localhost:8545");
+
+            const priceFeed = new ethers.Contract(chainlinkGoerliPriceFeedForEthUsdAddress, aggregatorV3InterfaceABI, provider);
+
+            const roundData = await priceFeed.latestRoundData();
+
+            const rentingPrice = rentingConditions.price
+
+            const amountToSend = Math.floor(roundData.answer * rentingPrice / 100);
+
+            // Send transaction to rent token
+
+            const currentUserOfMintedToken = await connectedSubscription.userOf(tokenId);
+
+            expect(currentUserOfMintedToken).to.equal(ethers.constants.AddressZero);
+
+            await expect(connectedSubscription.rent(tokenId, {value: amountToSend}))
+                .to.be.revertedWith("Cannot use your own token");
+        });
+
         it("Should update balances when a token is rented", async () => {
             const {subscription, netflix, marketplace, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
 
