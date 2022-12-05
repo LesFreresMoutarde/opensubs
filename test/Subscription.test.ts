@@ -296,7 +296,9 @@ describe("Subscription smart contract test", () => {
                 await account4ConnectedSubscription.rent(tokenIds[i], {value: amountToSendForRental});
             }
 
-            return {subscription, owner, netflix, marketplace, otherAccounts};
+            const expires = await time.latest() + rentalDuration;
+
+            return {subscription, owner, netflix, marketplace, otherAccounts, expires};
         }
 
         it("Should emit event when offer for rent is successfully created by owner", async () => {
@@ -1028,7 +1030,7 @@ describe("Subscription smart contract test", () => {
 
             const connectedSubscription = subscription.connect(otherAccounts[0]);
 
-            await connectedSubscription.setUser(1, ethers.constants.AddressZero, 0);
+            await connectedSubscription.reclaim(1);
 
             const userBalance = await connectedSubscription.usedBalanceOf(otherAccounts[1].address);
 
@@ -1050,7 +1052,7 @@ describe("Subscription smart contract test", () => {
 
             const connectedSubscription = subscription.connect(otherAccounts[0]);
 
-            await connectedSubscription.setUser(5, ethers.constants.AddressZero, 0);
+            await connectedSubscription.reclaim(5);
 
             const userBalance = await connectedSubscription.usedBalanceOf(otherAccounts[1].address);
 
@@ -1072,7 +1074,7 @@ describe("Subscription smart contract test", () => {
 
             const connectedSubscription = subscription.connect(otherAccounts[0]);
 
-            await connectedSubscription.setUser(3, ethers.constants.AddressZero, 0);
+            await connectedSubscription.reclaim(3);
 
             const userBalance = await connectedSubscription.usedBalanceOf(otherAccounts[1].address);
 
@@ -1094,11 +1096,11 @@ describe("Subscription smart contract test", () => {
 
             const connectedSubscription = subscription.connect(otherAccounts[0]);
 
-            await connectedSubscription.setUser(1, ethers.constants.AddressZero, 0);
-            await connectedSubscription.setUser(2, ethers.constants.AddressZero, 0);
-            await connectedSubscription.setUser(3, ethers.constants.AddressZero, 0);
-            await connectedSubscription.setUser(4, ethers.constants.AddressZero, 0);
-            await connectedSubscription.setUser(5, ethers.constants.AddressZero, 0);
+            await connectedSubscription.reclaim(1);
+            await connectedSubscription.reclaim(2);
+            await connectedSubscription.reclaim(3);
+            await connectedSubscription.reclaim(4);
+            await connectedSubscription.reclaim(5);
 
             const userBalance = await connectedSubscription.usedBalanceOf(otherAccounts[1].address);
 
