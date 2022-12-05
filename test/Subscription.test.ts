@@ -835,7 +835,57 @@ describe("Subscription smart contract test", () => {
 
             await expect(tokenOwnerConnectedSubscription.reclaim(tokenId))
                 .to.be.revertedWith("Already used");
-        })
+        });
+
+        it("Should revert if address trying to reclaim a token is not the token owner", async () => {
+            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
+
+            const tokenId = 1;
+
+            const rentDuration = 3600;
+
+            // Offer for rent
+
+            const tokenOwnerConnectedSubscription = subscription.connect(otherAccounts[0]);
+
+            const minPrice = await tokenOwnerConnectedSubscription.minRentPrice();
+
+            await tokenOwnerConnectedSubscription.offerForRent(tokenId,  minPrice * 5, 3600);
+
+            // Get renting conditions
+
+            const userConnectedSubscription = subscription.connect(otherAccounts[1]);
+
+            const rentingConditions = await userConnectedSubscription.getRentingConditions(tokenId);
+
+            // Compute ETH amount to send from subscription renting conditions
+
+            const provider = ethers.getDefaultProvider("http://localhost:8545");
+
+            const priceFeed = new ethers.Contract(chainlinkGoerliPriceFeedForEthUsdAddress, aggregatorV3InterfaceABI, provider);
+
+            const roundData = await priceFeed.latestRoundData();
+
+            const rentingPrice = rentingConditions.price
+
+            const amountToSend = Math.floor(roundData.answer * rentingPrice / 100);
+
+            // Send transaction to rent token
+
+            await userConnectedSubscription.rent(tokenId, {value: amountToSend});
+
+            // Move forward in time
+
+            await time.increaseTo(await time.latest() + rentDuration + 100);
+
+            // Try to reclaim token
+
+            const notApprovedConnectedSubscription = subscription.connect(otherAccounts[2]);
+
+            await expect(notApprovedConnectedSubscription.reclaim(tokenId))
+                .to.be.revertedWith("Caller is not token owner or approved");
+        });
+
 
         it("Should set user from approved account", async () => {
             const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
