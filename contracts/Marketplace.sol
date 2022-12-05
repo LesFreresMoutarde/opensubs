@@ -63,7 +63,7 @@ contract Marketplace is Initializable, ERC4907EnumerableUpgradeable {
         return _allAvailableForRenting.length;
     }
 
-    function getTokenIdAtIndex(uint256 index) public view returns (uint256) {
+    function getAvailableTokenIdAtIndex(uint256 index) public view returns (uint256) {
         return _allAvailableForRenting[index];
     }
 

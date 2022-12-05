@@ -305,6 +305,8 @@ describe("Subscription smart contract test", () => {
             return {subscription, owner, netflix, marketplace, otherAccounts, expires};
         }
 
+        /** CREATING RENTAL OFFER **/
+
         it("Should emit event when offer for rent is successfully created by owner", async () => {
             const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
 
@@ -408,6 +410,8 @@ describe("Subscription smart contract test", () => {
             await expect(notApprovedSubscription.cancelOfferForRent(tokenId))
                 .to.be.revertedWith("Caller is not token owner or approved");
         });
+
+        /** RENTING **/
 
         it("Should revert if setUser function is called directly", async () => {
             const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
@@ -803,6 +807,8 @@ describe("Subscription smart contract test", () => {
             expect(tokenOnwerBalanceAfterRenting).equal(tokenOnwerBalanceBeforeRenting.add(tokenOwnerRevenue));
         });
 
+        /** RECLAIMING **/
+
         it("Should emit event when a token is reclaimed by its owner", async () => {
             const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
 
@@ -951,7 +957,9 @@ describe("Subscription smart contract test", () => {
                 .to.be.revertedWith("Caller is not token owner or approved");
         });
 
-        it("Should add token id to user's enumeration", async () => {
+        /** 4907 ENUMERATIONS **/
+
+        it("Should add token id to user's enumeration when token is rented", async () => {
             const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
 
             const tokenId = 1;
@@ -1127,5 +1135,183 @@ describe("Subscription smart contract test", () => {
                 .to.be.revertedWith("ERC4907Enumerable: user index out of bounds");
         });
 
+        /** MARKETPLACE ENUMERATIONS **/
+
+        it("Should add token id to marketplace enumeration when rental offer is created", async () => {
+            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixture);
+
+            const connectedSubscription = subscription.connect(otherAccounts[0]);
+
+            // Mint
+
+            const provider = ethers.getDefaultProvider("http://localhost:8545");
+
+            const priceFeed = new ethers.Contract(chainlinkGoerliPriceFeedForEthUsdAddress, aggregatorV3InterfaceABI, provider);
+
+            const roundData = await priceFeed.latestRoundData();
+
+            const contentSubscriptionPrice = await connectedSubscription.contentSubscriptionPrice();
+
+            const amountToSend = Math.floor(roundData.answer * contentSubscriptionPrice / 100);
+
+            await connectedSubscription.mint({value: amountToSend});
+
+            const tokenId = 1;
+
+            // Create rental offer
+
+            const minPrice = await connectedSubscription.minRentPrice();
+            const minDuration = await connectedSubscription.minRentDuration();
+
+            const availableTokenCountBeforeOfferCreation = await connectedSubscription.getAvailableTokenCount();
+
+            expect(availableTokenCountBeforeOfferCreation).to.equal(0);
+
+            await connectedSubscription.offerForRent(tokenId,  minPrice * 5, minDuration * 2);
+
+            const availableTokenCountAfterOfferCreation = await connectedSubscription.getAvailableTokenCount();
+            const availableTokenId = await connectedSubscription.getAvailableTokenIdAtIndex(availableTokenCountAfterOfferCreation.sub(1));
+
+            expect(availableTokenCountAfterOfferCreation).to.equal(1);
+            expect(availableTokenId).to.equal(tokenId);
+        });
+
+        it("Should add multiple token ids to marketplace enumeration when rental offers are created", async () => {
+            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixture);
+
+            const connectedSubscription = subscription.connect(otherAccounts[0]);
+
+            // Mint multiple tokens
+
+            const provider = ethers.getDefaultProvider("http://localhost:8545");
+
+            const priceFeed = new ethers.Contract(chainlinkGoerliPriceFeedForEthUsdAddress, aggregatorV3InterfaceABI, provider);
+
+            const roundData = await priceFeed.latestRoundData();
+
+            const contentSubscriptionPrice = await connectedSubscription.contentSubscriptionPrice();
+
+            const amountToSendForMint = Math.floor(roundData.answer * contentSubscriptionPrice / 100);
+
+            const tokenIds = [...Array(20).keys()].map(item => item+1);
+
+            for (let i = 0; i < tokenIds.length; i++) {
+                await connectedSubscription.mint({value: amountToSendForMint});
+            }
+
+            // Create multiple rental offers
+
+            const minPrice = await connectedSubscription.minRentPrice();
+            const minDuration = await connectedSubscription.minRentDuration();
+
+            const availableTokenCountBeforeOfferCreation = await connectedSubscription.getAvailableTokenCount();
+
+            expect(availableTokenCountBeforeOfferCreation).to.equal(0);
+
+            await connectedSubscription.offerForRent(tokenIds[0],  minPrice * 5, minDuration * 2);
+            await connectedSubscription.offerForRent(tokenIds[1],  minPrice * 5, minDuration * 2);
+            await connectedSubscription.offerForRent(tokenIds[2],  minPrice * 5, minDuration * 2);
+            await connectedSubscription.offerForRent(tokenIds[3],  minPrice * 5, minDuration * 2);
+            await connectedSubscription.offerForRent(tokenIds[4],  minPrice * 5, minDuration * 2);
+
+            // Check enumerables
+
+            const availableTokenCountAfterOfferCreation = await connectedSubscription.getAvailableTokenCount();
+            const availableTokenIdAtIndex0 = await connectedSubscription.getAvailableTokenIdAtIndex(0);
+            const availableTokenIdAtIndex1 = await connectedSubscription.getAvailableTokenIdAtIndex(1);
+            const availableTokenIdAtIndex2 = await connectedSubscription.getAvailableTokenIdAtIndex(2);
+            const availableTokenIdAtIndex3 = await connectedSubscription.getAvailableTokenIdAtIndex(3);
+            const availableTokenIdAtIndex4 = await connectedSubscription.getAvailableTokenIdAtIndex(4);
+
+            expect(availableTokenCountAfterOfferCreation).to.equal(5);
+            expect(availableTokenIdAtIndex0).to.equal(tokenIds[0]);
+            expect(availableTokenIdAtIndex1).to.equal(tokenIds[1]);
+            expect(availableTokenIdAtIndex2).to.equal(tokenIds[2]);
+            expect(availableTokenIdAtIndex3).to.equal(tokenIds[3]);
+            expect(availableTokenIdAtIndex4).to.equal(tokenIds[4]);
+        });
+
+        it("Should remove token id from marketplace enumeration when a token is rented", async () => {
+            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixture);
+
+            const connectedSubscription = subscription.connect(otherAccounts[0]);
+
+            // Mint multiple tokens
+
+            const provider = ethers.getDefaultProvider("http://localhost:8545");
+
+            const priceFeed = new ethers.Contract(chainlinkGoerliPriceFeedForEthUsdAddress, aggregatorV3InterfaceABI, provider);
+
+            const roundData = await priceFeed.latestRoundData();
+
+            const contentSubscriptionPrice = await connectedSubscription.contentSubscriptionPrice();
+
+            const amountToSendForMint = Math.floor(roundData.answer * contentSubscriptionPrice / 100);
+
+            const tokenIds = [...Array(20).keys()].map(item => item+1);
+
+            for (let i = 0; i < tokenIds.length; i++) {
+                await connectedSubscription.mint({value: amountToSendForMint});
+            }
+
+            // Create multiple rental offers
+
+            const minPrice = await connectedSubscription.minRentPrice();
+            const minDuration = await connectedSubscription.minRentDuration();
+
+            const rentalPrice = minPrice * 5;
+
+            const availableTokenCountBeforeOfferCreation = await connectedSubscription.getAvailableTokenCount();
+
+            expect(availableTokenCountBeforeOfferCreation).to.equal(0);
+
+            await connectedSubscription.offerForRent(tokenIds[0], rentalPrice, minDuration * 2);
+            await connectedSubscription.offerForRent(tokenIds[1], rentalPrice, minDuration * 2);
+            await connectedSubscription.offerForRent(tokenIds[2], rentalPrice, minDuration * 2);
+            await connectedSubscription.offerForRent(tokenIds[3], rentalPrice, minDuration * 2);
+            await connectedSubscription.offerForRent(tokenIds[4], rentalPrice, minDuration * 2);
+
+            // Rent a token
+
+            const amountToSendForRental = Math.floor(roundData.answer * rentalPrice / 100);
+
+            const userConnectedSubscription = subscription.connect(otherAccounts[1]);
+
+            await userConnectedSubscription.rent(tokenIds[2], {value: amountToSendForRental});
+
+            // Check enumerables
+
+            const availableTokenCountAfterFirstRenting = await connectedSubscription.getAvailableTokenCount();
+            const availableTokenIdAtIndex0 = await connectedSubscription.getAvailableTokenIdAtIndex(0);
+            const availableTokenIdAtIndex1 = await connectedSubscription.getAvailableTokenIdAtIndex(1);
+            const availableTokenIdAtIndex2 = await connectedSubscription.getAvailableTokenIdAtIndex(2);
+            const availableTokenIdAtIndex3 = await connectedSubscription.getAvailableTokenIdAtIndex(3);
+
+            await expect(connectedSubscription.getAvailableTokenIdAtIndex(4))
+                .to.be.reverted;
+
+            expect(availableTokenCountAfterFirstRenting).to.equal(4);
+
+            expect(availableTokenIdAtIndex0).to.equal(tokenIds[0]);
+            expect(availableTokenIdAtIndex1).to.equal(tokenIds[1]);
+            expect(availableTokenIdAtIndex2).to.equal(tokenIds[4]);
+            expect(availableTokenIdAtIndex3).to.equal(tokenIds[3]);
+
+            // Rent other tokens
+
+            await userConnectedSubscription.rent(tokenIds[0], {value: amountToSendForRental});
+            await userConnectedSubscription.rent(tokenIds[1], {value: amountToSendForRental});
+            await userConnectedSubscription.rent(tokenIds[3], {value: amountToSendForRental});
+            await userConnectedSubscription.rent(tokenIds[4], {value: amountToSendForRental});
+
+            // Check enumerables
+
+            const availableTokenCountAfterOtherTokensRenting = await connectedSubscription.getAvailableTokenCount();
+
+            await expect(connectedSubscription.getAvailableTokenIdAtIndex(0))
+                .to.be.reverted;
+
+            expect(availableTokenCountAfterOtherTokensRenting).to.equal(0);
+        })
     });
 });
