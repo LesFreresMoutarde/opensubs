@@ -47,12 +47,13 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
         string calldata symbol_,
         uint32 contentSubscriptionPrice_,
         uint32 minRentPrice_,
+        uint32 minRentDuration_,
         address contentProvider_,
         address marketplaceProvider_,
         address priceFeedAddress_
     ) public initializer {
         ERC4907EnumerableUpgradeable.__ERC4907Enumerable_init(name_, symbol_);
-        Marketplace.__Marketplace_init(minRentPrice_);
+        Marketplace.__Marketplace_init(minRentPrice_, minRentDuration_);
 
         contentSubscriptionPrice = contentSubscriptionPrice_;
         _contentProvider = contentProvider_;

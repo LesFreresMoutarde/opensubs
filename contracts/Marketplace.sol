@@ -19,6 +19,8 @@ contract Marketplace is Initializable, ERC4907EnumerableUpgradeable {
     // The minimum price an owner can set for a renting
     uint32 public minRentPrice;
 
+    uint32 public minRentDuration;
+
     // Array with all token IDs available for renting
     uint256[] private _allAvailableForRenting;
 
@@ -29,14 +31,16 @@ contract Marketplace is Initializable, ERC4907EnumerableUpgradeable {
 
     event RentOfferCancelled(uint256 tokenId);
 
-    function __Marketplace_init(uint32 minRentPrice_) internal onlyInitializing {
+    function __Marketplace_init(uint32 minRentPrice_, uint32 minRentDuration_) internal onlyInitializing {
         minRentPrice = minRentPrice_;
+        minRentDuration = minRentDuration_;
     }
 
     function offerForRent(uint256 tokenId, uint32 price, uint128 duration) public {
         require(_isApprovedOrOwner(_msgSender(), tokenId), "Caller is not token owner or approved");
         require(userOf(tokenId) == address(0), "Already used");
         require(price >= minRentPrice, "Price too low");
+        require(duration >= minRentDuration, "Duration too low");
 
         RentingConditions memory rentingConditions = RentingConditions(price, duration, block.timestamp);
 
