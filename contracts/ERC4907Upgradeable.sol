@@ -28,8 +28,6 @@ contract ERC4907Upgradeable is Initializable, IERC4907, ERC721Upgradeable {
     /// @param user  The new user of the NFT
     /// @param expires  UNIX timestamp, The new user could use the NFT before expires
     function setUser(uint256 tokenId, address user, uint64 expires) public virtual {
-        require(_isApprovedOrOwner(msg.sender, tokenId), "ERC4907: transfer caller is not owner nor approved");
-
         if (user != address(0)) {
             require(expires > block.timestamp, "Expired timestamp");
         }

@@ -123,31 +123,7 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
             delete _rentingConditions[tokenId];
         }
 
-        // Identical to super.setUser but without checking that msg.sender is the token owner
-
-        _beforeTokenUse(user, tokenId);
-
-        if (user != address(0)) {
-            _usedBalances[user]++;
-        } else {
-            _usedBalances[userOf(tokenId)]--;
-        }
-
-        if (user != address(0)) {
-            require(expires > block.timestamp, "Expired timestamp");
-        }
-
-        UserInfo storage info = _users[tokenId];
-
-        info.user = user;
-
-        if (user == address(0)) {
-            info.expires = 0;
-        } else {
-            info.expires = expires;
-        }
-
-        emit UpdateUser(tokenId, user, expires);
+        super.setUser(tokenId, user, expires);
     }
 
     function _checkRentingPrice(uint256 tokenId) private {
