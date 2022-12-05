@@ -1,5 +1,5 @@
 import React, {useCallback} from "react";
-import {connectWallet} from "../../utils/providerUtils";
+import {connectWallet} from "../../utils/ProviderUtils";
 import {providers} from "ethers";
 
 interface ConnectButtonProps {
