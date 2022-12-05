@@ -17,7 +17,7 @@ function ConnectButton({changeAddress, provider}: ConnectButtonProps) {
         } catch (error: any) {
             console.error(error);
         }
-    }, []);
+    }, [changeAddress, provider]);
 
     return (
         <button onClick={onClick}>LOG IN</button>
