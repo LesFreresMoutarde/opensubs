@@ -63,9 +63,13 @@ describe("Subscription smart contract test", () => {
 
         const [owner, netflix, marketplace, ...otherAccounts] = await ethers.getSigners();
 
+        const contentSubscriptionPrice = 1549; // $15,49
+        const minRentPrice = 100; // $1
+        const minRentDuration = 60; // 1 minute
+
         const subscription = await upgrades.deployProxy(
             Subscription,
-            ["Fakeflix", "FLX", 1549, 100, netflix.address, marketplace.address, chainlinkGoerliPriceFeedForEthUsdAddress],
+            ["Fakeflix", "FLX", contentSubscriptionPrice, minRentPrice, minRentDuration, netflix.address, marketplace.address, chainlinkGoerliPriceFeedForEthUsdAddress],
             { initializer: 'initialize', kind: 'transparent'}
         ) as Subscription;
 
@@ -346,7 +350,7 @@ describe("Subscription smart contract test", () => {
                 .to.be.revertedWith("Caller is not token owner or approved");
         });
 
-        it("Should revert when minimal renting price is not reached by msg.value", async () => {
+        it("Should revert when renting price is too low", async () => {
             const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
 
             const tokenId = 1;
@@ -357,6 +361,19 @@ describe("Subscription smart contract test", () => {
 
             await expect(connectedSubscription.offerForRent(tokenId,  minPrice - 1,3600))
                 .to.be.revertedWith("Price too low");
+        });
+
+        it("Should revert when renting duration is too low", async () => {
+            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
+
+            const tokenId = 1;
+
+            const connectedSubscription = subscription.connect(otherAccounts[0]);
+
+            const minDuration = await connectedSubscription.minRentDuration();
+
+            await expect(connectedSubscription.offerForRent(tokenId, 1000, minDuration - 1))
+                .to.be.revertedWith("Duration too low");
         });
 
         it("Should emit event when offer for rent is cancelled", async () => {
