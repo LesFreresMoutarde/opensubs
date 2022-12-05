@@ -925,146 +925,42 @@ describe("Subscription smart contract test", () => {
                 .to.be.revertedWith("Caller is not token owner or approved");
         });
 
-
-        it("Should set user from approved account", async () => {
-            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
-
-            const tokenId = 1;
-
-            const currentTimestamp = await time.latest();
-
-            const expires = currentTimestamp + 20; // 20 seconds more
-
-            const tokenOwnerConnectedSubscription = subscription.connect(otherAccounts[0]);
-
-            await tokenOwnerConnectedSubscription.approve(otherAccounts[2].address, tokenId);
-
-            const approvedConnectedSubscription = subscription.connect(otherAccounts[2]);
-
-            await expect(approvedConnectedSubscription.setUser(tokenId, otherAccounts[1].address, expires))
-                .to.emit(approvedConnectedSubscription, "UpdateUser")
-                .withArgs(tokenId, otherAccounts[1].address, expires);
-        });
-
-        it("Should revert if account is neither token owner nor approved", async () => {
-            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
-
-            const tokenId = 1;
-
-            const currentTimestamp = await time.latest();
-
-            const expires = currentTimestamp + 20; // 20 seconds more
-
-            const notApprovedConnectedSubscription = subscription.connect(otherAccounts[2]);
-
-            await expect(notApprovedConnectedSubscription.setUser(tokenId, otherAccounts[1].address, expires))
-                .to.be.revertedWith("ERC4907: transfer caller is not owner nor approved");
-        });
-
-        it("Should set user to 0 after owner reclaims his token", async () => {
-            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
-
-            const tokenId = 1;
-
-            const currentTimestamp = await time.latest();
-
-            const expires = currentTimestamp + (3600 * 24 * 7); // 1 week of renting
-
-            const connectedSubscription = subscription.connect(otherAccounts[0]);
-
-            await connectedSubscription.setUser(tokenId, otherAccounts[1].address, expires);
-
-            await time.increaseTo(expires + 30);
-
-            await connectedSubscription.setUser(tokenId, ethers.constants.AddressZero, 42);
-
-            const usedBalanceOfPreviousUser = await connectedSubscription.usedBalanceOf(otherAccounts[1].address);
-
-            expect(usedBalanceOfPreviousUser).to.equal(0);
-
-            const newUserOfMintedToken = await connectedSubscription.userOf(tokenId);
-
-            expect(newUserOfMintedToken).to.equal(ethers.constants.AddressZero);
-
-            const expirationTime = await connectedSubscription.userExpires(tokenId);
-
-            expect(expirationTime).to.equal(0);
-        });
-
-        it("Should revert if expiration timestamp has passed", async () => {
-            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
-
-            const tokenId = 1;
-
-            const currentTimestamp = await time.latest();
-
-            const expires = currentTimestamp - 20; // 20 seconds less
-
-            const connectedSubscription = subscription.connect(otherAccounts[0]);
-
-            await expect(connectedSubscription.setUser(tokenId, otherAccounts[1].address, expires))
-                .to.be.revertedWith("Expired timestamp");
-        });
-
-        it("Should revert if token's owner tries to become user of his token", async () => {
-            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
-
-            const tokenId = 1;
-
-            const currentTimestamp = await time.latest();
-
-            const expires = currentTimestamp + 200;
-
-            const connectedSubscription = subscription.connect(otherAccounts[0]);
-
-            await expect(connectedSubscription.setUser(tokenId, otherAccounts[0].address, expires))
-                .to.be.revertedWith("Cannot use your own token");
-        });
-
-        it("Should revert if token is already used", async () => {
-            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
-
-            const tokenId = 1;
-
-            const currentTimestamp = await time.latest();
-
-            const expires = currentTimestamp + 2000;
-
-            const connectedSubscription = subscription.connect(otherAccounts[0]);
-
-            await connectedSubscription.setUser(tokenId, otherAccounts[1].address, expires);
-
-            await expect(connectedSubscription.setUser(tokenId, otherAccounts[2].address, expires + 200))
-                .to.be.revertedWith("Already used");
-        });
-
-        it("Should revert if token does not exist", async () => {
-            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
-
-            const tokenId = 2;
-
-            const currentTimestamp = await time.latest();
-
-            const expires = currentTimestamp + 2000;
-
-            const connectedSubscription = subscription.connect(otherAccounts[0]);
-
-            await expect(connectedSubscription.setUser(tokenId, otherAccounts[1].address, expires))
-                .to.be.revertedWith("ERC721: invalid token ID");
-        });
-
         it("Should add token id to user's enumeration", async () => {
             const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
 
             const tokenId = 1;
 
-            const currentTimestamp = await time.latest();
-
-            const expires = currentTimestamp + 2000;
+            // Offer for rent
 
             const connectedSubscription = subscription.connect(otherAccounts[0]);
 
-            await connectedSubscription.setUser(tokenId, otherAccounts[1].address, expires);
+            const minPrice = await connectedSubscription.minRentPrice();
+
+            await connectedSubscription.offerForRent(tokenId,  minPrice * 5, 3600);
+
+            // Get renting conditions
+
+            const userConnectedSubscription = subscription.connect(otherAccounts[1]);
+
+            const rentingConditions = await userConnectedSubscription.getRentingConditions(tokenId);
+
+            // Compute ETH amount to send from subscription renting conditions
+
+            const provider = ethers.getDefaultProvider("http://localhost:8545");
+
+            const priceFeed = new ethers.Contract(chainlinkGoerliPriceFeedForEthUsdAddress, aggregatorV3InterfaceABI, provider);
+
+            const roundData = await priceFeed.latestRoundData();
+
+            const rentingPrice = rentingConditions.price
+
+            const amountToSend = Math.floor(roundData.answer * rentingPrice / 100);
+
+            // Send transaction to rent token
+
+            await userConnectedSubscription.rent(tokenId, {value: amountToSend})
+
+            // Check balance
 
             const balanceOfNewUser = await connectedSubscription.usedBalanceOf(otherAccounts[1].address);
 
