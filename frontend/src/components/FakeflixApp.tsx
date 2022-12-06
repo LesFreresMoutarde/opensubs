@@ -2,7 +2,7 @@ import {useEffect, useState} from "react";
 import {Contract, providers} from "ethers";
 import ConnectButton from "./common/ConnectButton";
 import {autoLogin} from "../utils/ProviderUtils";
-import {getSubscriptionContract, getTokensOwnedByUser, isChainIdSupported} from "../utils/SubscriptionUtil";
+import {getSubscriptionContract, getBalanceOfOwnedTokens, isChainIdSupported} from "../utils/SubscriptionUtil";
 function FakeflixApp() {
 
     const [provider, setProvider] = useState<providers.Web3Provider | null | undefined>(undefined);
@@ -58,7 +58,7 @@ function FakeflixApp() {
 
         if (subscription) {
             (async () => {
-                const balance = await getTokensOwnedByUser(subscription, address);
+                const balance = await getBalanceOfOwnedTokens(subscription, address);
                 console.log(balance);
             })();
         }

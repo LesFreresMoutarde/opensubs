@@ -5,7 +5,7 @@ function getSubscriptionContract(provider: providers.Web3Provider, address: stri
     return new ethers.Contract(address, SUBSCRIPTION_JSON.abi, provider.getSigner());
 }
 
-async function getTokensOwnedByUser(contract: Contract, address: string): Promise<BigNumber> {
+async function getBalanceOfOwnedTokens(contract: Contract, address: string): Promise<BigNumber> {
     return await contract.balanceOf(address);
 }
 
@@ -15,4 +15,4 @@ function isChainIdSupported(chainId: number): boolean {
     return supportedNetworks.includes(chainId);
 }
 
-export {getSubscriptionContract, getTokensOwnedByUser, isChainIdSupported}
+export {getSubscriptionContract, getBalanceOfOwnedTokens, isChainIdSupported}

@@ -2,7 +2,7 @@ import {useEffect, useState} from "react";
 import {Contract, providers} from "ethers";
 import ConnectButton from "./common/ConnectButton";
 import {autoLogin} from "../utils/ProviderUtils";
-import {getSubscriptionContract, getTokensOwnedByUser} from "../utils/SubscriptionUtil";
+import {getSubscriptionContract, getBalanceOfOwnedTokens} from "../utils/SubscriptionUtil";
 
 type ContractDescription = {
     /**
@@ -94,7 +94,7 @@ function OpenSubsApp() {
             (async () => {
                 const balances: any = {};
                 for (const [serviceName, contractDescription] of Object.entries(contracts)) {
-                    balances[serviceName] = await getTokensOwnedByUser(contractDescription.contract, address);
+                    balances[serviceName] = await getBalanceOfOwnedTokens(contractDescription.contract, address);
                 }
                 console.log(balances);
             })();
