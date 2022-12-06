@@ -4,6 +4,56 @@ import {ContractFactory} from "ethers";
 
 const chainlinkGoerliPriceFeedForEthUsdAddress: string = "0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e";
 
+const aggregatorV3InterfaceABI = [
+    {
+        inputs: [],
+        name: "decimals",
+        outputs: [{ internalType: "uint8", name: "", type: "uint8" }],
+        stateMutability: "view",
+        type: "function",
+    },
+    {
+        inputs: [],
+        name: "description",
+        outputs: [{ internalType: "string", name: "", type: "string" }],
+        stateMutability: "view",
+        type: "function",
+    },
+    {
+        inputs: [{ internalType: "uint80", name: "_roundId", type: "uint80" }],
+        name: "getRoundData",
+        outputs: [
+            { internalType: "uint80", name: "roundId", type: "uint80" },
+            { internalType: "int256", name: "answer", type: "int256" },
+            { internalType: "uint256", name: "startedAt", type: "uint256" },
+            { internalType: "uint256", name: "updatedAt", type: "uint256" },
+            { internalType: "uint80", name: "answeredInRound", type: "uint80" },
+        ],
+        stateMutability: "view",
+        type: "function",
+    },
+    {
+        inputs: [],
+        name: "latestRoundData",
+        outputs: [
+            { internalType: "uint80", name: "roundId", type: "uint80" },
+            { internalType: "int256", name: "answer", type: "int256" },
+            { internalType: "uint256", name: "startedAt", type: "uint256" },
+            { internalType: "uint256", name: "updatedAt", type: "uint256" },
+            { internalType: "uint80", name: "answeredInRound", type: "uint80" },
+        ],
+        stateMutability: "view",
+        type: "function",
+    },
+    {
+        inputs: [],
+        name: "version",
+        outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+        stateMutability: "view",
+        type: "function",
+    },
+]
+
 async function deployFakeflix(
     Subscription: ContractFactory,
     fakeflixAccountAddress: string,
@@ -69,7 +119,7 @@ async function main() {
         fakeflixAccount,
         spooftifyAccount,
         marketplaceAccount,
-        // ...accounts
+        ...accounts
     ] = await ethers.getSigners();
 
     const fakeflix = await deployFakeflix(Subscription, fakeflixAccount.address, marketplaceAccount.address);
@@ -79,6 +129,53 @@ async function main() {
     const spooftify = await deploySpooftify(Subscription, spooftifyAccount.address, marketplaceAccount.address);
 
     console.log(`Spooftify deployed to ${spooftify.address}`);
+
+    const provider = ethers.getDefaultProvider("http://localhost:8545");
+
+    const priceFeed = new ethers.Contract(chainlinkGoerliPriceFeedForEthUsdAddress, aggregatorV3InterfaceABI, provider);
+
+    const roundData = await priceFeed.latestRoundData();
+
+    const fakeflixContentSubscriptionPrice = await fakeflix.contentSubscriptionPrice();
+
+    const amountToSendToFakeflix = Math.floor(roundData.answer * fakeflixContentSubscriptionPrice / 100);
+
+    const spooftifyContentSubscriptionPrice = await spooftify.contentSubscriptionPrice();
+
+    const amountToSendToSpooftify = Math.floor(roundData.answer * spooftifyContentSubscriptionPrice  / 100);
+
+    const fakeflixConnectedSubscription0 = fakeflix.connect(accounts[0]);
+
+    await fakeflixConnectedSubscription0.mint({value: amountToSendToFakeflix});
+
+    const fakeflixConnectedSubscription1 = fakeflix.connect(accounts[1]);
+
+    await fakeflixConnectedSubscription1.mint({value: amountToSendToFakeflix});
+
+    const fakeflixConnectedSubscription2 = fakeflix.connect(accounts[2]);
+
+    await fakeflixConnectedSubscription2.mint({value: amountToSendToFakeflix});
+
+    const spooftifyConnectedSubscription0 = spooftify.connect(accounts[0]);
+
+    await spooftifyConnectedSubscription0.mint({value: amountToSendToSpooftify});
+
+    await spooftifyConnectedSubscription0.mint({value: amountToSendToSpooftify});
+
+    const spooftifyConnectedSubscription1 = spooftify.connect(accounts[1]);
+
+    await spooftifyConnectedSubscription1.mint({value: amountToSendToSpooftify});
+
+    console.log("accounts0", accounts[0].address);
+
+    console.log("accounts1", accounts[1].address);
+
+    console.log("accounts2", accounts[2].address);
+
+
+    // Account0 :  1 Fakeflix - 2 Sp
+    // Account1 : 1 FF - 1 SP
+    // Account2 : 1 FF - 0 SP
 }
 
 main().catch(e => {
