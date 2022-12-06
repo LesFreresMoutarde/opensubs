@@ -2,7 +2,12 @@ import {useEffect, useState} from "react";
 import {Contract, providers} from "ethers";
 import ConnectButton from "./common/ConnectButton";
 import {autoLogin} from "../utils/ProviderUtils";
-import {getSubscriptionContract, getBalanceOfOwnedTokens} from "../utils/SubscriptionUtil";
+import {
+    getSubscriptionContract,
+    getBalanceOfOwnedTokens,
+    getOwnedTokensByUser,
+    isChainIdSupported
+} from "../utils/SubscriptionUtil";
 
 type ContractDescription = {
     /**
@@ -93,10 +98,20 @@ function OpenSubsApp() {
         if (contracts) {
             (async () => {
                 const balances: any = {};
+                const tokenIds: any = {};
+
                 for (const [serviceName, contractDescription] of Object.entries(contracts)) {
                     balances[serviceName] = await getBalanceOfOwnedTokens(contractDescription.contract, address);
+
+                    tokenIds[serviceName] = await getOwnedTokensByUser(
+                        contractDescription.contract,
+                        address,
+                        balances[serviceName].toBigInt()
+                    );
                 }
-                console.log(balances);
+
+                console.log('balances', balances);
+                console.log('tokenIds', tokenIds);
             })();
         }
 
@@ -111,6 +126,12 @@ function OpenSubsApp() {
     if (provider === null) {
         return (
             <div>Install metamask</div>
+        )
+    }
+
+    if (chainId && !isChainIdSupported(chainId)) {
+        return (
+            <div>Unsupported network</div>
         )
     }
 
