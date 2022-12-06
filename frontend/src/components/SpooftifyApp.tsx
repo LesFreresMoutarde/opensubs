@@ -2,7 +2,12 @@ import {useEffect, useState} from "react";
 import {Contract, providers} from "ethers";
 import ConnectButton from "./common/ConnectButton";
 import {autoLogin} from "../utils/ProviderUtils";
-import {getSubscriptionContract, getBalanceOfOwnedTokens, isChainIdSupported} from "../utils/SubscriptionUtil";
+import {
+    getSubscriptionContract,
+    getBalanceOfOwnedTokens,
+    isChainIdSupported,
+    getOwnedTokensByUser
+} from "../utils/SubscriptionUtil";
 
 function SpooftifyApp() {
 
@@ -60,7 +65,8 @@ function SpooftifyApp() {
         if (subscription) {
             (async () => {
                 const balance = await getBalanceOfOwnedTokens(subscription, address);
-                console.log(balance);
+                const tokenIds = await getOwnedTokensByUser(subscription, address, balance.toBigInt());
+                console.log('tokenIds', tokenIds);
             })();
         }
 
