@@ -9,10 +9,20 @@ async function getBalanceOfOwnedTokens(contract: Contract, address: string): Pro
     return await contract.balanceOf(address);
 }
 
+async function getOwnedTokensByUser(contract: Contract, address: string, balance: bigint|number): Promise<BigNumber[]> {
+    const tokenIds: BigNumber[] = [];
+
+    for (let i = 0; i < balance; i++) {
+        tokenIds.push(await contract.tokenOfOwnerByIndex(address, i))
+    }
+
+    return tokenIds;
+}
+
 function isChainIdSupported(chainId: number): boolean {
     const supportedNetworks = [5, 31337];
 
     return supportedNetworks.includes(chainId);
 }
 
-export {getSubscriptionContract, getBalanceOfOwnedTokens, isChainIdSupported}
+export {getSubscriptionContract, getBalanceOfOwnedTokens, isChainIdSupported, getOwnedTokensByUser}
