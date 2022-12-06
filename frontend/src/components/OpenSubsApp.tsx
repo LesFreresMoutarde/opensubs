@@ -2,7 +2,7 @@ import {useEffect, useState} from "react";
 import {Contract, providers} from "ethers";
 import ConnectButton from "./common/ConnectButton";
 import {autoLogin} from "../utils/ProviderUtils";
-import {getSubscriptionContract} from "../utils/SubscriptionUtil";
+import {getSubscriptionContract, getTokensOwnedByUser} from "../utils/SubscriptionUtil";
 
 type ContractDescription = {
     /**
@@ -33,6 +33,8 @@ function OpenSubsApp() {
 
     const [address, setAddress] = useState('');
 
+    const [chainId, setChainId] = useState<number | null>(null);
+
     const [contracts, setContracts] = useState<ContractsList | null>(null);
 
     useEffect(() => {
@@ -47,6 +49,14 @@ function OpenSubsApp() {
                 if (loggedAddress) {
                     setAddress(loggedAddress);
                 }
+
+                window.ethereum.on('accountsChanged', (accounts: any) => {
+                    setAddress(String(accounts[0]));
+                });
+
+                window.ethereum.on('chainChanged', () => {
+                    window.location.reload();
+                })
             } else {
                 setProvider(null);
             }
@@ -58,17 +68,39 @@ function OpenSubsApp() {
             return;
         }
 
-        const contractDescriptions: Partial<ContractsList> = {};
+        (async () => {
+            const contractDescriptions: Partial<ContractsList> = {};
 
-        for (const [serviceName, address] of Object.entries(contractAddresses)) {
-            contractDescriptions[serviceName as ServiceName] = {
-                address,
-                contract: getSubscriptionContract(provider, address),
-            };
+            for (const [serviceName, address] of Object.entries(contractAddresses)) {
+                contractDescriptions[serviceName as ServiceName] = {
+                    address,
+                    contract: getSubscriptionContract(provider, address),
+                };
+            }
+
+            setContracts(contractDescriptions as ContractsList);
+            setChainId((await provider.getNetwork()).chainId);
+        })();
+
+    }, [provider]);
+
+    useEffect(() => {
+
+        if (address === '') {
+            return;
         }
 
-        setContracts(contractDescriptions as ContractsList);
-    }, [provider]);
+        if (contracts) {
+            (async () => {
+                const balances: any = {};
+                for (const [serviceName, contractDescription] of Object.entries(contracts)) {
+                    balances[serviceName] = await getTokensOwnedByUser(contractDescription.contract, address);
+                }
+                console.log(balances);
+            })();
+        }
+
+    }, [address, contracts]);
 
     if (provider === undefined) {
         return (
