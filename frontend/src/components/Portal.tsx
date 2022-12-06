@@ -1,6 +1,18 @@
+import { Link } from "react-router-dom"
+
 function Portal() {
     return (
-        <p>This is portal !</p>
+        <nav>
+            <ul>
+                <Link to="/opensubs">Opensubs</Link>
+            </ul>
+            <ul>
+                <Link to="/fakeflix">Fakeflix</Link>
+            </ul>
+            <ul>
+                <Link to="/spooftify">Spooftify</Link>
+            </ul>
+        </nav>
     )
 }
 
