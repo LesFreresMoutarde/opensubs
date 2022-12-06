@@ -9,7 +9,7 @@ function Portal() {
             <nav>
                 <ul>
                     <li>
-                        <Link to="/opensubs">
+                        <Link to="/opensubs" target="_blank">
                             <div className="logo">
                                 <img src="/portal/img/opensubs-logo.png" alt="Logo Opensubs"/>
                             </div>
@@ -17,7 +17,7 @@ function Portal() {
                         </Link>
                     </li>
                     <li>
-                        <Link to="/fakeflix">
+                        <Link to="/fakeflix" target="_blank">
                             <div className="logo">
                                 <img src="/portal/img/fakeflix-logo.png" alt="Logo Fakeflix"/>
                             </div>
@@ -25,7 +25,7 @@ function Portal() {
                         </Link>
                     </li>
                     <li>
-                        <Link to="/spooftify">
+                        <Link to="/spooftify" target="_blank">
                             <div className="logo">
                                 <img src="/portal/img/spooftify-logo.png" alt="Logo Fakeflix"/>
                             </div>

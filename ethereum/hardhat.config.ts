@@ -9,6 +9,9 @@ dotenv.config();
 const config: HardhatUserConfig = {
   solidity: "0.8.17",
   defaultNetwork: "localhost",
+  paths: {
+    artifacts: "../frontend/src/artifacts"
+  },
   networks: {
     hardhat: {
       forking: {
