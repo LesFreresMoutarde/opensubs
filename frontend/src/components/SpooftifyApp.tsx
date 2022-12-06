@@ -1,13 +1,16 @@
 import {useEffect, useState} from "react";
-import {providers} from "ethers";
+import {Contract, providers} from "ethers";
 import ConnectButton from "./common/ConnectButton";
 import {autoLogin} from "../utils/ProviderUtils";
+import {getSubscriptionContract} from "../utils/SubscriptionUtil";
 
 function SpooftifyApp() {
 
     const [provider, setProvider] = useState<providers.Web3Provider | null | undefined>(undefined);
 
     const [address, setAddress] = useState('');
+
+    const [subscription, setSubscription] = useState<Contract | null>(null);
 
     useEffect(() => {
         (async () => {
@@ -26,6 +29,26 @@ function SpooftifyApp() {
             }
         })();
     }, []);
+
+    useEffect(() => {
+        if (!provider) {
+            return;
+        }
+
+        setSubscription(getSubscriptionContract(provider, String(process.env.REACT_APP_SPOOFTIFY_CONTRACT_ADDRESS)));
+    }, [provider]);
+
+    useEffect(() => {
+        console.log(subscription);
+
+        if (subscription === null) {
+            return;
+        }
+
+        (async () => {
+            console.log(await subscription.contentSubscriptionPrice());
+        })();
+    }, [subscription]);
 
     if (provider === undefined) {
         return (
