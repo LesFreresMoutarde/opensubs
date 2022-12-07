@@ -1,5 +1,5 @@
 import "../css/spooftify.css";
-import {createContext, useEffect, useState} from "react";
+import {createContext, useCallback, useEffect, useState} from "react";
 import {Contract, providers} from "ethers";
 import ConnectButton from "./common/ConnectButton";
 import {autoLogin} from "../utils/ProviderUtils";
@@ -32,12 +32,18 @@ type ContentItem = {
 
 type AppContent = ContentItem[];
 
+type SelectedItem = [number, ContentItem];
+
 type SpooftifyAppContext = {
     content: AppContent;
+    selectedItem: SelectedItem | null;
+    selectItem: (id: number | null) => any;
 }
 
 export const spooftifyAppContext = createContext<SpooftifyAppContext>({
     content: [],
+    selectedItem: null,
+    selectItem: () => {},
 });
 
 function SpooftifyApp() {
@@ -49,6 +55,8 @@ function SpooftifyApp() {
     const [subscription, setSubscription] = useState<Contract | null>(null);
 
     const [appContent, setAppContent] = useState<AppContent>([]);
+
+    const [selectedItem, setSelectedItem] = useState<SelectedItem | null>(null);
 
     useEffect(() => {
         (async () => {
@@ -93,6 +101,15 @@ function SpooftifyApp() {
         })();
     }, [subscription]);
 
+    const selectItem = useCallback((itemId: number | null) => {
+        if (itemId === null) {
+            setSelectedItem(null);
+            return;
+        }
+
+        setSelectedItem([itemId, appContent[itemId]]);
+    }, [appContent]);
+
     if (provider === undefined) {
         return (
             <div>Loading...</div>
@@ -112,6 +129,8 @@ function SpooftifyApp() {
             <ConnectButton changeAddress={setAddress} provider={provider}/>
             <spooftifyAppContext.Provider value={{
                 content: appContent,
+                selectedItem,
+                selectItem,
             }}>
                 <SpooftifyContent/>
             </spooftifyAppContext.Provider>

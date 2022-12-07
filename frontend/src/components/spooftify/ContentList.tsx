@@ -2,7 +2,7 @@ import {useContext} from "react";
 import {spooftifyAppContext} from "../SpooftifyApp";
 
 function ContentList() {
-    const {content} = useContext(spooftifyAppContext);
+    const {content, selectedItem, selectItem} = useContext(spooftifyAppContext);
 
     return (
         <div className="content-list">
@@ -17,13 +17,32 @@ function ContentList() {
                 <tbody>
                 {content.map((item, index) => {
                     return(
-                        <tr key={index}>
+                        <tr key={index} onClick={() => {
+                            if (selectedItem !== null && selectedItem[0] === index) {
+                                selectItem(null);
+                                return;
+                            }
+
+                            selectItem(index)
+                        }}>
                             <td className="index-cell">
                                 <div className="index">
-                                    {index + 1}
+                                    {(() => {
+                                        if (selectedItem && selectedItem[0] === index) {
+                                            return "▶";
+                                        }
+
+                                        return index + 1;
+                                    })()}
                                 </div>
                                 <div className="play-button">
-                                    ▶
+                                    {(() => {
+                                        if (selectedItem && selectedItem[0] === index) {
+                                            return "◼";
+                                        }
+
+                                        return "▶";
+                                    })()}
                                 </div>
                             </td>
                             <td className="title-cell">
