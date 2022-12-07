@@ -148,14 +148,57 @@ async function mintFixturesTokens(fakeflix: Subscription, spooftify: Subscriptio
     // Account2 : 1 FF - 0 SP
 }
 
-    console.log("accounts1", accounts[1].address);
+async function rentTokenIds(fakeflix: Subscription, spooftify: Subscription, ethUsdRate: any, accounts: any) {
+    const fakeflixMinRentPrice = await fakeflix.minRentPrice();
+    const spooftifyMinRentPrice = await spooftify.minRentPrice();
 
-    console.log("accounts2", accounts[2].address);
+    const fakeflixMinRentDuration = await fakeflix.minRentDuration();
+    const spooftifyMinRentDuration = await spooftify.minRentDuration();
+
+    /* Create offers for rent */
+    const spooftifyTokenId = 1;
+    const fakeflixTokenId = 2
+
+    const connectedSpooftifyAccount0 = spooftify.connect(accounts[0]);
+
+    // Account0 has tokenId 1 and 2 in spooftify
+    await connectedSpooftifyAccount0.offerForRent(spooftifyTokenId, spooftifyMinRentPrice + 100, spooftifyMinRentDuration + 10);
+
+    const connectedFakeflixAccount1 = fakeflix.connect(accounts[1]);
+
+    // Account1 has token id 2 in fakeflix
+    await connectedFakeflixAccount1.offerForRent(fakeflixTokenId, fakeflixMinRentPrice + 100, fakeflixMinRentDuration + 10);
+
+    /* Rent tokens */
+
+    // Spooftify token
+    const spooftifyToken1RentingConditions = await spooftify.getRentingConditions(spooftifyTokenId);
+
+    const amountToSendForSpooftifyToken1 = Math.floor(ethUsdRate * spooftifyToken1RentingConditions.price / 100);
+
+    const connectedSpooftifyAccount3 = spooftify.connect(accounts[3]);
+
+    await connectedSpooftifyAccount3.rent(spooftifyTokenId, {value: amountToSendForSpooftifyToken1});
+
+    // Fakeflix token
+    const fakeflixToken2RentingConditions = await fakeflix.getRentingConditions(fakeflixTokenId);
+
+    const amountToSendForFakeflixToken2 = Math.floor(ethUsdRate * fakeflixToken2RentingConditions.price / 100);
+
+    const connectedFakeflixAccount4 = fakeflix.connect(accounts[4]);
+
+    await connectedFakeflixAccount4.rent(fakeflixTokenId, {value: amountToSendForFakeflixToken2});
+
+    // Create offer for rent
+    // Account 0 - 1 sp en location
+    // Account 1 - 1 ff en location
+
+    // Renting tokens
+    // Account 3 - rent 1 SP
+    // Account 4 - rent 1 FF
+}
 
 
-    // Account0 :  1 Fakeflix - 2 Sp
-    // Account1 : 1 FF - 1 SP
-    // Account2 : 1 FF - 0 SP
 }
 
 main().catch(e => {
