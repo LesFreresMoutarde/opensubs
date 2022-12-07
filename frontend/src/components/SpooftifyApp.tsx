@@ -6,7 +6,7 @@ import {
     getSubscriptionContract,
     getBalanceOfOwnedTokens,
     isChainIdSupported,
-    getOwnedTokensByUser
+    getOwnedTokensByUser, getBalanceOfUsedTokens, getUsedTokensByUser
 } from "../utils/SubscriptionUtil";
 
 function SpooftifyApp() {
@@ -64,9 +64,13 @@ function SpooftifyApp() {
 
         if (subscription) {
             (async () => {
-                const balance = await getBalanceOfOwnedTokens(subscription, address);
-                const tokenIds = await getOwnedTokensByUser(subscription, address, balance.toBigInt());
-                console.log('tokenIds', tokenIds);
+                const ownedBalances = await getBalanceOfOwnedTokens(subscription, address);
+                const ownedTokenIds = await getOwnedTokensByUser(subscription, address, ownedBalances.toBigInt());
+                console.log('Owned tokenIds', ownedTokenIds);
+
+                const usedBalances = await getBalanceOfUsedTokens(subscription, address);
+                const usedTokenIds = await  getUsedTokensByUser(subscription, address, usedBalances.toBigInt());
+                console.log('used tokenIds', usedTokenIds);
             })();
         }
 
