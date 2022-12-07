@@ -198,6 +198,39 @@ async function rentTokenIds(fakeflix: Subscription, spooftify: Subscription, eth
     // Account 4 - rent 1 FF
 }
 
+async function main() {
+    const Subscription = await ethers.getContractFactory("Subscription");
+
+    const [
+        fakeflixAccount,
+        spooftifyAccount,
+        marketplaceAccount,
+        ...accounts
+    ] = await ethers.getSigners();
+
+    const fakeflix = await deployFakeflix(Subscription, fakeflixAccount.address, marketplaceAccount.address);
+
+    console.log(`Fakeflix deployed to ${fakeflix.address}`);
+
+    const spooftify = await deploySpooftify(Subscription, spooftifyAccount.address, marketplaceAccount.address);
+
+    console.log(`Spooftify deployed to ${spooftify.address}`);
+
+    const provider = ethers.getDefaultProvider("http://localhost:8545");
+
+    const priceFeed = new ethers.Contract(chainlinkGoerliPriceFeedForEthUsdAddress, aggregatorV3InterfaceABI, provider);
+
+    const roundData = await priceFeed.latestRoundData();
+
+    await mintFixturesTokens(fakeflix, spooftify, roundData.answer, accounts);
+
+    await rentTokenIds(fakeflix, spooftify, roundData.answer, accounts);
+
+    console.log("accounts0", accounts[0].address);
+    console.log("accounts1", accounts[1].address);
+    console.log("accounts2", accounts[2].address);
+    console.log("accounts3", accounts[3].address);
+    console.log("accounts4", accounts[4].address);
 
 }
 
