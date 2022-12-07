@@ -64,11 +64,57 @@ async function isContentAvailableFromToken(contract: Contract, tokenId: BigNumbe
     return true;
 }
 
+async function isTokenRentable(contract: Contract, tokenId: BigNumber, address: string) {
+    const ownerOf = await contract.ownerOf(tokenId);
+
+    if (ethers.utils.getAddress(address) !== ownerOf) {
+        return false;
+    }
+
+    const subscriptionExpiration = await contract.expiresAt(tokenId) * 1000;
+
+    if (Date.now() > subscriptionExpiration) {
+        return false;
+    }
+
+    const userOf = await contract.userOf(tokenId);
+
+    if (userOf !== ethers.constants.AddressZero) {
+        return false;
+    }
+
+    return true;
+}
+
+async function isTokenReclaimable(contract: Contract, tokenId: BigNumber, address: string) {
+    const ownerOf = await contract.ownerOf(tokenId);
+
+    if (ethers.utils.getAddress(address) !== ownerOf) {
+        return false;
+    }
+
+    const userOf = await contract.userOf(tokenId);
+
+    if (userOf === ethers.constants.AddressZero){
+        return false;
+    }
+
+    const userExpires = await contract.userExpires(tokenId) * 1000;
+
+    if (Date.now() < userExpires) {
+        return false;
+    }
+
+    return true;
+}
+
 export {
     getSubscriptionContract,
     getBalanceOfOwnedTokens,
     getBalanceOfUsedTokens,
     getUsedTokensByUser,
     getOwnedTokensByUser,
-    isContentAvailableFromToken
+    isContentAvailableFromToken,
+    isTokenRentable,
+    isTokenReclaimable
 }

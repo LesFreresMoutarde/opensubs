@@ -379,6 +379,25 @@ describe("Subscription smart contract test", () => {
                 .to.be.revertedWith("Duration too low");
         });
 
+        it("Should revert when renting duration is too high regarding subscription expiration time", async () => {
+            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
+
+            const tokenId = 1;
+
+            const connectedSubscription = subscription.connect(otherAccounts[0]);
+
+            const minPrice = await connectedSubscription.minRentPrice();
+
+            const expirationTimestamp = await connectedSubscription.expiresAt(tokenId);
+
+            const currentTimestamp = await time.latest();
+
+            const duration = expirationTimestamp.sub(currentTimestamp).add(30);
+
+            await expect(connectedSubscription.offerForRent(tokenId,  minPrice * 5, duration))
+                .to.be.revertedWith("Subscription will expire before rent expires");
+        });
+
         it("Should emit event when offer for rent is cancelled", async () => {
             const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
 
@@ -656,6 +675,52 @@ describe("Subscription smart contract test", () => {
 
             await expect(userConnectedSubscription.rent(tokenId, {value: amountToSend * 2}))
                 .to.be.revertedWith("Too much slippage");
+        });
+
+        it("Should revert if subscription will expire before rent expires", async () => {
+            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
+
+            const tokenId = 1;
+
+            const connectedSubscription = subscription.connect(otherAccounts[0]);
+
+            // Offer for rent
+
+            const expirationTimestamp = await connectedSubscription.expiresAt(tokenId);
+
+            const currentTimestamp = await time.latest();
+
+            const duration = expirationTimestamp.sub(currentTimestamp).div(2);
+
+            const minPrice = await connectedSubscription.minRentPrice();
+
+            await connectedSubscription.offerForRent(tokenId,  minPrice * 5, duration);
+
+            // Forward time
+            time.increase(duration.add(3600));
+
+            // Get renting conditions
+
+            const userConnectedSubscription = subscription.connect(otherAccounts[1]);
+
+            const rentingConditions = await userConnectedSubscription.getRentingConditions(tokenId);
+
+            // Compute ETH amount to send from subscription renting conditions
+
+            const provider = ethers.getDefaultProvider("http://localhost:8545");
+
+            const priceFeed = new ethers.Contract(chainlinkGoerliPriceFeedForEthUsdAddress, aggregatorV3InterfaceABI, provider);
+
+            const roundData = await priceFeed.latestRoundData();
+
+            const rentingPrice = rentingConditions.price
+
+            const amountToSend = Math.floor(roundData.answer * rentingPrice / 100);
+
+            // Send transaction to rent token
+
+            await expect(userConnectedSubscription.rent(tokenId, {value: amountToSend}))
+                .to.be.revertedWith("Subscription expires before rent expires");
         });
 
         it("Should delete renting offer when a token is used", async () => {

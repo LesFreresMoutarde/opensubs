@@ -6,7 +6,7 @@ import {
     getSubscriptionContract,
     getBalanceOfOwnedTokens,
     getOwnedTokensByUser,
-    getBalanceOfUsedTokens, getUsedTokensByUser
+    getBalanceOfUsedTokens, getUsedTokensByUser, isTokenRentable, isTokenReclaimable
 } from "../utils/SubscriptionUtil";
 
 type ContractDescription = {
@@ -119,8 +119,18 @@ function OpenSubsApp() {
                     );
                 }
 
-                console.log('balances', balances);
-                console.log('tokenIds', tokenIds);
+                for (const serviceName in tokenIds) {
+                    for (const [type, tokens] of Object.entries<any>(tokenIds[serviceName])) {
+                        if (tokens.length > 0) {
+                            for (const token of tokens) {
+                                console.log("token, service, type", token, serviceName, type)
+                                console.log("isRentable", await isTokenRentable(contracts[serviceName as ServiceName].contract, token, address))
+                                console.log("isReclaimable", await isTokenReclaimable(contracts[serviceName as ServiceName].contract, token, address))
+                            }
+                        }
+                    }
+                }
+
             })();
         }
 

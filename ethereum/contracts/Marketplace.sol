@@ -36,7 +36,7 @@ contract Marketplace is Initializable, ERC4907EnumerableUpgradeable {
         minRentDuration = minRentDuration_;
     }
 
-    function offerForRent(uint256 tokenId, uint32 price, uint128 duration) public {
+    function offerForRent(uint256 tokenId, uint32 price, uint128 duration) public virtual {
         require(_isApprovedOrOwner(_msgSender(), tokenId), "Caller is not token owner or approved");
         require(userOf(tokenId) == address(0), "Already used");
         require(price >= minRentPrice, "Price too low");
