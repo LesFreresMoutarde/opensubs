@@ -17,6 +17,8 @@ function FakeflixApp() {
 
     const [subscription, setSubscription] = useState<Contract | null>(null);
 
+    const [isContentAvailable, setIsContentAvailable] = useState<boolean | null>(null);
+
     useEffect(() => {
         (async () => {
             if (window.ethereum) {
@@ -55,30 +57,37 @@ function FakeflixApp() {
     }, [provider]);
 
     useEffect(() => {
-
         if (address === '') {
             return;
         }
 
-        if (subscription) {
-            (async () => {
-                const ownedBalances = await getBalanceOfOwnedTokens(subscription, address);
-                const ownedTokenIds = await getOwnedTokensByUser(subscription, address, ownedBalances.toBigInt());
-                console.log('Owned tokenIds', ownedTokenIds);
-
-                const usedBalances = await getBalanceOfUsedTokens(subscription, address);
-                const usedTokenIds = await  getUsedTokensByUser(subscription, address, usedBalances.toBigInt());
-                console.log('used tokenIds', usedTokenIds);
-
-                for (const ownedTokenId of ownedTokenIds) {
-                    await isContentAvailableFromToken(subscription, ownedTokenId, 'owned');
-                }
-
-                for (const usedTokenId of usedTokenIds) {
-                    await isContentAvailableFromToken(subscription, usedTokenId, 'used');
-                }
-            })();
+        if (!subscription) {
+            return;
         }
+
+        (async () => {
+            const ownedBalances = await getBalanceOfOwnedTokens(subscription, address);
+            const ownedTokenIds = await getOwnedTokensByUser(subscription, address, ownedBalances.toBigInt());
+
+            const usedBalances = await getBalanceOfUsedTokens(subscription, address);
+            const usedTokenIds = await  getUsedTokensByUser(subscription, address, usedBalances.toBigInt());
+
+            for (const ownedTokenId of ownedTokenIds) {
+                if (await isContentAvailableFromToken(subscription, ownedTokenId, 'owned')) {
+                    setIsContentAvailable(true);
+                    return;
+                }
+            }
+
+            for (const usedTokenId of usedTokenIds) {
+                if (await isContentAvailableFromToken(subscription, usedTokenId, 'used')) {
+                    setIsContentAvailable(true);
+                    return;
+                }
+            }
+
+            setIsContentAvailable(false);
+        })();
 
     }, [address, subscription]);
 
@@ -105,6 +114,22 @@ function FakeflixApp() {
             <p>Fakeflix ! tudum</p>
             <p>{address}</p>
             <ConnectButton changeAddress={setAddress} provider={provider}/>
+
+            {address &&
+            <>
+                {isContentAvailable === null &&
+                <p>Verifying your tokens...</p>
+                }
+
+                {isContentAvailable === false &&
+                <p>You are not authorized to access content</p>
+                }
+
+                {isContentAvailable === true &&
+                <p>TODO App content</p>
+                }
+            </>
+            }
         </div>
     )
 }
