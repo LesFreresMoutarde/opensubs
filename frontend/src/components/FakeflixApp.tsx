@@ -5,7 +5,7 @@ import {autoLogin, isChainIdSupported} from "../utils/ProviderUtils";
 import {
     getSubscriptionContract,
     getBalanceOfOwnedTokens,
-    getOwnedTokensByUser, getBalanceOfUsedTokens, getUsedTokensByUser
+    getOwnedTokensByUser, getBalanceOfUsedTokens, getUsedTokensByUser, isContentAvailableFromToken
 } from "../utils/SubscriptionUtil";
 function FakeflixApp() {
 
@@ -69,6 +69,14 @@ function FakeflixApp() {
                 const usedBalances = await getBalanceOfUsedTokens(subscription, address);
                 const usedTokenIds = await  getUsedTokensByUser(subscription, address, usedBalances.toBigInt());
                 console.log('used tokenIds', usedTokenIds);
+
+                for (const ownedTokenId of ownedTokenIds) {
+                    await isContentAvailableFromToken(subscription, ownedTokenId, 'owned');
+                }
+
+                for (const usedTokenId of usedTokenIds) {
+                    await isContentAvailableFromToken(subscription, usedTokenId, 'used');
+                }
             })();
         }
 
