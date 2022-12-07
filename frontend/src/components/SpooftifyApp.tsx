@@ -1,10 +1,12 @@
-import {useEffect, useState} from "react";
+import "../css/spooftify.css";
+import {createContext, useEffect, useState} from "react";
 import {Contract, providers} from "ethers";
 import ConnectButton from "./common/ConnectButton";
 import {autoLogin} from "../utils/ProviderUtils";
 import {getSubscriptionContract} from "../utils/SubscriptionUtil";
 
 import CONTENT_JSON from "../apps-content/spooftify.json";
+import SpooftifyContent from "./spooftify/SpooftifyContent";
 
 type ContentItem = {
     /**
@@ -29,6 +31,14 @@ type ContentItem = {
 }
 
 type AppContent = ContentItem[];
+
+type SpooftifyAppContext = {
+    content: AppContent;
+}
+
+export const spooftifyAppContext = createContext<SpooftifyAppContext>({
+    content: [],
+});
 
 function SpooftifyApp() {
 
@@ -100,6 +110,11 @@ function SpooftifyApp() {
             <p>Spooftify</p>
             <p>{address}</p>
             <ConnectButton changeAddress={setAddress} provider={provider}/>
+            <spooftifyAppContext.Provider value={{
+                content: appContent,
+            }}>
+                <SpooftifyContent/>
+            </spooftifyAppContext.Provider>
         </div>
 
     )
