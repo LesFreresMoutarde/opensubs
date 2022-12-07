@@ -4,6 +4,32 @@ import ConnectButton from "./common/ConnectButton";
 import {autoLogin} from "../utils/ProviderUtils";
 import {getSubscriptionContract} from "../utils/SubscriptionUtil";
 
+import CONTENT_JSON from "../apps-content/spooftify.json";
+
+type ContentItem = {
+    /**
+     * The track title
+     */
+    title: string;
+
+    /**
+     * The artist who made the track
+     */
+    artist: string;
+
+    /**
+     * The URL to a cover image
+     */
+    coverUrl: string;
+
+    /**
+     * The URL to an audio file
+     */
+    songUrl: string;
+}
+
+type AppContent = ContentItem[];
+
 function SpooftifyApp() {
 
     const [provider, setProvider] = useState<providers.Web3Provider | null | undefined>(undefined);
@@ -11,6 +37,8 @@ function SpooftifyApp() {
     const [address, setAddress] = useState('');
 
     const [subscription, setSubscription] = useState<Contract | null>(null);
+
+    const [appContent, setAppContent] = useState<AppContent>([]);
 
     useEffect(() => {
         (async () => {
@@ -28,6 +56,11 @@ function SpooftifyApp() {
                 setProvider(null);
             }
         })();
+    }, []);
+
+    // TODO initialize content only once we're sure user has a valid subscription ?
+    useEffect(() => {
+        setAppContent(CONTENT_JSON);
     }, []);
 
     useEffect(() => {
