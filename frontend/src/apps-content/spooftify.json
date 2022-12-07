@@ -1,0 +1,62 @@
+[
+    {
+        "title": "Woodsky",
+        "artist": "Audiorezout",
+        "coverUrl": "https://firebasestorage.googleapis.com/v0/b/alyra-certification.appspot.com/o/spotify%2Fcover%2Faudiorezout-woodsky.jpg?alt=media",
+        "songUrl" : "https://firebasestorage.googleapis.com/v0/b/alyra-certification.appspot.com/o/spotify%2Fsong%2Faudiorezout-woodsky.mp3?alt=media"
+    },
+    {
+        "title": "Nights in the woods",
+        "artist": "Dee Yan-Key",
+        "coverUrl": "https://firebasestorage.googleapis.com/v0/b/alyra-certification.appspot.com/o/spotify%2Fcover%2Fdee-yan-key-nights-in-the-woods.jpg?alt=media",
+        "songUrl" : "https://firebasestorage.googleapis.com/v0/b/alyra-certification.appspot.com/o/spotify%2Fsong%2Fdee-yan-key-nights-in-the-woods.mp3?alt=media"
+    },
+    {
+        "title": "Blue Skies",
+        "artist": "Derek Clegg",
+        "coverUrl": "https://firebasestorage.googleapis.com/v0/b/alyra-certification.appspot.com/o/spotify%2Fcover%2Fdee-yan-key-nights-in-the-woods.jpg?alt=media",
+        "songUrl" : "https://firebasestorage.googleapis.com/v0/b/alyra-certification.appspot.com/o/spotify%2Fsong%2Fderek-Clegg-blue-skies.mp3?alt=media"
+    },
+    {
+        "title": "Blind",
+        "artist": "Derek Clegg",
+        "coverUrl": "https://firebasestorage.googleapis.com/v0/b/alyra-certification.appspot.com/o/spotify%2Fcover%2Fderek-clegg-blind.jpg?alt=media",
+        "songUrl" : "https://firebasestorage.googleapis.com/v0/b/alyra-certification.appspot.com/o/spotify%2Fsong%2Fderek-clegg-blind.mp3?alt=media"
+    },
+    {
+        "title": "Monsters",
+        "artist": "Independent Music Licensing Collective",
+        "coverUrl": "https://firebasestorage.googleapis.com/v0/b/alyra-certification.appspot.com/o/spotify%2Fcover%2Findependent-music-licensing-collective-monsters.jpg?alt=media",
+        "songUrl" : "https://firebasestorage.googleapis.com/v0/b/alyra-certification.appspot.com/o/spotify%2Fsong%2Findependent-music-licensing-collective-monsters.mp3?alt=media"
+    },
+    {
+        "title": "Herschel Walker Vampire EDM",
+        "artist": "John Lopker",
+        "coverUrl": "https://firebasestorage.googleapis.com/v0/b/alyra-certification.appspot.com/o/spotify%2Fcover%2Fjohn-lopker-herschel-walker-vampire-edm.jpg?alt=media",
+        "songUrl" : "https://firebasestorage.googleapis.com/v0/b/alyra-certification.appspot.com/o/spotify%2Fsong%2Fjohn-lopker-herschel-walker-vampire-edm.mp3?alt=media"
+    },
+    {
+        "title": "Wild Blood",
+        "artist": "Jonas Hipper",
+        "coverUrl": "https://firebasestorage.googleapis.com/v0/b/alyra-certification.appspot.com/o/spotify%2Fcover%2Fjonas-hipper-wild-blood.jpg?alt=media",
+        "songUrl" : "https://firebasestorage.googleapis.com/v0/b/alyra-certification.appspot.com/o/spotify%2Fsong%2Fjonas-hipper-wild-blood.mp3?alt=media"
+    },
+    {
+        "title": "Don't Worry",
+        "artist": "Ketsa",
+        "coverUrl": "https://firebasestorage.googleapis.com/v0/b/alyra-certification.appspot.com/o/spotify%2Fcover%2Fketsa-dont-worry.webp?alt=media",
+        "songUrl" : "https://firebasestorage.googleapis.com/v0/b/alyra-certification.appspot.com/o/spotify%2Fsong%2Fketsa-dont-worry.mp3?alt=media"
+    },
+    {
+        "title": "I Dig You",
+        "artist": "Ketsa",
+        "coverUrl": "https://firebasestorage.googleapis.com/v0/b/alyra-certification.appspot.com/o/spotify%2Fcover%2Fketsa-i-dig-you.webp?alt=media",
+        "songUrl" : "https://firebasestorage.googleapis.com/v0/b/alyra-certification.appspot.com/o/spotify%2Fsong%2Fketsa-i-dig-you.mp3?alt=media"
+    },
+    {
+        "title": "Luminescent",
+        "artist": "Mindseye",
+        "coverUrl": "https://firebasestorage.googleapis.com/v0/b/alyra-certification.appspot.com/o/spotify%2Fcover%2Fmindseye-luminescent.webp?alt=media",
+        "songUrl" : "https://firebasestorage.googleapis.com/v0/b/alyra-certification.appspot.com/o/spotify%2Fsong%2Fmindseye-luminescent.mp3?alt=media"
+    }
+]
