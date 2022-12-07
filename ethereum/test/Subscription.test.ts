@@ -379,6 +379,25 @@ describe("Subscription smart contract test", () => {
                 .to.be.revertedWith("Duration too low");
         });
 
+        it("Should revert when renting duration is too high regarding subscription expiration time", async () => {
+            const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
+
+            const tokenId = 1;
+
+            const connectedSubscription = subscription.connect(otherAccounts[0]);
+
+            const minPrice = await connectedSubscription.minRentPrice();
+
+            const expirationTimestamp = await connectedSubscription.expiresAt(tokenId);
+
+            const currentTimestamp = await time.latest();
+
+            const duration = expirationTimestamp.sub(currentTimestamp).add(30);
+
+            await expect(connectedSubscription.offerForRent(tokenId,  minPrice * 5, duration))
+                .to.be.revertedWith("Subscription will expire before rent expires");
+        });
+
         it("Should emit event when offer for rent is cancelled", async () => {
             const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixtureAndMint);
 
