@@ -97,6 +97,16 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
         _tokenIds.increment();
     }
 
+    function offerForRent(uint256 tokenId, uint32 price, uint128 duration) public virtual {
+        uint64 expires = uint64(block.timestamp + duration);
+
+        uint256 subscriptionExpiration = _expirations[tokenId];
+
+        require(expires < subscriptionExpiration, "Subscription will expire before rent expires");
+
+        super.offerForRent();
+    }
+
     // Wrapper for setUser function called by a user who wants to use a token proposed for rental
     function rent(uint256 tokenId) public payable {
         RentingConditions memory rentingConditions = _rentingConditions[tokenId];
@@ -104,6 +114,10 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
         require(rentingConditions.createdAt != 0, "Not available for renting");
 
         uint64 expires = uint64(block.timestamp + rentingConditions.duration);
+
+        uint256 subscriptionExpiration = _expirations[tokenId];
+
+        require(expires < subscriptionExpiration, "Subscription expires before rent expires");
 
         setUser(tokenId, msg.sender, expires);
     }
