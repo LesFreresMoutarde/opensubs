@@ -1,6 +1,7 @@
 import {ethers, upgrades} from "hardhat";
 import {Subscription} from "../typechain-types";
 import {BigNumber, ContractFactory} from "ethers";
+import {time} from "@nomicfoundation/hardhat-network-helpers";
 
 const chainlinkGoerliPriceFeedForEthUsdAddress: string = "0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e";
 
@@ -61,7 +62,8 @@ async function deployFakeflix(
 ): Promise<Subscription> {
     const fakeflixContentSubscriptionPrice = 1549; // $15,49
     const fakeflixMinRentPrice = 100; // $1
-    const fakeflixMinRentDuration = 60; // 1 minute
+    const fakeflixMinRentDuration = 120; // 2 minutes
+    const fakeFlixContentSubscriptionDuration = 30 * 24 * 60 * 60; // 1 month
 
     const fakeflix = await upgrades.deployProxy(
         Subscription,
@@ -69,6 +71,7 @@ async function deployFakeflix(
             "Fakeflix",
             "FLX",
             fakeflixContentSubscriptionPrice,
+            fakeFlixContentSubscriptionDuration,
             fakeflixMinRentPrice,
             fakeflixMinRentDuration,
             fakeflixAccountAddress,
@@ -90,7 +93,8 @@ async function deploySpooftify(
 ): Promise<Subscription> {
     const spooftifyContentSubscriptionPrice = 999; // $9,99
     const spooftifyMinRentPrice = 100; // $1
-    const spooftifyMinRentDuration = 60; // 1 minute
+    const spooftifyMinRentDuration = 120; // 2 minutes
+    const spooftifyContentSubscriptionDuration = 30 * 24 * 60 * 60; // 1 month
 
     const spooftify = await upgrades.deployProxy(
         Subscription,
@@ -98,6 +102,7 @@ async function deploySpooftify(
             "Spooftify",
             "SPF",
             spooftifyContentSubscriptionPrice,
+            spooftifyContentSubscriptionDuration,
             spooftifyMinRentPrice,
             spooftifyMinRentDuration,
             spooftifyAccountAddress,
@@ -162,12 +167,12 @@ async function rentTokenIds(fakeflix: Subscription, spooftify: Subscription, eth
     const connectedSpooftifyAccount0 = spooftify.connect(accounts[0]);
 
     // Account0 has tokenId 1 and 2 in spooftify
-    await connectedSpooftifyAccount0.offerForRent(spooftifyTokenId, spooftifyMinRentPrice + 100, spooftifyMinRentDuration + 10);
+    await connectedSpooftifyAccount0.offerForRent(spooftifyTokenId, spooftifyMinRentPrice + 100, spooftifyMinRentDuration);
 
     const connectedFakeflixAccount1 = fakeflix.connect(accounts[1]);
 
     // Account1 has token id 2 in fakeflix
-    await connectedFakeflixAccount1.offerForRent(fakeflixTokenId, fakeflixMinRentPrice + 100, fakeflixMinRentDuration + 10);
+    await connectedFakeflixAccount1.offerForRent(fakeflixTokenId, fakeflixMinRentPrice + 100, fakeflixMinRentDuration * 10);
 
     /* Rent tokens */
 

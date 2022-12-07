@@ -64,12 +64,13 @@ describe("Subscription smart contract test", () => {
         const [owner, netflix, marketplace, ...otherAccounts] = await ethers.getSigners();
 
         const contentSubscriptionPrice = 1549; // $15,49
+        const contentSubscriptionDuration = 30 * 24 * 60 * 60 ; // 1 month
         const minRentPrice = 100; // $1
         const minRentDuration = 60; // 1 minute
 
         const subscription = await upgrades.deployProxy(
             Subscription,
-            ["Fakeflix", "FLX", contentSubscriptionPrice, minRentPrice, minRentDuration, netflix.address, marketplace.address, chainlinkGoerliPriceFeedForEthUsdAddress],
+            ["Fakeflix", "FLX", contentSubscriptionPrice, contentSubscriptionDuration, minRentPrice, minRentDuration, netflix.address, marketplace.address, chainlinkGoerliPriceFeedForEthUsdAddress],
             { initializer: 'initialize', kind: 'transparent'}
         ) as Subscription;
 
