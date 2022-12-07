@@ -2,12 +2,19 @@ import {useEffect, useState} from "react";
 import {Contract, providers} from "ethers";
 import ConnectButton from "./common/ConnectButton";
 import {autoLogin} from "../utils/ProviderUtils";
-import {getSubscriptionContract} from "../utils/SubscriptionUtil";
+import {
+    getSubscriptionContract,
+    getBalanceOfOwnedTokens,
+    isChainIdSupported,
+    getOwnedTokensByUser, getBalanceOfUsedTokens, getUsedTokensByUser
+} from "../utils/SubscriptionUtil";
 function FakeflixApp() {
 
     const [provider, setProvider] = useState<providers.Web3Provider | null | undefined>(undefined);
 
     const [address, setAddress] = useState('');
+
+    const [chainId, setChainId] = useState<number | null>(null);
 
     const [subscription, setSubscription] = useState<Contract | null>(null);
 
@@ -23,10 +30,18 @@ function FakeflixApp() {
                 if (loggedAddress) {
                     setAddress(loggedAddress);
                 }
+
+                window.ethereum.on('accountsChanged', (accounts: any) => {
+                    setAddress(String(accounts[0]));
+                });
+
+                window.ethereum.on('chainChanged', () => {
+                    window.location.reload();
+                })
             } else {
                 setProvider(null);
             }
-        })()
+        })();
     }, []);
 
     useEffect(() => {
@@ -34,20 +49,31 @@ function FakeflixApp() {
             return;
         }
 
-        setSubscription(getSubscriptionContract(provider, String(process.env.REACT_APP_FAKEFLIX_CONTRACT_ADDRESS)));
+        (async () => {
+            setChainId((await provider.getNetwork()).chainId);
+            setSubscription(getSubscriptionContract(provider, String(process.env.REACT_APP_FAKEFLIX_CONTRACT_ADDRESS)));
+        })();
     }, [provider]);
 
     useEffect(() => {
-        console.log(subscription);
 
-        if (subscription === null) {
+        if (address === '') {
             return;
         }
 
-        (async () => {
-            console.log(await subscription.contentSubscriptionPrice());
-        })();
-    }, [subscription]);
+        if (subscription) {
+            (async () => {
+                const ownedBalances = await getBalanceOfOwnedTokens(subscription, address);
+                const ownedTokenIds = await getOwnedTokensByUser(subscription, address, ownedBalances.toBigInt());
+                console.log('Owned tokenIds', ownedTokenIds);
+
+                const usedBalances = await getBalanceOfUsedTokens(subscription, address);
+                const usedTokenIds = await  getUsedTokensByUser(subscription, address, usedBalances.toBigInt());
+                console.log('used tokenIds', usedTokenIds);
+            })();
+        }
+
+    }, [address, subscription]);
 
     if (provider === undefined) {
         return (
@@ -58,6 +84,12 @@ function FakeflixApp() {
     if (provider === null) {
         return (
             <div>Install metamask</div>
+        )
+    }
+
+    if (chainId && !isChainIdSupported(chainId)) {
+        return (
+            <div>Unsupported network</div>
         )
     }
 
