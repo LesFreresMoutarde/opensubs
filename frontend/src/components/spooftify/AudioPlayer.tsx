@@ -51,7 +51,7 @@ function AudioPlayer() {
         audio.play();
 
         setCurrentlyPlayingAudio(audio);
-    }, [item]);
+    }, [item, selectItem]);
 
     return (
         <div className="audio-player">
