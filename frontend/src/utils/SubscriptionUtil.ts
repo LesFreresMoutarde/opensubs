@@ -33,7 +33,7 @@ async function getUsedTokensByUser(contract: Contract, address: string, balance:
     return tokenIds;
 }
 
-async function isTokenValid(contract: Contract, tokenId: BigNumber, type: 'owned' | 'used'): Promise<boolean> {
+async function isContentAvailableFromToken(contract: Contract, tokenId: BigNumber, type: 'owned' | 'used'): Promise<boolean> {
     const subscriptionExpirationTimestamp = await contract.expiresAt(tokenId) * 1000;
 
     if (Date.now() >= subscriptionExpirationTimestamp) {
@@ -70,5 +70,5 @@ export {
     getBalanceOfUsedTokens,
     getUsedTokensByUser,
     getOwnedTokensByUser,
-    isTokenValid
+    isContentAvailableFromToken
 }
