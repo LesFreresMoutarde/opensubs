@@ -86,6 +86,27 @@ async function isTokenRentable(contract: Contract, tokenId: BigNumber, address: 
     return true;
 }
 
+async function isTokenReclaimable(contract: Contract, tokenId: BigNumber, address: string) {
+    const ownerOf = await contract.ownerOf(tokenId);
+
+    if (ethers.utils.getAddress(address) !== ownerOf) {
+        return false;
+    }
+
+    const userOf = await contract.userOf(tokenId);
+
+    if (userOf === ethers.constants.AddressZero){
+        return false;
+    }
+
+    const userExpires = await contract.userExpires(tokenId) * 1000;
+
+    if (Date.now() < userExpires) {
+        return false;
+    }
+
+    return true;
+}
 
 export {
     getSubscriptionContract,
