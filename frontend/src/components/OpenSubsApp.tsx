@@ -1,12 +1,12 @@
 import {useEffect, useState} from "react";
 import {Contract, providers} from "ethers";
 import ConnectButton from "./common/ConnectButton";
-import {autoLogin} from "../utils/ProviderUtils";
+import {autoLogin, isChainIdSupported} from "../utils/ProviderUtils";
 import {
     getSubscriptionContract,
     getBalanceOfOwnedTokens,
     getOwnedTokensByUser,
-    isChainIdSupported, getBalanceOfUsedTokens, getUsedTokensByUser
+    getBalanceOfUsedTokens, getUsedTokensByUser
 } from "../utils/SubscriptionUtil";
 
 type ContractDescription = {

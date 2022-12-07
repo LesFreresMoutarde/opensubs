@@ -33,10 +33,35 @@ async function getUsedTokensByUser(contract: Contract, address: string, balance:
     return tokenIds;
 }
 
-function isChainIdSupported(chainId: number): boolean {
-    const supportedNetworks = [5, 31337];
+async function isContentAvailableFromToken(contract: Contract, tokenId: BigNumber, type: 'owned' | 'used'): Promise<boolean> {
+    const subscriptionExpirationTimestamp = await contract.expiresAt(tokenId) * 1000;
 
-    return supportedNetworks.includes(chainId);
+    if (Date.now() >= subscriptionExpirationTimestamp) {
+        return false;
+    }
+
+    switch (type) {
+        case 'owned':
+            const user = await contract.userOf(tokenId);
+
+            if (user !== ethers.constants.AddressZero) {
+                return false;
+            }
+
+            break;
+        case 'used':
+            const rentExpiration = await contract.userExpires(tokenId) * 1000;
+
+            if (Date.now() >= rentExpiration) {
+                return false;
+            }
+
+            break;
+        default:
+            return false;
+    }
+
+    return true;
 }
 
 export {
@@ -44,6 +69,6 @@ export {
     getBalanceOfOwnedTokens,
     getBalanceOfUsedTokens,
     getUsedTokensByUser,
-    isChainIdSupported,
-    getOwnedTokensByUser
+    getOwnedTokensByUser,
+    isContentAvailableFromToken
 }

@@ -20,4 +20,10 @@ async function autoLogin(provider: providers.Web3Provider): Promise<string | nul
     return null;
 }
 
-export {connectWallet, autoLogin};
+function isChainIdSupported(chainId: number): boolean {
+    const supportedNetworks = [5, 31337];
+
+    return supportedNetworks.includes(chainId);
+}
+
+export {connectWallet, autoLogin, isChainIdSupported};
