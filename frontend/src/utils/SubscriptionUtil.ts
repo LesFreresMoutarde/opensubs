@@ -33,17 +33,10 @@ async function getUsedTokensByUser(contract: Contract, address: string, balance:
     return tokenIds;
 }
 
-function isChainIdSupported(chainId: number): boolean {
-    const supportedNetworks = [5, 31337];
-
-    return supportedNetworks.includes(chainId);
-}
-
 export {
     getSubscriptionContract,
     getBalanceOfOwnedTokens,
     getBalanceOfUsedTokens,
     getUsedTokensByUser,
-    isChainIdSupported,
     getOwnedTokensByUser
 }
