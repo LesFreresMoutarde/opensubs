@@ -1,6 +1,6 @@
 import {ethers, upgrades} from "hardhat";
 import {Subscription} from "../typechain-types";
-import {ContractFactory} from "ethers";
+import {BigNumber, ContractFactory} from "ethers";
 
 const chainlinkGoerliPriceFeedForEthUsdAddress: string = "0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e";
 
@@ -112,37 +112,14 @@ async function deploySpooftify(
     return spooftify;
 }
 
-async function main() {
-    const Subscription = await ethers.getContractFactory("Subscription");
-
-    const [
-        fakeflixAccount,
-        spooftifyAccount,
-        marketplaceAccount,
-        ...accounts
-    ] = await ethers.getSigners();
-
-    const fakeflix = await deployFakeflix(Subscription, fakeflixAccount.address, marketplaceAccount.address);
-
-    console.log(`Fakeflix deployed to ${fakeflix.address}`);
-
-    const spooftify = await deploySpooftify(Subscription, spooftifyAccount.address, marketplaceAccount.address);
-
-    console.log(`Spooftify deployed to ${spooftify.address}`);
-
-    const provider = ethers.getDefaultProvider("http://localhost:8545");
-
-    const priceFeed = new ethers.Contract(chainlinkGoerliPriceFeedForEthUsdAddress, aggregatorV3InterfaceABI, provider);
-
-    const roundData = await priceFeed.latestRoundData();
-
+async function mintFixturesTokens(fakeflix: Subscription, spooftify: Subscription, ethUsdRate: any, accounts: any) {
     const fakeflixContentSubscriptionPrice = await fakeflix.contentSubscriptionPrice();
 
-    const amountToSendToFakeflix = Math.floor(roundData.answer * fakeflixContentSubscriptionPrice / 100);
+    const amountToSendToFakeflix = Math.floor(ethUsdRate * fakeflixContentSubscriptionPrice / 100);
 
     const spooftifyContentSubscriptionPrice = await spooftify.contentSubscriptionPrice();
 
-    const amountToSendToSpooftify = Math.floor(roundData.answer * spooftifyContentSubscriptionPrice  / 100);
+    const amountToSendToSpooftify = Math.floor(ethUsdRate * spooftifyContentSubscriptionPrice  / 100);
 
     const fakeflixConnectedSubscription0 = fakeflix.connect(accounts[0]);
 
@@ -166,7 +143,10 @@ async function main() {
 
     await spooftifyConnectedSubscription1.mint({value: amountToSendToSpooftify});
 
-    console.log("accounts0", accounts[0].address);
+    // Account0 :  1 Fakeflix - 2 Sp
+    // Account1 : 1 FF - 1 SP
+    // Account2 : 1 FF - 0 SP
+}
 
     console.log("accounts1", accounts[1].address);
 
