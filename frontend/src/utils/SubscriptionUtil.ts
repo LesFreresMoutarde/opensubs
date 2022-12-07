@@ -23,6 +23,16 @@ async function getBalanceOfUsedTokens(contract: Contract, address: string): Prom
     return await contract.usedBalanceOf(address);
 }
 
+async function getUsedTokensByUser(contract: Contract, address: string, balance: bigint|number): Promise<BigNumber[]> {
+    const tokenIds: BigNumber[] = [];
+
+    for (let i = 0; i < balance; i++) {
+        tokenIds.push(await contract.tokenOfUserByIndex(address, i))
+    }
+
+    return tokenIds;
+}
+
 function isChainIdSupported(chainId: number): boolean {
     const supportedNetworks = [5, 31337];
 
