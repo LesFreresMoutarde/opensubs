@@ -24,6 +24,9 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
 
     CountersUpgradeable.Counter private _tokenIds;
 
+    // The duration of the subscription
+    uint32 public contentSubscriptionDuration;
+
     // Mapping from tokenId to subscription expiration timestamp
     mapping(uint256 => uint256) private _expirations;
 
@@ -46,6 +49,7 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
         string calldata name_,
         string calldata symbol_,
         uint32 contentSubscriptionPrice_,
+        uint32 contentSubscriptionDuration_,
         uint32 minRentPrice_,
         uint32 minRentDuration_,
         address contentProvider_,
@@ -56,6 +60,7 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
         Marketplace.__Marketplace_init(minRentPrice_, minRentDuration_);
 
         contentSubscriptionPrice = contentSubscriptionPrice_;
+        contentSubscriptionDuration = contentSubscriptionDuration_;
         _contentProvider = contentProvider_;
         _marketplaceProvider = marketplaceProvider_;
         priceFeed = AggregatorV3Interface(priceFeedAddress_);
@@ -85,7 +90,7 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
 
         uint256 tokenId = _tokenIds.current();
 
-        _expirations[tokenId] = block.timestamp + 30 days;
+        _expirations[tokenId] = block.timestamp + contentSubscriptionDuration;
 
         _safeMint(msg.sender, tokenId);
 
