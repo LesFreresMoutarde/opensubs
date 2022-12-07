@@ -19,10 +19,21 @@ async function getOwnedTokensByUser(contract: Contract, address: string, balance
     return tokenIds;
 }
 
+async function getBalanceOfUsedTokens(contract: Contract, address: string): Promise<BigNumber> {
+    return await contract.usedBalanceOf(address);
+}
+
 function isChainIdSupported(chainId: number): boolean {
     const supportedNetworks = [5, 31337];
 
     return supportedNetworks.includes(chainId);
 }
 
-export {getSubscriptionContract, getBalanceOfOwnedTokens, isChainIdSupported, getOwnedTokensByUser}
+export {
+    getSubscriptionContract,
+    getBalanceOfOwnedTokens,
+    getBalanceOfUsedTokens,
+    getUsedTokensByUser,
+    isChainIdSupported,
+    getOwnedTokensByUser
+}
