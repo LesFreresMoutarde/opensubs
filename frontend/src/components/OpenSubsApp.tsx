@@ -6,7 +6,7 @@ import {
     getSubscriptionContract,
     getBalanceOfOwnedTokens,
     getOwnedTokensByUser,
-    isChainIdSupported
+    isChainIdSupported, getBalanceOfUsedTokens, getUsedTokensByUser
 } from "../utils/SubscriptionUtil";
 
 type ContractDescription = {
@@ -101,12 +101,21 @@ function OpenSubsApp() {
                 const tokenIds: any = {};
 
                 for (const [serviceName, contractDescription] of Object.entries(contracts)) {
-                    balances[serviceName] = await getBalanceOfOwnedTokens(contractDescription.contract, address);
+                    balances[serviceName] = {owned: [], used: []};
+                    tokenIds[serviceName]= {owned: [], used: []};
 
-                    tokenIds[serviceName] = await getOwnedTokensByUser(
+                    balances[serviceName].owned = await getBalanceOfOwnedTokens(contractDescription.contract, address);
+                    tokenIds[serviceName].owned = await getOwnedTokensByUser(
                         contractDescription.contract,
                         address,
-                        balances[serviceName].toBigInt()
+                        balances[serviceName].owned.toBigInt()
+                    );
+
+                    balances[serviceName].used = await getBalanceOfUsedTokens(contractDescription.contract, address);
+                    tokenIds[serviceName].used = await getUsedTokensByUser(
+                        contractDescription.contract,
+                        address,
+                        balances[serviceName].used.toBigInt()
                     );
                 }
 
