@@ -92,11 +92,6 @@ function SpooftifyApp() {
         })();
     }, []);
 
-    // TODO initialize content only once we're sure user has a valid subscription ?
-    useEffect(() => {
-        setAppContent(CONTENT_JSON);
-    }, []);
-
     useEffect(() => {
         if (!provider) {
             return;
@@ -142,6 +137,15 @@ function SpooftifyApp() {
         })();
 
     }, [address, subscription]);
+
+    useEffect(() => {
+        if (isContentAvailable) {
+            setAppContent(CONTENT_JSON);
+            return;
+        }
+
+        setAppContent([]);
+    }, [isContentAvailable]);
 
     const selectItem = useCallback((itemId: number | null) => {
         if (itemId === null) {
