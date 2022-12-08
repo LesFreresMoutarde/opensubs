@@ -1,3 +1,4 @@
+import "../css/opensubs.css";
 import {useEffect, useState} from "react";
 import {Contract, providers} from "ethers";
 import ConnectButton from "./common/ConnectButton";
@@ -8,6 +9,7 @@ import {
     getOwnedTokensByUser,
     getBalanceOfUsedTokens, getUsedTokensByUser, isTokenRentable, isTokenReclaimable
 } from "../utils/SubscriptionUtil";
+import OpenSubsHeader from "./openSubs/OpenSubsHeader";
 
 type ContractDescription = {
     /**
@@ -169,9 +171,10 @@ function OpenSubsApp() {
 
     return (
         <div>
-            <p>OpenSubs !! !</p>
-            <p>{address}</p>
-            <ConnectButton changeAddress={setAddress} provider={provider}/>
+            <OpenSubsHeader address={address}
+                            changeAddress={setAddress}
+                            provider={provider}
+            />
         </div>
     )
 }
