@@ -80,6 +80,11 @@ function SpooftifyApp() {
                 }
 
                 window.ethereum.on('accountsChanged', (accounts: any) => {
+                    if (accounts.length === 0) {
+                        setAddress('');
+                        return;
+                    }
+
                     setAddress(String(accounts[0]));
                 });
 
