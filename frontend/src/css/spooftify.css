@@ -2,6 +2,48 @@ body {
     background-color: #121212;
 }
 
+.connect-wallet-button {
+    background-color: #1ed760;
+    color: #000;
+    font-size: 1.1em;
+    font-weight: 700;
+    padding: 0.5em 1em;
+    border-radius: 0.5em;
+
+    transition: background-color 0.1s ease-out;
+}
+
+.connect-wallet-button:hover {
+    cursor: pointer;
+    background-color: #fff;
+}
+
+.flex-spacer {
+    flex: 1;
+}
+
+.app-header {
+    display: flex;
+    height: 60px;
+    padding: 0.5em
+}
+
+.header-logo {
+    display: flex;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+}
+
+.header-address {
+    border: 3px solid #1ed760;
+    font-weight: 700;
+    border-radius: 2em;
+    padding: 0.25em 0.75em;
+}
+
 .content-list {
     margin-bottom: 85px;
 }
