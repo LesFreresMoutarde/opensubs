@@ -5,7 +5,7 @@ import {autoLogin, isChainIdSupported} from "../utils/ProviderUtils";
 import {
     getSubscriptionContract,
     getBalanceOfOwnedTokens,
-    getOwnedTokensByUser, getBalanceOfUsedTokens, getUsedTokensByUser, isContentAvailableFromToken
+    getOwnedTokensByUser, getBalanceOfUsedTokens, getUsedTokensByUser, isContentAvailableFromToken, mintToken
 } from "../utils/SubscriptionUtil";
 function FakeflixApp() {
 
@@ -87,6 +87,9 @@ function FakeflixApp() {
             }
 
             setIsContentAvailable(false);
+
+            // Test
+            await mintToken(subscription, provider!);
         })();
 
     }, [address, subscription]);

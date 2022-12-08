@@ -75,7 +75,10 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
 
         assert(exchangeRateFromChainlink > 0);
 
-        uint256 mintingPrice = (uint256(exchangeRateFromChainlink) * contentSubscriptionPrice) / 100;
+        uint8 decimals = priceFeed.decimals();
+
+//        uint256 mintingPrice = (uint256(exchangeRateFromChainlink) * contentSubscriptionPrice) / 100;
+        uint256 mintingPrice = ((contentSubscriptionPrice / 100) * 1 ether) / uint256(exchangeRateFromChainlink) * 10 ** decimals;
 
         uint256 minMintingPrice = mintingPrice * (1000 - _allowedSlippage) / 1000;
         uint256 maxMintingPrice = mintingPrice * (1000 + _allowedSlippage) / 1000;
@@ -154,7 +157,10 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
 
         assert(exchangeRateFromChainlink > 0);
 
-        uint256 rentingPrice = (uint256(exchangeRateFromChainlink) * rentingConditions.price) / 100;
+        uint8 decimals = priceFeed.decimals();
+
+//        uint256 rentingPrice = (uint256(exchangeRateFromChainlink) * rentingConditions.price) / 100;
+        uint256 rentingPrice = ((rentingConditions.price / 100) * 1 ether) / uint256(exchangeRateFromChainlink) * 10 ** decimals;
 
         uint256 minRentingPrice = rentingPrice * (1000 - _allowedSlippage) / 1000;
         uint256 maxRentingPrice = rentingPrice * (1000 + _allowedSlippage) / 1000;
