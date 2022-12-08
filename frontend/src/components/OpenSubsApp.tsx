@@ -43,6 +43,19 @@ function OpenSubsApp() {
     const [contracts, setContracts] = useState<ContractsList | null>(null);
 
     useEffect(() => {
+        const initialBackgroundColor = document.body.style.backgroundColor;
+        const initialColor = document.body.style.color;
+
+        document.body.style.backgroundColor = "#f8f8f8";
+        document.body.style.color = "#080808";
+
+        return (() => {
+            document.body.style.backgroundColor = initialBackgroundColor;
+            document.body.style.color = initialColor;
+        });
+    });
+
+    useEffect(() => {
         (async () => {
             if (window.ethereum) {
                 const web3Provider = new providers.Web3Provider(window.ethereum);
