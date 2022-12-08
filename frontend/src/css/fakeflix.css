@@ -40,6 +40,51 @@ body {
     padding: 0.25em 0.75em;
 }
 
+.video-player-container {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: flex;
+
+    background-color: #000000cc;
+
+    align-items: center;
+    justify-content: center;
+}
+
+.video-player-container video {
+    height: 80vh
+}
+
+.video-player-container .inner {
+    display: flex;
+    flex-direction: column;
+}
+
+.video-player-container .close-button-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 1em;
+}
+
+.video-player-container .close-button-container button {
+    background-color: #dc1a28;
+    color: #000;
+    font-size: 1em;
+    font-weight: 700;
+    padding: 0.5em 1em;
+    border-radius: 0.5em;
+
+    transition: background-color 0.1s ease-out;
+}
+
+.video-player-container .close-button-container button:hover {
+    cursor: pointer;
+    background-color: #fff;
+}
+
 .movies-list {
     display: flex;
     flex-wrap: wrap;
