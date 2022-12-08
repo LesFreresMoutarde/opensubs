@@ -10,9 +10,9 @@ interface SpooftifyHeaderProps {
 
 function SpooftifyHeader({address, changeAddress, provider}: SpooftifyHeaderProps) {
     return (
-        <header className="spooftify-app-header">
+        <header className="fakeflix-app-header">
             <div className="header-logo">
-                <img src="/spooftify/img/spooftify-logo.png" alt="Logo"/>
+                <img src="/fakeflix/img/fakeflix-logo.png" alt="Logo"/>
             </div>
             <div className="flex-spacer"/>
             <div className="header-right">

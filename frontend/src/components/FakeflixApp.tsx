@@ -7,6 +7,9 @@ import {
     getBalanceOfOwnedTokens,
     getOwnedTokensByUser, getBalanceOfUsedTokens, getUsedTokensByUser, isContentAvailableFromToken
 } from "../utils/SubscriptionUtil";
+import FakeflixHeader from "./fakeflix/FakeflixHeader";
+import "../css/fakeflix.css";
+
 function FakeflixApp() {
 
     const [provider, setProvider] = useState<providers.Web3Provider | null | undefined>(undefined);
@@ -111,9 +114,10 @@ function FakeflixApp() {
 
     return (
         <div>
-            <p>Fakeflix ! tudum</p>
-            <p>{address}</p>
-            <ConnectButton changeAddress={setAddress} provider={provider}/>
+            <FakeflixHeader address={address}
+                            changeAddress={setAddress}
+                            provider={provider}
+            />
 
             {address &&
             <>

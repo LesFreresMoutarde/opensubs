@@ -1,0 +1,41 @@
+body {
+    background-color: #121212;
+}
+
+.fakeflix-app-header .connect-wallet-button {
+    background-color: #dc1a28;
+    color: #000;
+    font-size: 1.1em;
+    font-weight: 700;
+    padding: 0.5em 1em;
+    border-radius: 0.5em;
+
+    transition: background-color 0.1s ease-out;
+}
+
+.fakeflix-app-header .connect-wallet-button:hover {
+    cursor: pointer;
+    background-color: #fff;
+}
+
+.fakeflix-app-header {
+    display: flex;
+    height: 60px;
+    padding: 0.5em
+}
+
+.fakeflix-app-header .header-logo {
+    display: flex;
+}
+
+.fakeflix-app-header .header-right {
+    display: flex;
+    align-items: center;
+}
+
+.fakeflix-app-header .header-address {
+    border: 3px solid #dc1a28;
+    font-weight: 700;
+    border-radius: 2em;
+    padding: 0.25em 0.75em;
+}
