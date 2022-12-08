@@ -39,3 +39,48 @@ body {
     border-radius: 2em;
     padding: 0.25em 0.75em;
 }
+
+.movies-list {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 3em;
+    overflow: hidden;
+}
+
+.movies-list .movie {
+    width: 25%;
+    padding: 1em;
+    box-sizing: border-box;
+}
+
+.movie-cover {
+    display: flex;
+}
+
+.movie-cover img {
+    width: 100%;
+    aspect-ratio: 16/9;
+
+    transition: 0.1s ease-out transform;
+}
+
+.movie-cover img:hover {
+    cursor: pointer;
+    transform: scale(1.1);
+}
+
+.movie-data {
+    margin-top: 0.75em
+}
+
+.movie-data .title {
+    font-size: 1.15em;
+}
+
+.movie-data .director {
+    color: #ccc;
+}
+
+.movie-data .actors {
+    color: #999;
+}

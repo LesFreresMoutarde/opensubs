@@ -10,6 +10,7 @@ import FakeflixHeader from "./fakeflix/FakeflixHeader";
 import "../css/fakeflix.css";
 
 import CONTENT_JSON from "../apps-content/fakeflix.json";
+import FakeflixContent from "./fakeflix/FakeflixContent";
 
 type ContentItem = {
     /**
@@ -201,7 +202,7 @@ function FakeflixApp() {
                     selectedItem,
                     selectItem,
                 }}>
-
+                    <FakeflixContent/>
                 </fakeflixAppContext.Provider>
                 }
             </>
