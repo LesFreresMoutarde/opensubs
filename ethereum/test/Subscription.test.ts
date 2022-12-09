@@ -67,10 +67,11 @@ describe("Subscription smart contract test", () => {
         const contentSubscriptionDuration = 30 * 24 * 60 * 60 ; // 1 month
         const minRentPrice = 100; // $1
         const minRentDuration = 60; // 1 minute
+        const baseUri = 'https://firebasestorage.googleapis.com/v0/b/alyra-certification.appspot.com/o/metadata%2Ffakeflix%2F/'
 
         const subscription = await upgrades.deployProxy(
             Subscription,
-            ["Fakeflix", "FLX", contentSubscriptionPrice, contentSubscriptionDuration, minRentPrice, minRentDuration, netflix.address, marketplace.address, chainlinkGoerliPriceFeedForEthUsdAddress],
+            ["Fakeflix", "FLX", contentSubscriptionPrice, contentSubscriptionDuration, minRentPrice, minRentDuration, netflix.address, marketplace.address, chainlinkGoerliPriceFeedForEthUsdAddress, baseUri],
             { initializer: 'initialize', kind: 'transparent'}
         ) as Subscription;
 
@@ -102,6 +103,9 @@ describe("Subscription smart contract test", () => {
             await expect(connectedSubscription.mint({value: BigNumber.from(amountToSend)}))
                 .to.emit(connectedSubscription, "Transfer")
                 .withArgs(ethers.constants.AddressZero, otherAccounts[0].address, 1);
+
+            expect(await connectedSubscription.tokenURI(1))
+                .to.equal('https://firebasestorage.googleapis.com/v0/b/alyra-certification.appspot.com/o/metadata%2Ffakeflix%2F/1.json?alt=media')
 
             await expect(connectedSubscription.mint({value: BigNumber.from(amountToSend)}))
                 .to.emit(connectedSubscription, "Transfer")

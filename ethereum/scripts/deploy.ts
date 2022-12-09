@@ -64,6 +64,7 @@ async function deployFakeflix(
     const fakeflixMinRentPrice = 100; // $1
     const fakeflixMinRentDuration = 120; // 2 minutes
     const fakeFlixContentSubscriptionDuration = 30 * 24 * 60 * 60; // 1 month
+    const fakeFlixBaseUri = 'https://firebasestorage.googleapis.com/v0/b/alyra-certification.appspot.com/o/metadata%2Ffakeflix%2F/'
 
     const fakeflix = await upgrades.deployProxy(
         Subscription,
@@ -77,6 +78,7 @@ async function deployFakeflix(
             fakeflixAccountAddress,
             marketplaceAccountAddress,
             chainlinkGoerliPriceFeedForEthUsdAddress,
+            fakeFlixBaseUri
         ],
         {initializer: "initialize", kind: "transparent"}
     ) as Subscription;
@@ -95,6 +97,7 @@ async function deploySpooftify(
     const spooftifyMinRentPrice = 100; // $1
     const spooftifyMinRentDuration = 120; // 2 minutes
     const spooftifyContentSubscriptionDuration = 30 * 24 * 60 * 60; // 1 month
+    const spooftifyBaseUri = 'https://firebasestorage.googleapis.com/v0/b/alyra-certification.appspot.com/o/metadata%2Fspooftify%2F';
 
     const spooftify = await upgrades.deployProxy(
         Subscription,
@@ -108,6 +111,7 @@ async function deploySpooftify(
             spooftifyAccountAddress,
             marketplaceAccountAddress,
             chainlinkGoerliPriceFeedForEthUsdAddress,
+            spooftifyBaseUri
         ],
         {initializer: "initialize", kind: "transparent"}
     ) as Subscription;
