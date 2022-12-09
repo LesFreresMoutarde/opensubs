@@ -1,5 +1,5 @@
 import Swal from 'sweetalert2';
-import {getStorage, ref, uploadString} from "firebase/storage";
+import {getStorage, getDownloadURL, ref, uploadString} from "firebase/storage";
 
 function shortenAddress(address: string, firstCharactersCount: number = 3, lastCharactersCount: number = 3): string {
     if (!address.startsWith("0x")) {
@@ -69,4 +69,12 @@ async function pushMetadata(tokenId: number, platform: 'spooftify' | 'fakeflix')
     await uploadString(metadataRef, JSON.stringify(metadata));
 }
 
-export {shortenAddress, fireToast, pushMetadata}
+async function getMetadata(tokenId: number, platform: 'spooftify' | 'fakeflix') {
+    const storage = getStorage();
+
+    const metadataRef = ref(storage, `metadata/${platform}/${tokenId}.json`);
+
+    await getDownloadURL(metadataRef);
+}
+
+export {shortenAddress, fireToast, pushMetadata, getMetadata}
