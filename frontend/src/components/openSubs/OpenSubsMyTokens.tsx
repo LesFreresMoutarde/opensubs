@@ -88,7 +88,42 @@ function OpenSubsMyTokens() {
 
 
     return (
-        <p>My tokens</p>
+        <div className="my-tokens-page">
+            <h2>Owned</h2>
+
+            <ul>
+                {ownedTokens.map((token, index) => {
+                    const status: TokenStatus = ((): TokenStatus => {
+                        if (token.isReclaimable) {
+                            return "reclaimable";
+                        }
+
+                        if (token.isRentable) {
+                            return "owned";
+                        }
+
+                        return "rented";
+                    })();
+
+                    return (
+                        <li key={index}>{`${token.service}#${token.tokenId} (${status})`}</li>
+                    );
+                })}
+            </ul>
+
+
+            <h2>Borrowed</h2>
+
+            <ul>
+                {usedTokens.map((token, index) => {
+                    const status: TokenStatus = "borrowed";
+
+                    return (
+                        <li key={index}>{`${token.service}#${token.tokenId} (${status})`}</li>
+                    );
+                })}
+            </ul>
+        </div>
     );
 }
 
