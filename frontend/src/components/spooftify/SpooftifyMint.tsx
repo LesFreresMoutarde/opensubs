@@ -1,6 +1,6 @@
 import {useCallback, useContext, useEffect, useState} from "react";
 import {ethers} from "ethers";
-import {fireToast, pushMetadata} from "../../utils/Util";
+import {fireToast, getMetadata, pushMetadata} from "../../utils/Util";
 import {mintToken} from "../../utils/SubscriptionUtil";
 import LoadingModal from "../common/LoadingModal";
 import {spooftifyAppContext} from "../SpooftifyApp";
@@ -16,13 +16,17 @@ function SpooftifyMint() {
             return;
         }
 
-        subscription.on('Transfer', (from, to, tokenId) => {
+        subscription.on('Transfer', async (from, to, tokenId) => {
             if (to === ethers.utils.getAddress(address)) {
                 setShowModal(false);
 
                 fireToast('success', 'You have successfully minted a subscription NFT');
 
-                pushMetadata(tokenId, 'spooftify');
+                try {
+                    await getMetadata(tokenId, 'spooftify');
+                } catch (error) {
+                    await pushMetadata(tokenId, 'spooftify');
+                }
             }
         });
     }, [subscription]);
