@@ -46,6 +46,8 @@ type SpooftifyAppContext = {
     content: AppContent;
     selectedItem: SelectedItem | null;
     selectItem: (id: number | null) => any;
+    subscription: Contract | null;
+    provider: providers.Web3Provider | null;
 }
 
 export const spooftifyAppContext = createContext<SpooftifyAppContext>({
@@ -54,6 +56,8 @@ export const spooftifyAppContext = createContext<SpooftifyAppContext>({
     content: [],
     selectedItem: null,
     selectItem: () => {},
+    subscription: null,
+    provider: null
 });
 
 function SpooftifyApp() {
@@ -198,6 +202,8 @@ function SpooftifyApp() {
                 content: appContent,
                 selectedItem,
                 selectItem,
+                subscription,
+                provider
             }}>
                 <Routes>
                     <Route path="/" element={<SpooftifyHome/>}/>

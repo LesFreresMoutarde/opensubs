@@ -4,7 +4,7 @@ import {autoLogin, isChainIdSupported} from "../utils/ProviderUtils";
 import {
     getSubscriptionContract,
     getBalanceOfOwnedTokens,
-    getOwnedTokensByUser, getBalanceOfUsedTokens, getUsedTokensByUser, isContentAvailableFromToken
+    getOwnedTokensByUser, getBalanceOfUsedTokens, getUsedTokensByUser, isContentAvailableFromToken, mintToken
 } from "../utils/SubscriptionUtil";
 import FakeflixHeader from "./fakeflix/FakeflixHeader";
 import "../css/fakeflix.css";
@@ -51,6 +51,8 @@ type FakeflixAppContext = {
     content: AppContent;
     selectedItem: SelectedItem | null;
     selectItem: (id: number | null) => any;
+    subscription: Contract | null;
+    provider: providers.Web3Provider | null;
 }
 
 export const fakeflixAppContext = createContext<FakeflixAppContext>({
@@ -59,6 +61,8 @@ export const fakeflixAppContext = createContext<FakeflixAppContext>({
     content: [],
     selectedItem: null,
     selectItem: () => {},
+    subscription: null,
+    provider: null
 });
 
 function FakeflixApp() {
@@ -203,11 +207,12 @@ function FakeflixApp() {
                 content: appContent,
                 selectedItem,
                 selectItem,
+                subscription,
+                provider
             }}>
                 <Routes>
                     <Route path="/" element={<FakeflixHome/>}/>
                     <Route path="/mint" element={<FakeflixMint/>}/>
-
                     <Route path="*" element={<Navigate to="/fakeflix" replace/>}/>
                 </Routes>
             </fakeflixAppContext.Provider>

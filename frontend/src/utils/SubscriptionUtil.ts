@@ -1,5 +1,7 @@
 import {BigNumber, Contract, ethers, providers} from "ethers";
 import SUBSCRIPTION_JSON from "../artifacts/contracts/Subscription.sol/Subscription.json";
+import {getChainlinkEthUsdPriceFeed} from "./OracleUtils";
+import {parseEther} from "ethers/lib/utils";
 
 function getSubscriptionContract(provider: providers.Web3Provider, address: string): Contract {
     return new ethers.Contract(address, SUBSCRIPTION_JSON.abi, provider.getSigner());
@@ -108,6 +110,18 @@ async function isTokenReclaimable(contract: Contract, tokenId: BigNumber, addres
     return true;
 }
 
+async function mintToken(contract: Contract, provider: providers.Web3Provider) {
+    const contentSubscriptionPrice = await contract.contentSubscriptionPrice();
+
+    const {rate, decimals} = await getChainlinkEthUsdPriceFeed(provider)
+
+    const rateWithDecimalsBN = rate.div(BigNumber.from((10 ** decimals).toString()));
+
+    const amountToSend = BigNumber.from(contentSubscriptionPrice).mul(BigNumber.from((10 ** 18).toString())).div(rateWithDecimalsBN).div(100);
+
+    await contract.mint({value: amountToSend});
+}
+
 export {
     getSubscriptionContract,
     getBalanceOfOwnedTokens,
@@ -116,5 +130,6 @@ export {
     getOwnedTokensByUser,
     isContentAvailableFromToken,
     isTokenRentable,
-    isTokenReclaimable
+    isTokenReclaimable,
+    mintToken
 }

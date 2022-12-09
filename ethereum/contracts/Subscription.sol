@@ -45,6 +45,8 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
     // Mapping from address to balance in wei
     mapping(address => uint256) public balances;
 
+    string private _baseUri;
+
     function initialize(
         string calldata name_,
         string calldata symbol_,
@@ -54,7 +56,8 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
         uint32 minRentDuration_,
         address contentProvider_,
         address marketplaceProvider_,
-        address priceFeedAddress_
+        address priceFeedAddress_,
+        string memory baseUri_
     ) public initializer {
         ERC4907EnumerableUpgradeable.__ERC4907Enumerable_init(name_, symbol_);
         Marketplace.__Marketplace_init(minRentPrice_, minRentDuration_);
@@ -65,8 +68,23 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
         _marketplaceProvider = marketplaceProvider_;
         priceFeed = AggregatorV3Interface(priceFeedAddress_);
         _allowedSlippage = 5;
+        _baseUri = baseUri_;
 
         _tokenIds.increment();
+    }
+
+    /**
+     * @dev See {ERC721Upgradeable-_baseUri}
+     */
+    function _baseURI() internal view override returns (string memory) {
+        return _baseUri;
+    }
+
+    /**
+     * @dev See {IERC721Metadata-tokenURI}.
+     */
+    function tokenURI(uint256 tokenId) public view override returns (string memory) {
+        return string(abi.encodePacked(super.tokenURI(tokenId),'.json?alt=media'));
     }
 
     function mint() public payable {
@@ -75,7 +93,9 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
 
         assert(exchangeRateFromChainlink > 0);
 
-        uint256 mintingPrice = (uint256(exchangeRateFromChainlink) * contentSubscriptionPrice) / 100;
+        uint8 decimals = priceFeed.decimals();
+
+        uint256 mintingPrice = ((uint256(contentSubscriptionPrice) * 1 ether) / (uint256(exchangeRateFromChainlink) / (10 ** decimals))) / 100;
 
         uint256 minMintingPrice = mintingPrice * (1000 - _allowedSlippage) / 1000;
         uint256 maxMintingPrice = mintingPrice * (1000 + _allowedSlippage) / 1000;
@@ -154,7 +174,9 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
 
         assert(exchangeRateFromChainlink > 0);
 
-        uint256 rentingPrice = (uint256(exchangeRateFromChainlink) * rentingConditions.price) / 100;
+        uint8 decimals = priceFeed.decimals();
+
+        uint256 rentingPrice = ((uint256(rentingConditions.price) * 1 ether) / (uint256(exchangeRateFromChainlink) / 10 ** decimals)) / 100;
 
         uint256 minRentingPrice = rentingPrice * (1000 - _allowedSlippage) / 1000;
         uint256 maxRentingPrice = rentingPrice * (1000 + _allowedSlippage) / 1000;

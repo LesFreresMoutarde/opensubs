@@ -64,6 +64,7 @@ async function deployFakeflix(
     const fakeflixMinRentPrice = 100; // $1
     const fakeflixMinRentDuration = 120; // 2 minutes
     const fakeFlixContentSubscriptionDuration = 30 * 24 * 60 * 60; // 1 month
+    const fakeFlixBaseUri = 'https://firebasestorage.googleapis.com/v0/b/alyra-certification.appspot.com/o/metadata%2Ffakeflix%2F/'
 
     const fakeflix = await upgrades.deployProxy(
         Subscription,
@@ -77,6 +78,7 @@ async function deployFakeflix(
             fakeflixAccountAddress,
             marketplaceAccountAddress,
             chainlinkGoerliPriceFeedForEthUsdAddress,
+            fakeFlixBaseUri
         ],
         {initializer: "initialize", kind: "transparent"}
     ) as Subscription;
@@ -95,6 +97,7 @@ async function deploySpooftify(
     const spooftifyMinRentPrice = 100; // $1
     const spooftifyMinRentDuration = 120; // 2 minutes
     const spooftifyContentSubscriptionDuration = 30 * 24 * 60 * 60; // 1 month
+    const spooftifyBaseUri = 'https://firebasestorage.googleapis.com/v0/b/alyra-certification.appspot.com/o/metadata%2Fspooftify%2F';
 
     const spooftify = await upgrades.deployProxy(
         Subscription,
@@ -108,6 +111,7 @@ async function deploySpooftify(
             spooftifyAccountAddress,
             marketplaceAccountAddress,
             chainlinkGoerliPriceFeedForEthUsdAddress,
+            spooftifyBaseUri
         ],
         {initializer: "initialize", kind: "transparent"}
     ) as Subscription;
@@ -117,14 +121,23 @@ async function deploySpooftify(
     return spooftify;
 }
 
-async function mintFixturesTokens(fakeflix: Subscription, spooftify: Subscription, ethUsdRate: any, accounts: any) {
+async function mintFixturesTokens(fakeflix: Subscription, spooftify: Subscription, {rate, decimals}: {rate: BigNumber, decimals: number}, accounts: any) {
     const fakeflixContentSubscriptionPrice = await fakeflix.contentSubscriptionPrice();
 
-    const amountToSendToFakeflix = Math.floor(ethUsdRate * fakeflixContentSubscriptionPrice / 100);
+    const rateWithDecimalsBN = rate.div(BigNumber.from((10 ** decimals).toString()));
+
+    const amountToSendToFakeflix =  BigNumber.from(fakeflixContentSubscriptionPrice)
+        .mul(BigNumber.from((10**18).toString()))
+        .div(rateWithDecimalsBN)
+        .div(100);
+
 
     const spooftifyContentSubscriptionPrice = await spooftify.contentSubscriptionPrice();
 
-    const amountToSendToSpooftify = Math.floor(ethUsdRate * spooftifyContentSubscriptionPrice  / 100);
+    const amountToSendToSpooftify = BigNumber.from(spooftifyContentSubscriptionPrice)
+        .mul(BigNumber.from((10**18).toString()))
+        .div(rateWithDecimalsBN)
+        .div(100);
 
     const fakeflixConnectedSubscription0 = fakeflix.connect(accounts[0]);
 
@@ -153,7 +166,7 @@ async function mintFixturesTokens(fakeflix: Subscription, spooftify: Subscriptio
     // Account2 : 1 FF - 0 SP
 }
 
-async function rentTokenIds(fakeflix: Subscription, spooftify: Subscription, ethUsdRate: any, accounts: any) {
+async function rentTokenIds(fakeflix: Subscription, spooftify: Subscription, {rate, decimals}: {rate: BigNumber, decimals: number}, accounts: any) {
     const fakeflixMinRentPrice = await fakeflix.minRentPrice();
     const spooftifyMinRentPrice = await spooftify.minRentPrice();
 
@@ -175,11 +188,15 @@ async function rentTokenIds(fakeflix: Subscription, spooftify: Subscription, eth
     await connectedFakeflixAccount1.offerForRent(fakeflixTokenId, fakeflixMinRentPrice + 100, fakeflixMinRentDuration * 10);
 
     /* Rent tokens */
+    const rateWithDecimalsBN = rate.div(BigNumber.from((10 ** decimals).toString()));
 
     // Spooftify token
     const spooftifyToken1RentingConditions = await spooftify.getRentingConditions(spooftifyTokenId);
 
-    const amountToSendForSpooftifyToken1 = Math.floor(ethUsdRate * spooftifyToken1RentingConditions.price / 100);
+    const amountToSendForSpooftifyToken1 = BigNumber.from(spooftifyToken1RentingConditions.price)
+        .mul(BigNumber.from((10**18).toString()))
+        .div(rateWithDecimalsBN)
+        .div(100);
 
     const connectedSpooftifyAccount3 = spooftify.connect(accounts[3]);
 
@@ -188,7 +205,10 @@ async function rentTokenIds(fakeflix: Subscription, spooftify: Subscription, eth
     // Fakeflix token
     const fakeflixToken2RentingConditions = await fakeflix.getRentingConditions(fakeflixTokenId);
 
-    const amountToSendForFakeflixToken2 = Math.floor(ethUsdRate * fakeflixToken2RentingConditions.price / 100);
+    const amountToSendForFakeflixToken2 = BigNumber.from(fakeflixToken2RentingConditions.price)
+        .mul(BigNumber.from((10**18).toString()))
+        .div(rateWithDecimalsBN)
+        .div(100);
 
     const connectedFakeflixAccount4 = fakeflix.connect(accounts[4]);
 
@@ -227,9 +247,11 @@ async function main() {
 
     const roundData = await priceFeed.latestRoundData();
 
-    await mintFixturesTokens(fakeflix, spooftify, roundData.answer, accounts);
+    const decimals = await priceFeed.decimals();
 
-    await rentTokenIds(fakeflix, spooftify, roundData.answer, accounts);
+    await mintFixturesTokens(fakeflix, spooftify, {rate:roundData.answer, decimals}, accounts);
+
+    await rentTokenIds(fakeflix, spooftify, {rate: roundData.answer, decimals}, accounts);
 
     console.log("accounts0", accounts[0].address);
     console.log("accounts1", accounts[1].address);
