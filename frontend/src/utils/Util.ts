@@ -1,5 +1,6 @@
 import Swal from 'sweetalert2';
 import {getStorage, getDownloadURL, ref, uploadString} from "firebase/storage";
+import {ethers} from "ethers";
 
 function shortenAddress(address: string, firstCharactersCount: number = 3, lastCharactersCount: number = 3): string {
     if (!address.startsWith("0x")) {
@@ -10,6 +11,10 @@ function shortenAddress(address: string, firstCharactersCount: number = 3, lastC
     const lastCharacters = address.slice(lastCharactersCount * -1);
 
     return firstCharacters + "…" + lastCharacters;
+}
+
+function areAdressesEqual(address1: string, address2: string): boolean {
+    return ethers.utils.getAddress(address1) === ethers.utils.getAddress(address2);
 }
 
 type toastType = "success" | "error" | "warning"
@@ -39,6 +44,7 @@ interface SubscriptionMetadata {
     "level": string;
     "content_url": string;
 }
+
 async function pushMetadata(tokenId: number, platform: 'spooftify' | 'fakeflix') {
     const mappingData = {
         fakeflix: {
@@ -77,4 +83,4 @@ async function getMetadata(tokenId: number, platform: 'spooftify' | 'fakeflix') 
     await getDownloadURL(metadataRef);
 }
 
-export {shortenAddress, fireToast, pushMetadata, getMetadata}
+export {shortenAddress, areAdressesEqual, fireToast, pushMetadata, getMetadata}
