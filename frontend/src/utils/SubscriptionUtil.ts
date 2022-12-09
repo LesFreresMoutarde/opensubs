@@ -119,16 +119,19 @@ async function mintToken(contract: Contract, provider: providers.Web3Provider) {
     // Récupérer le rate de chainlink
     const {rate, decimals} = await getChainlinkEthUsdPriceFeed(provider)
 
+    console.log("rate classqiue", rate.toString());
+
     console.log("rate", rate.div(10 ** decimals).toString());
 
     console.log("rate2", rate / 10 ** decimals);
 
-    const subscriptionPriceBN = BigNumber.from(contentSubscriptionPrice).div(100) // Perte des 49 centimes
-
     const rateWithDecimalsBN = rate.div(BigNumber.from((10 ** decimals).toString())); // Perte des digits du rate/
 
-    const bonprixenWeiBN = subscriptionPriceBN.mul(BigNumber.from((10**18).toString())).div(rateWithDecimalsBN);
+    const bonprixenWeiBN = BigNumber.from(contentSubscriptionPrice).mul(BigNumber.from((10**18).toString())).div(rateWithDecimalsBN).div(100);
     console.log("bonprixenwei BN", bonprixenWeiBN.toString()) // Netflix ne touchera jamais 15.49 mais 15.00
+
+    const bonprixenWeiBN2 = BigNumber.from(contentSubscriptionPrice).div(100).mul(BigNumber.from((10**18).toString())).div(rateWithDecimalsBN);
+    console.log("bonprixenwei BN2", bonprixenWeiBN.toString())
 
     const bonPrixEnEth = (contentSubscriptionPrice / 100) / rate  / 10 ** decimals; // * 10^18 pour du wei
     console.log("bonprix en wei", (bonPrixEnEth * 10 ** 18).toString().replaceAll('.', '')); // 15.49$ en Wei
