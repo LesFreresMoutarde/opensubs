@@ -8,6 +8,7 @@ import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721Enumer
 import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 import "./ERC4907EnumerableUpgradeable.sol";
 import "./Marketplace.sol";
+import "hardhat/console.sol";
 
 contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721EnumerableUpgradeable, Marketplace {
     using CountersUpgradeable for CountersUpgradeable.Counter;
@@ -45,6 +46,8 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
     // Mapping from address to balance in wei
     mapping(address => uint256) public balances;
 
+    string private _baseUri;
+
     function initialize(
         string calldata name_,
         string calldata symbol_,
@@ -54,7 +57,8 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
         uint32 minRentDuration_,
         address contentProvider_,
         address marketplaceProvider_,
-        address priceFeedAddress_
+        address priceFeedAddress_,
+        string memory baseUri_
     ) public initializer {
         ERC4907EnumerableUpgradeable.__ERC4907Enumerable_init(name_, symbol_);
         Marketplace.__Marketplace_init(minRentPrice_, minRentDuration_);
@@ -65,8 +69,24 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
         _marketplaceProvider = marketplaceProvider_;
         priceFeed = AggregatorV3Interface(priceFeedAddress_);
         _allowedSlippage = 5;
+        _baseUri = baseUri_;
 
         _tokenIds.increment();
+    }
+
+    /**
+     * @dev See {ERC721Upgradeable-_baseUri}
+     */
+    function _baseURI() internal view override returns (string memory) {
+        return _baseUri;
+    }
+
+    /**
+     * @dev See {IERC721Metadata-tokenURI}.
+     */
+    function tokenURI(uint256 tokenId) public view override returns (string memory) {
+        console.log(string(abi.encodePacked(super.tokenURI(tokenId),'.json?alt=media')));
+        return string(abi.encodePacked(super.tokenURI(tokenId),'.json?alt=media'));
     }
 
     function mint() public payable {
