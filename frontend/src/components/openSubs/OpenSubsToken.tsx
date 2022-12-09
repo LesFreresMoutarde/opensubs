@@ -54,7 +54,7 @@ function OpenSubsToken() {
                 setNotFound(true);
             }
         })();
-    }, [address, contracts, platform]);
+    }, [address, contracts, platform, tokenId]);
 
     if (notFound) {
         return (
