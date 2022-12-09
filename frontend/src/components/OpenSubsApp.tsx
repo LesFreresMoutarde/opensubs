@@ -10,6 +10,7 @@ import {
     getBalanceOfUsedTokens, getUsedTokensByUser, isTokenRentable, isTokenReclaimable
 } from "../utils/SubscriptionUtil";
 import OpenSubsHeader from "./openSubs/OpenSubsHeader";
+import {Route, Routes } from "react-router-dom";
 
 type ContractDescription = {
     /**
@@ -180,6 +181,10 @@ function OpenSubsApp() {
                             changeAddress={setAddress}
                             provider={provider}
             />
+            <Routes>
+                <Route path="my-subscriptions" element={<p>My subscriptions</p>}/>
+                <Route path="subscriptions-for-rent" element={<p>Subscriptions for rent</p>}/>
+            </Routes>
         </div>
     )
 }
