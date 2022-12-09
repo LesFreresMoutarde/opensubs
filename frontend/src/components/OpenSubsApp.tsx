@@ -1,5 +1,5 @@
 import "../css/opensubs.css";
-import {useEffect, useState} from "react";
+import {createContext, useEffect, useState} from "react";
 import {Contract, providers} from "ethers";
 import {autoLogin, isChainIdSupported} from "../utils/ProviderUtils";
 import {
@@ -10,6 +10,7 @@ import {
 } from "../utils/SubscriptionUtil";
 import OpenSubsHeader from "./openSubs/OpenSubsHeader";
 import {Navigate, Route, Routes } from "react-router-dom";
+import OpenSubsMyTokens from "./openSubs/OpenSubsMyTokens";
 
 type ContractDescription = {
     /**
@@ -23,7 +24,7 @@ type ContractDescription = {
     contract: Contract;
 }
 
-type ServiceName = "fakeflix" | "spooftify";
+export type ServiceName = "fakeflix" | "spooftify";
 
 type ContractsList = {
     [key in ServiceName]: ContractDescription;
@@ -33,6 +34,16 @@ const contractAddresses: {[key in ServiceName]: string} = {
     fakeflix: String(process.env.REACT_APP_FAKEFLIX_CONTRACT_ADDRESS),
     spooftify: String(process.env.REACT_APP_SPOOFTIFY_CONTRACT_ADDRESS),
 };
+
+type OpenSubsAppContext = {
+    address: string,
+    contracts: ContractsList | null,
+}
+
+export const openSubsAppContext = createContext<OpenSubsAppContext>({
+    address: '',
+    contracts: null,
+});
 
 function OpenSubsApp() {
 
@@ -109,53 +120,6 @@ function OpenSubsApp() {
 
     }, [provider]);
 
-    useEffect(() => {
-
-        if (address === '') {
-            return;
-        }
-
-        if (contracts) {
-            (async () => {
-                const balances: any = {};
-                const tokenIds: any = {};
-
-                for (const [serviceName, contractDescription] of Object.entries(contracts)) {
-                    balances[serviceName] = {owned: [], used: []};
-                    tokenIds[serviceName]= {owned: [], used: []};
-
-                    balances[serviceName].owned = await getBalanceOfOwnedTokens(contractDescription.contract, address);
-                    tokenIds[serviceName].owned = await getOwnedTokensByUser(
-                        contractDescription.contract,
-                        address,
-                        balances[serviceName].owned.toBigInt()
-                    );
-
-                    balances[serviceName].used = await getBalanceOfUsedTokens(contractDescription.contract, address);
-                    tokenIds[serviceName].used = await getUsedTokensByUser(
-                        contractDescription.contract,
-                        address,
-                        balances[serviceName].used.toBigInt()
-                    );
-                }
-
-                for (const serviceName in tokenIds) {
-                    for (const [type, tokens] of Object.entries<any>(tokenIds[serviceName])) {
-                        if (tokens.length > 0) {
-                            for (const token of tokens) {
-                                console.log("token, service, type", token, serviceName, type)
-                                console.log("isRentable", await isTokenRentable(contracts[serviceName as ServiceName].contract, token, address))
-                                console.log("isReclaimable", await isTokenReclaimable(contracts[serviceName as ServiceName].contract, token, address))
-                            }
-                        }
-                    }
-                }
-
-            })();
-        }
-
-    }, [address, contracts]);
-
     if (provider === undefined) {
         return (
             <div>Loading...</div>
@@ -176,16 +140,21 @@ function OpenSubsApp() {
 
     return (
         <div className="opensubs-app">
-            <OpenSubsHeader address={address}
-                            changeAddress={setAddress}
-                            provider={provider}
-            />
-            <Routes>
-                <Route path="/" element={<p>Marketplace</p>}/>
-                <Route path="my-subscriptions" element={<p>My subscriptions</p>}/>
+            <openSubsAppContext.Provider value={{
+                address,
+                contracts,
+            }}>
+                <OpenSubsHeader address={address}
+                                changeAddress={setAddress}
+                                provider={provider}
+                />
+                <Routes>
+                    <Route path="/" element={<p>Marketplace</p>}/>
+                    <Route path="my-subscriptions" element={<OpenSubsMyTokens/>}/>
 
-                <Route path="*" element={<Navigate to="/opensubs" replace/>}/>
-            </Routes>
+                    <Route path="*" element={<Navigate to="/opensubs" replace/>}/>
+                </Routes>
+            </openSubsAppContext.Provider>
         </div>
     )
 }
