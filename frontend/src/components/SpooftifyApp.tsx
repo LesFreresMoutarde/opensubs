@@ -1,7 +1,6 @@
 import "../css/spooftify.css";
 import {createContext, useCallback, useEffect, useState} from "react";
 import {Contract, providers} from "ethers";
-import ConnectButton from "./common/ConnectButton";
 import {autoLogin, isChainIdSupported} from "../utils/ProviderUtils";
 import {
     getSubscriptionContract,
@@ -11,6 +10,7 @@ import {
 
 import CONTENT_JSON from "../apps-content/spooftify.json";
 import SpooftifyContent from "./spooftify/SpooftifyContent";
+import SpooftifyHeader from "./spooftify/SpooftifyHeader";
 
 type ContentItem = {
     /**
@@ -181,9 +181,10 @@ function SpooftifyApp() {
 
     return (
         <div>
-            <p>Spooftify</p>
-            <p>{address}</p>
-            <ConnectButton changeAddress={setAddress} provider={provider}/>
+            <SpooftifyHeader address={address}
+                             changeAddress={setAddress}
+                             provider={provider}
+            />
 
             {address &&
             <>

@@ -20,7 +20,9 @@ function ConnectButton({changeAddress, provider}: ConnectButtonProps) {
     }, [changeAddress, provider]);
 
     return (
-        <button onClick={onClick}>LOG IN</button>
+        <button onClick={onClick} className="connect-wallet-button">
+            Connect wallet
+        </button>
     )
 }
 

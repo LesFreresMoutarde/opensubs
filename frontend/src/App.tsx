@@ -11,9 +11,9 @@ function App() {
         <>
             <Routes>
                 <Route path="/" element={<Portal/>}/>
-                <Route path="fakeflix" element={<FakeflixApp/>}/>
-                <Route path="spooftify" element={<SpooftifyApp/>}/>
-                <Route path="opensubs" element={<OpenSubsApp/>}/>
+                <Route path="/fakeflix/*" element={<FakeflixApp/>}/>
+                <Route path="/spooftify/*" element={<SpooftifyApp/>}/>
+                <Route path="/opensubs/*" element={<OpenSubsApp/>}/>
                 <Route path="*" element={<ErrorPage/>}/>
             </Routes>
         </>
