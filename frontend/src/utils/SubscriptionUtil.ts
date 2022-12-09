@@ -34,6 +34,12 @@ async function getUsedTokensByUser(contract: Contract, address: string, balance:
     return tokenIds;
 }
 
+async function isRentingExpired(contract: Contract, tokenId: BigNumber): Promise<boolean> {
+    const rentExpiration = await contract.userExpires(tokenId) * 1000;
+
+    return Date.now() >= rentExpiration;
+}
+
 async function isContentAvailableFromToken(contract: Contract, tokenId: BigNumber, type: 'owned' | 'used'): Promise<boolean> {
     const subscriptionExpirationTimestamp = await contract.expiresAt(tokenId) * 1000;
 
@@ -131,6 +137,7 @@ export {
     getBalanceOfUsedTokens,
     getUsedTokensByUser,
     getOwnedTokensByUser,
+    isRentingExpired,
     isContentAvailableFromToken,
     isTokenRentable,
     isTokenReclaimable,

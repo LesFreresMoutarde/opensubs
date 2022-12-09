@@ -4,7 +4,7 @@ import {
     getBalanceOfOwnedTokens,
     getBalanceOfUsedTokens,
     getOwnedTokensByUser,
-    getUsedTokensByUser, isTokenReclaimable, isTokenRentable
+    getUsedTokensByUser, isRentingExpired, isTokenReclaimable, isTokenRentable
 } from "../../utils/SubscriptionUtil";
 import {BigNumber} from "ethers";
 
@@ -14,6 +14,8 @@ type Token = {
     isReclaimable: boolean,
     service: ServiceName,
 };
+
+type TokenStatus = "owned" | "rented" | "reclaimable" | "borrowed"
 
 function OpenSubsMyTokens() {
     const {address, contracts} = useContext(openSubsAppContext)
@@ -57,6 +59,12 @@ function OpenSubsMyTokens() {
                     for (const [type, tokens] of Object.entries<any>(tokenIds[serviceName])) {
                         if (tokens.length > 0) {
                             for (const tokenId of tokens) {
+                                if (type === "used") {
+                                    if (await isRentingExpired(contracts[serviceName as ServiceName].contract, tokenId)) {
+                                        continue;
+                                    }
+                                }
+
                                 const isRentable = await isTokenRentable(contracts[serviceName as ServiceName].contract, tokenId, address);
                                 const isReclaimable = await isTokenReclaimable(contracts[serviceName as ServiceName].contract, tokenId, address);
 
