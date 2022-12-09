@@ -10,10 +10,6 @@ const navbarItems: NavbarItem[] = [
         label: "My subscriptions",
         url: "my-subscriptions",
     },
-    {
-        label: "Subscriptions for rent",
-        url: "subscriptions-for-rent",
-    }
 ];
 
 function OpenSubsNavbar() {
