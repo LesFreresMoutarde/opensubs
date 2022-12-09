@@ -1,6 +1,7 @@
 import {useContext} from "react";
 import {spooftifyAppContext} from "../SpooftifyApp";
 import SpooftifyContent from "./SpooftifyContent";
+import {Link} from "react-router-dom";
 
 function SpooftifyHome() {
     const {address, isContentAvailable} = useContext(spooftifyAppContext);
@@ -14,7 +15,7 @@ function SpooftifyHome() {
                 }
 
                 {isContentAvailable === false &&
-                <p>You are not authorized to access content</p>
+                <p>Please <Link to="mint">subscribe</Link> to access content</p>
                 }
 
                 {isContentAvailable === true &&
