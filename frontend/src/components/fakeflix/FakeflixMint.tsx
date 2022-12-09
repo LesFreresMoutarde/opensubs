@@ -30,6 +30,20 @@ function FakeflixMint() {
         });
     }, [subscription]);
 
+    const mint = useCallback(async () => {
+        if (!subscription) {
+            return;
+        }
+
+        await mintToken(subscription, provider!);
+
+        setShowModal(true);
+    }, [subscription, provider]);
+
+    const closeModal = useCallback(() => {
+        setShowModal(false);
+    }, [])
+
     return (
         <p>Fakeflix mint</p>
     );
