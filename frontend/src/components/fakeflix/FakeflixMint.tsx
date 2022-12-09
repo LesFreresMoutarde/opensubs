@@ -45,7 +45,11 @@ function FakeflixMint() {
     }, [])
 
     return (
-        <p>Fakeflix mint</p>
+        <>
+            {showModal && <LoadingModal showModal={showModal} closeModal={closeModal}/>}
+            <p>Fakeflix mint</p>
+            <button onClick={mint}>Mint</button>
+        </>
     );
 }
 
