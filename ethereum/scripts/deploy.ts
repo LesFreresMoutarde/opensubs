@@ -162,7 +162,7 @@ async function mintFixturesTokens(fakeflix: Subscription, spooftify: Subscriptio
     // Account2 : 1 FF - 0 SP
 }
 
-async function rentTokenIds(fakeflix: Subscription, spooftify: Subscription, {rate, decimals}, accounts: any) {
+async function rentTokenIds(fakeflix: Subscription, spooftify: Subscription, {rate, decimals}: {rate: BigNumber, decimals: number}, accounts: any) {
     const fakeflixMinRentPrice = await fakeflix.minRentPrice();
     const spooftifyMinRentPrice = await spooftify.minRentPrice();
 
