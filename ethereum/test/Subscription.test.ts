@@ -95,13 +95,9 @@ describe("Subscription smart contract test", () => {
 
             const contentSubscriptionPrice = await connectedSubscription.contentSubscriptionPrice();
 
-            const oldamountToSend = Math.floor(roundData.answer * contentSubscriptionPrice / 100);
-            // const amountToSend = Math.floor(roundData.answer * contentSubscriptionPrice / 100);
+            const rateWithDecimalsBN = roundData.answer.div(BigNumber.from((10 ** decimals).toString()));
 
-            const amountToSend = Math.floor((contentSubscriptionPrice / 100) * 10**18 / roundData.answer * 10 ** decimals);
-
-            console.log('old amount', oldamountToSend)
-            console.log("amount to send should mint", amountToSend);
+            const amountToSend = BigNumber.from(contentSubscriptionPrice).mul(BigNumber.from((10**18).toString())).div(rateWithDecimalsBN).div(100);
 
             await expect(connectedSubscription.mint({value: BigNumber.from(amountToSend)}))
                 .to.emit(connectedSubscription, "Transfer")
@@ -112,7 +108,6 @@ describe("Subscription smart contract test", () => {
                 .withArgs(ethers.constants.AddressZero, otherAccounts[0].address, 2);
         });
 
-        return;
         it("Should update balances when a token is minted", async () => {
             const {subscription, netflix, marketplace, otherAccounts} = await loadFixture(deploySubscriptionFixture);
 
@@ -126,7 +121,11 @@ describe("Subscription smart contract test", () => {
 
             const contentSubscriptionPrice = await connectedSubscription.contentSubscriptionPrice();
 
-            const amountToSend = Math.floor(roundData.answer * contentSubscriptionPrice / 100);
+            const decimals = await priceFeed.decimals();
+
+            const rateWithDecimalsBN = roundData.answer.div(BigNumber.from((10 ** decimals).toString()));
+
+            const amountToSend = BigNumber.from(contentSubscriptionPrice).mul(BigNumber.from((10**18).toString())).div(rateWithDecimalsBN).div(100);
 
             // Check balances before minting
 
@@ -137,10 +136,9 @@ describe("Subscription smart contract test", () => {
 
             await connectedSubscription.mint({value: amountToSend});
 
-            // Check balances after minting
+            const marketplaceCommission = amountToSend.mul(25).div(1000);
 
-            const marketplaceCommission = Math.floor(amountToSend * 0.025);
-            const netflixRevenue = amountToSend - marketplaceCommission;
+            const netflixRevenue = amountToSend.sub(marketplaceCommission)
 
             const marketplaceBalanceAfterRenting = await subscription.balances(marketplace.address);
             const netflixBalanceAfterRenting = await subscription.balances(netflix.address);
@@ -162,9 +160,13 @@ describe("Subscription smart contract test", () => {
 
             const contentSubscriptionPrice = await connectedSubscription.contentSubscriptionPrice();
 
-            const amountToSend = Math.floor(roundData.answer * contentSubscriptionPrice / 100);
+            const decimals = await priceFeed.decimals();
 
-            await expect(connectedSubscription.mint({value: amountToSend + 10000}))
+            const rateWithDecimalsBN = roundData.answer.div(BigNumber.from((10 ** decimals).toString()));
+
+            const amountToSend = BigNumber.from(contentSubscriptionPrice).mul(BigNumber.from((10**18).toString())).div(rateWithDecimalsBN).div(100);
+
+            await expect(connectedSubscription.mint({value: amountToSend.add(10000)}))
                 .to.emit(connectedSubscription, "Transfer")
                 .withArgs(ethers.constants.AddressZero, otherAccounts[0].address, 1);
         });
@@ -182,9 +184,13 @@ describe("Subscription smart contract test", () => {
 
             const contentSubscriptionPrice = await connectedSubscription.contentSubscriptionPrice();
 
-            const amountToSend = Math.floor(roundData.answer * contentSubscriptionPrice / 100);
+            const decimals = await priceFeed.decimals();
 
-            await expect(connectedSubscription.mint({value: amountToSend - 10000}))
+            const rateWithDecimalsBN = roundData.answer.div(BigNumber.from((10 ** decimals).toString()));
+
+            const amountToSend = BigNumber.from(contentSubscriptionPrice).mul(BigNumber.from((10**18).toString())).div(rateWithDecimalsBN).div(100);
+
+            await expect(connectedSubscription.mint({value: amountToSend.sub(1000)}))
                 .to.emit(connectedSubscription, "Transfer")
                 .withArgs(ethers.constants.AddressZero, otherAccounts[0].address, 1);
         });
@@ -211,9 +217,13 @@ describe("Subscription smart contract test", () => {
 
             const contentSubscriptionPrice = await connectedSubscription.contentSubscriptionPrice();
 
-            const amountToSend = Math.floor(roundData.answer * contentSubscriptionPrice / 100);
+            const decimals = await priceFeed.decimals();
 
-            await expect(connectedSubscription.mint({value: amountToSend * 2}))
+            const rateWithDecimalsBN = roundData.answer.div(BigNumber.from((10 ** decimals).toString()));
+
+            const amountToSend = BigNumber.from(contentSubscriptionPrice).mul(BigNumber.from((10**18).toString())).div(rateWithDecimalsBN).div(100);
+
+            await expect(connectedSubscription.mint({value: amountToSend.mul(2)}))
                 .to.be.revertedWith("Too much slippage");
         });
 
@@ -230,15 +240,16 @@ describe("Subscription smart contract test", () => {
 
             const contentSubscriptionPrice = await connectedSubscription.contentSubscriptionPrice();
 
-            const amountToSend = Math.floor(roundData.answer * contentSubscriptionPrice / 100);
+            const decimals = await priceFeed.decimals();
 
-            await expect(connectedSubscription.mint({value: Math.floor(amountToSend / 2)}))
+            const rateWithDecimalsBN = roundData.answer.div(BigNumber.from((10 ** decimals).toString()));
+
+            const amountToSend = BigNumber.from(contentSubscriptionPrice).mul(BigNumber.from((10**18).toString())).div(rateWithDecimalsBN).div(100);
+
+            await expect(connectedSubscription.mint({value: amountToSend.div(2)}))
                 .to.be.revertedWith("Too much slippage");
         });
     });
-
-    return;
-
 
     describe("Renting", async () => {
         async function deploySubscriptionFixtureAndMint() {
@@ -256,10 +267,9 @@ describe("Subscription smart contract test", () => {
 
             const contentSubscriptionPrice = await connectedSubscription.contentSubscriptionPrice();
 
-            // const amountToSend = Math.floor(roundData.answer * contentSubscriptionPrice / 100);
-            const amountToSend = Math.floor((contentSubscriptionPrice / 100) * 10**18 / roundData.answer * 10 ** decimals);
+            const rateWithDecimalsBN = roundData.answer.div(BigNumber.from((10 ** decimals).toString()));
 
-            console.log("amountTOSend", amountToSend);
+            const amountToSend = BigNumber.from(contentSubscriptionPrice).mul(BigNumber.from((10**18).toString())).div(rateWithDecimalsBN).div(100);
 
             await connectedSubscription.mint({value: amountToSend});
 
@@ -281,8 +291,9 @@ describe("Subscription smart contract test", () => {
 
             const contentSubscriptionPrice = await connectedSubscription.contentSubscriptionPrice();
 
-            // const amountToSendForMint = Math.floor(roundData.answer * contentSubscriptionPrice / 100);
-            const amountToSendForMint = Math.floor((contentSubscriptionPrice / 100) * 10**18 / roundData.answer * 10 ** decimals);
+            const rateWithDecimalsBN = roundData.answer.div(BigNumber.from((10 ** decimals).toString()));
+
+            const amountToSendForMint = BigNumber.from(contentSubscriptionPrice).mul(BigNumber.from((10**18).toString())).div(rateWithDecimalsBN).div(100);
 
             const tokenIds = [...Array(20).keys()].map(item => item+1);
 
@@ -297,7 +308,7 @@ describe("Subscription smart contract test", () => {
             let i: number = 0;
 
             // const amountToSendForRental = Math.floor(roundData.answer * rentalPrice / 100);
-            const amountToSendForRental = Math.floor((rentalPrice / 100) * 10**18 / roundData.answer * 10 ** decimals);
+            const amountToSendForRental = BigNumber.from(rentalPrice).mul(BigNumber.from((10**18).toString())).div(rateWithDecimalsBN).div(100);
 
             // Add 5 tokens to each address
 
@@ -502,13 +513,20 @@ describe("Subscription smart contract test", () => {
 
             const rentingPrice = rentingConditions.price
 
-            const amountToSend = Math.floor(roundData.answer * rentingPrice / 100);
+            const decimals = await priceFeed.decimals();
+
+            const rateWithDecimalsBN = roundData.answer.div(BigNumber.from((10 ** decimals).toString()));
+
+            const amountToSend = BigNumber.from(rentingPrice)
+                .mul(BigNumber.from((10**18).toString()))
+                .div(rateWithDecimalsBN)
+                .div(100);
 
             const currentTimestamp = await time.latest();
             const blockTime = 20;
 
             // Force next block timestamp to guess renting expiration time
-            time.setNextBlockTimestamp(currentTimestamp + blockTime);
+            await time.setNextBlockTimestamp(currentTimestamp + blockTime);
 
             const expires = BigNumber.from(currentTimestamp)
                 .add(blockTime)
@@ -564,11 +582,18 @@ describe("Subscription smart contract test", () => {
 
             const roundData = await priceFeed.latestRoundData();
 
-            const rentingPrice = rentingConditions.price
+            const rentingPrice = rentingConditions.price;
 
-            const amountToSend = Math.floor(roundData.answer * rentingPrice / 100);
+            const decimals = await priceFeed.decimals();
 
-            await expect(userConnectedSubscription.rent(tokenId, {value: amountToSend - 10000}))
+            const rateWithDecimalsBN = roundData.answer.div(BigNumber.from((10 ** decimals).toString()));
+
+            const amountToSend = BigNumber.from(rentingPrice)
+                .mul(BigNumber.from((10**18).toString()))
+                .div(rateWithDecimalsBN)
+                .div(100);
+
+            await expect(userConnectedSubscription.rent(tokenId, {value: amountToSend.sub(10000)}))
                 .to.emit(connectedSubscription, "UpdateUser");
         });
 
@@ -601,9 +626,16 @@ describe("Subscription smart contract test", () => {
 
             const rentingPrice = rentingConditions.price
 
-            const amountToSend = Math.floor(roundData.answer * rentingPrice / 100);
+            const decimals = await priceFeed.decimals();
 
-            await expect(userConnectedSubscription.rent(tokenId, {value: amountToSend + 10000}))
+            const rateWithDecimalsBN = roundData.answer.div(BigNumber.from((10 ** decimals).toString()));
+
+            const amountToSend = BigNumber.from(rentingPrice)
+                .mul(BigNumber.from((10**18).toString()))
+                .div(rateWithDecimalsBN)
+                .div(100);
+
+            await expect(userConnectedSubscription.rent(tokenId, {value: amountToSend.add(10000)}))
                 .to.emit(connectedSubscription, "UpdateUser");
         });
 
@@ -657,7 +689,14 @@ describe("Subscription smart contract test", () => {
 
             const rentingPrice = rentingConditions.price
 
-            const amountToSend = Math.floor(roundData.answer * rentingPrice / 100);
+            const decimals = await priceFeed.decimals();
+
+            const rateWithDecimalsBN = roundData.answer.div(BigNumber.from((10 ** decimals).toString()));
+
+            const amountToSend = BigNumber.from(rentingPrice)
+                .mul(BigNumber.from((10**18).toString()))
+                .div(rateWithDecimalsBN)
+                .div(100);
 
             await expect(userConnectedSubscription.rent(tokenId, {value: Math.floor(amountToSend / 2)}))
                 .to.be.revertedWith("Too much slippage");
@@ -692,9 +731,16 @@ describe("Subscription smart contract test", () => {
 
             const rentingPrice = rentingConditions.price
 
-            const amountToSend = Math.floor(roundData.answer * rentingPrice / 100);
+            const decimals = await priceFeed.decimals();
 
-            await expect(userConnectedSubscription.rent(tokenId, {value: amountToSend * 2}))
+            const rateWithDecimalsBN = roundData.answer.div(BigNumber.from((10 ** decimals).toString()));
+
+            const amountToSend = BigNumber.from(rentingPrice)
+                .mul(BigNumber.from((10**18).toString()))
+                .div(rateWithDecimalsBN)
+                .div(100);
+
+            await expect(userConnectedSubscription.rent(tokenId, {value: amountToSend.mul(2)}))
                 .to.be.revertedWith("Too much slippage");
         });
 
@@ -736,7 +782,14 @@ describe("Subscription smart contract test", () => {
 
             const rentingPrice = rentingConditions.price
 
-            const amountToSend = Math.floor(roundData.answer * rentingPrice / 100);
+            const decimals = await priceFeed.decimals();
+
+            const rateWithDecimalsBN = roundData.answer.div(BigNumber.from((10 ** decimals).toString()));
+
+            const amountToSend = BigNumber.from(rentingPrice)
+                .mul(BigNumber.from((10**18).toString()))
+                .div(rateWithDecimalsBN)
+                .div(100);
 
             // Send transaction to rent token
 
@@ -773,7 +826,14 @@ describe("Subscription smart contract test", () => {
 
             const rentingPrice = rentingConditions.price
 
-            const amountToSend = Math.floor(roundData.answer * rentingPrice / 100);
+            const decimals = await priceFeed.decimals();
+
+            const rateWithDecimalsBN = roundData.answer.div(BigNumber.from((10 ** decimals).toString()));
+
+            const amountToSend = BigNumber.from(rentingPrice)
+                .mul(BigNumber.from((10**18).toString()))
+                .div(rateWithDecimalsBN)
+                .div(100);
 
             // Send transaction to rent token
 
@@ -824,7 +884,14 @@ describe("Subscription smart contract test", () => {
 
             const rentingPrice = rentingConditions.price
 
-            const amountToSend = Math.floor(roundData.answer * rentingPrice / 100);
+            const decimals = await priceFeed.decimals();
+
+            const rateWithDecimalsBN = roundData.answer.div(BigNumber.from((10 ** decimals).toString()));
+
+            const amountToSend = BigNumber.from(rentingPrice)
+                .mul(BigNumber.from((10**18).toString()))
+                .div(rateWithDecimalsBN)
+                .div(100);
 
             // Send transaction to rent token
 
@@ -867,7 +934,14 @@ describe("Subscription smart contract test", () => {
 
             const rentingPrice = rentingConditions.price
 
-            const amountToSend = Math.floor(roundData.answer * rentingPrice / 100);
+            const decimals = await priceFeed.decimals();
+
+            const rateWithDecimalsBN = roundData.answer.div(BigNumber.from((10 ** decimals).toString()));
+
+            const amountToSend = BigNumber.from(rentingPrice)
+                .mul(BigNumber.from((10**18).toString()))
+                .div(rateWithDecimalsBN)
+                .div(100);
 
             // Check balances before renting
 
@@ -881,9 +955,9 @@ describe("Subscription smart contract test", () => {
 
             // Check balances after renting
 
-            const netflixCommission = Math.floor(amountToSend * 0.15);
-            const marketplaceCommission = Math.floor(amountToSend * 0.15);
-            const tokenOwnerRevenue = amountToSend - netflixCommission - marketplaceCommission;
+            const netflixCommission = amountToSend.mul(15).div(100);
+            const marketplaceCommission = amountToSend.mul(15).div(100);
+            const tokenOwnerRevenue = amountToSend.sub(netflixCommission).sub(marketplaceCommission);
 
             const netflixBalanceAfterRenting = await subscription.balances(netflix.address);
             const marketplaceBalanceAfterRenting = await subscription.balances(marketplace.address);
@@ -927,7 +1001,14 @@ describe("Subscription smart contract test", () => {
 
             const rentingPrice = rentingConditions.price
 
-            const amountToSend = Math.floor(roundData.answer * rentingPrice / 100);
+            const decimals = await priceFeed.decimals();
+
+            const rateWithDecimalsBN = roundData.answer.div(BigNumber.from((10 ** decimals).toString()));
+
+            const amountToSend = BigNumber.from(rentingPrice)
+                .mul(BigNumber.from((10**18).toString()))
+                .div(rateWithDecimalsBN)
+                .div(100);
 
             // Send transaction to rent token
 
@@ -979,7 +1060,14 @@ describe("Subscription smart contract test", () => {
 
             const rentingPrice = rentingConditions.price
 
-            const amountToSend = Math.floor(roundData.answer * rentingPrice / 100);
+            const decimals = await priceFeed.decimals();
+
+            const rateWithDecimalsBN = roundData.answer.div(BigNumber.from((10 ** decimals).toString()));
+
+            const amountToSend = BigNumber.from(rentingPrice)
+                .mul(BigNumber.from((10**18).toString()))
+                .div(rateWithDecimalsBN)
+                .div(100);
 
             // Send transaction to rent token
 
@@ -1026,7 +1114,14 @@ describe("Subscription smart contract test", () => {
 
             const rentingPrice = rentingConditions.price
 
-            const amountToSend = Math.floor(roundData.answer * rentingPrice / 100);
+            const decimals = await priceFeed.decimals();
+
+            const rateWithDecimalsBN = roundData.answer.div(BigNumber.from((10 ** decimals).toString()));
+
+            const amountToSend = BigNumber.from(rentingPrice)
+                .mul(BigNumber.from((10**18).toString()))
+                .div(rateWithDecimalsBN)
+                .div(100);
 
             // Send transaction to rent token
 
@@ -1075,7 +1170,14 @@ describe("Subscription smart contract test", () => {
 
             const rentingPrice = rentingConditions.price
 
-            const amountToSend = Math.floor(roundData.answer * rentingPrice / 100);
+            const decimals = await priceFeed.decimals();
+
+            const rateWithDecimalsBN = roundData.answer.div(BigNumber.from((10 ** decimals).toString()));
+
+            const amountToSend = BigNumber.from(rentingPrice)
+                .mul(BigNumber.from((10**18).toString()))
+                .div(rateWithDecimalsBN)
+                .div(100);
 
             // Send transaction to rent token
 
@@ -1239,7 +1341,11 @@ describe("Subscription smart contract test", () => {
 
             const contentSubscriptionPrice = await connectedSubscription.contentSubscriptionPrice();
 
-            const amountToSend = Math.floor(roundData.answer * contentSubscriptionPrice / 100);
+            const decimals = await priceFeed.decimals();
+
+            const rateWithDecimalsBN = roundData.answer.div(BigNumber.from((10 ** decimals).toString()));
+
+            const amountToSend = BigNumber.from(contentSubscriptionPrice).mul(BigNumber.from((10**18).toString())).div(rateWithDecimalsBN).div(100);
 
             await connectedSubscription.mint({value: amountToSend});
 
@@ -1278,7 +1384,11 @@ describe("Subscription smart contract test", () => {
 
             const contentSubscriptionPrice = await connectedSubscription.contentSubscriptionPrice();
 
-            const amountToSendForMint = Math.floor(roundData.answer * contentSubscriptionPrice / 100);
+            const decimals = await priceFeed.decimals();
+
+            const rateWithDecimalsBN = roundData.answer.div(BigNumber.from((10 ** decimals).toString()));
+
+            const amountToSendForMint = BigNumber.from(contentSubscriptionPrice).mul(BigNumber.from((10**18).toString())).div(rateWithDecimalsBN).div(100);
 
             const tokenIds = [...Array(20).keys()].map(item => item+1);
 
@@ -1333,7 +1443,11 @@ describe("Subscription smart contract test", () => {
 
             const contentSubscriptionPrice = await connectedSubscription.contentSubscriptionPrice();
 
-            const amountToSendForMint = Math.floor(roundData.answer * contentSubscriptionPrice / 100);
+            const decimals = await priceFeed.decimals();
+
+            const rateWithDecimalsBN = roundData.answer.div(BigNumber.from((10 ** decimals).toString()));
+
+            const amountToSendForMint = BigNumber.from(contentSubscriptionPrice).mul(BigNumber.from((10**18).toString())).div(rateWithDecimalsBN).div(100);
 
             const tokenIds = [...Array(20).keys()].map(item => item+1);
 
@@ -1360,7 +1474,10 @@ describe("Subscription smart contract test", () => {
 
             // Rent a token
 
-            const amountToSendForRental = Math.floor(roundData.answer * rentalPrice / 100);
+            const amountToSendForRental = BigNumber.from(rentalPrice)
+                .mul(BigNumber.from((10**18).toString()))
+                .div(rateWithDecimalsBN)
+                .div(100);
 
             const userConnectedSubscription = subscription.connect(otherAccounts[1]);
 
