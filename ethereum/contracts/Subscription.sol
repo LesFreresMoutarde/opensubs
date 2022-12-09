@@ -8,7 +8,6 @@ import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721Enumer
 import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 import "./ERC4907EnumerableUpgradeable.sol";
 import "./Marketplace.sol";
-import "hardhat/console.sol";
 
 contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721EnumerableUpgradeable, Marketplace {
     using CountersUpgradeable for CountersUpgradeable.Counter;
@@ -85,7 +84,6 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
      * @dev See {IERC721Metadata-tokenURI}.
      */
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
-        console.log(string(abi.encodePacked(super.tokenURI(tokenId),'.json?alt=media')));
         return string(abi.encodePacked(super.tokenURI(tokenId),'.json?alt=media'));
     }
 
