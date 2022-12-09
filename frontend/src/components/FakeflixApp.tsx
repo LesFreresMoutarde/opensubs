@@ -144,12 +144,31 @@ function FakeflixApp() {
             }
 
             setIsContentAvailable(false);
-
-            // Test
-            await mintToken(subscription, provider!);
         })();
 
     }, [address, subscription]);
+
+    useEffect(() => {
+        if (!subscription) {
+            return;
+        }
+
+        subscription.on('Transfer', (address, to, tokenId) => {
+            console.log("from, to, tokenId", address, to, tokenId)
+            console.log("closeMosdal");
+            console.log("push metadata");
+        })
+    }, [subscription]);
+
+    const mint = useCallback(async () => {
+        console.log("showModal");
+
+        if (!subscription) {
+            return;
+        }
+
+        await mintToken(subscription, provider!);
+    }, [subscription, provider]);
 
     useEffect(() => {
         if (isContentAvailable) {
@@ -210,6 +229,7 @@ function FakeflixApp() {
                     selectedItem,
                     selectItem,
                 }}>
+                    <button onClick={mint}>Mint</button>
                     <FakeflixContent/>
                 </fakeflixAppContext.Provider>
                 }
