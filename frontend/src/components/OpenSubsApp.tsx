@@ -11,6 +11,7 @@ import {
 import OpenSubsHeader from "./openSubs/OpenSubsHeader";
 import {Navigate, Route, Routes } from "react-router-dom";
 import OpenSubsMyTokens from "./openSubs/OpenSubsMyTokens";
+import OpenSubsToken from "./openSubs/OpenSubsToken";
 
 type ContractDescription = {
     /**
@@ -151,6 +152,7 @@ function OpenSubsApp() {
                 <Routes>
                     <Route path="/" element={<p>Marketplace</p>}/>
                     <Route path="my-subscriptions" element={<OpenSubsMyTokens/>}/>
+                    <Route path="/:platform/:tokenId" element={<OpenSubsToken/>}/>
 
                     <Route path="*" element={<Navigate to="/opensubs" replace/>}/>
                 </Routes>
