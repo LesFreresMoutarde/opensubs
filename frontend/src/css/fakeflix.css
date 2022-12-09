@@ -2,6 +2,10 @@ body {
     background-color: #121212;
 }
 
+.fakeflix-app {
+    color: white !important;
+}
+
 .fakeflix-app a {
     color: white;
 }

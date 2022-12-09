@@ -2,6 +2,10 @@ body {
     background-color: #121212;
 }
 
+.spooftify-app {
+    color: white !important;
+}
+
 .spooftify-app a {
     color: white;
 }
