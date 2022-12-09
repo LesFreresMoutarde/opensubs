@@ -2,6 +2,10 @@ body {
     background-color: #121212;
 }
 
+.fakeflix-app {
+    color: white !important;
+}
+
 .fakeflix-app a {
     color: white;
 }
@@ -165,4 +169,44 @@ body {
 
 .movie-data .actors {
     color: #999;
+}
+
+.fakeflix-app .please-subscribe {
+    display: flex;
+    justify-content: center;
+    font-size: 1.2em;
+    margin-top: 10vh;
+}
+
+.fakeflix-app .please-subscribe a {
+    color: #dc1a28;
+}
+
+.fakeflix-app .mint-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 30vh;
+}
+
+.fakeflix-app .mint-page .text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.fakeflix-app .mint-page button {
+    background-color: #dc1a28;
+    color: #000;
+    font-size: 1.3em;
+    font-weight: 700;
+    padding: 0.5em 1em;
+    border-radius: 0.5em;
+
+    transition: background-color 0.1s ease-out;
+}
+
+.fakeflix-app .mint-page button:hover {
+    cursor: pointer;
+    background-color: #fff;
 }

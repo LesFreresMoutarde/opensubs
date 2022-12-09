@@ -15,7 +15,9 @@ function FakeflixHome() {
                 }
 
                 {isContentAvailable === false &&
-                <p>Please <Link to="mint">subscribe</Link> to access content</p>
+                <div className="please-subscribe">
+                    <p>Please <Link to="mint">subscribe</Link> to access content</p>
+                </div>
                 }
 
                 {isContentAvailable === true &&

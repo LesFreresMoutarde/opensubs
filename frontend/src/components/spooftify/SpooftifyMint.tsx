@@ -1,7 +1,7 @@
 import {useCallback, useContext, useEffect, useState} from "react";
 import {ethers} from "ethers";
 import {fireToast, getMetadata, pushMetadata} from "../../utils/Util";
-import {mintToken} from "../../utils/SubscriptionUtil";
+import {getSubscriptionPrice, mintToken} from "../../utils/SubscriptionUtil";
 import LoadingModal from "../common/LoadingModal";
 import {spooftifyAppContext} from "../SpooftifyApp";
 
@@ -10,6 +10,18 @@ function SpooftifyMint() {
     const {subscription, provider, address} = useContext(spooftifyAppContext);
 
     const [showModal, setShowModal] = useState<boolean>(false);
+
+    const [subscriptionPrice, setSubscriptionPrice] = useState(0);
+
+    useEffect(() => {
+        if (!subscription) {
+            return;
+        }
+
+        (async () => {
+            setSubscriptionPrice(await getSubscriptionPrice(subscription));
+        })();
+    }, [subscription]);
 
     useEffect(() => {
         if (!subscription) {
@@ -46,11 +58,16 @@ function SpooftifyMint() {
     }, [])
 
     return (
-        <>
+        <div className="mint-page">
             {showModal && <LoadingModal showModal={showModal} closeModal={closeModal}/>}
-            <p>Spooftify mint</p>
-            <button onClick={mint}>Mint</button>
-        </>
+            <div className="text">
+                <h1>Enjoy ad-free music listening, offline playback, and more.</h1>
+                <p>Cancel anytime. Only {subscriptionPrice / 100}$ for 30 days</p>
+            </div>
+            <div className="mint-button-container">
+                <button onClick={mint}>Subscribe</button>
+            </div>
+        </div>
     );
 }
 
