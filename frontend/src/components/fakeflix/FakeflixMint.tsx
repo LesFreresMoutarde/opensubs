@@ -2,7 +2,7 @@ import {useCallback, useContext, useEffect, useState} from "react";
 import {mintToken} from "../../utils/SubscriptionUtil";
 import {fakeflixAppContext} from "../FakeflixApp";
 import LoadingModal from "../common/LoadingModal";
-import {fireToast, pushMetadata} from "../../utils/Util";
+import {fireToast, getMetadata, pushMetadata} from "../../utils/Util";
 import {ethers} from "ethers";
 
 function FakeflixMint() {
@@ -16,13 +16,17 @@ function FakeflixMint() {
             return;
         }
 
-        subscription.on('Transfer', (from, to, tokenId) => {
+        subscription.on('Transfer', async (from, to, tokenId) => {
             if (to === ethers.utils.getAddress(address)) {
                 setShowModal(false);
 
                 fireToast('success', 'You have successfully minted a subscription NFT');
 
-                pushMetadata(tokenId, 'fakeflix');
+                try {
+                    await getMetadata(tokenId, 'fakeflix');
+                } catch (error) {
+                    await pushMetadata(tokenId, 'fakeflix');
+                }
             }
         });
     }, [subscription]);
