@@ -1,4 +1,4 @@
-import {Link} from "react-router-dom";
+import {NavLink} from "react-router-dom";
 
 type NavbarItem = {
     label: string;
@@ -23,9 +23,9 @@ function OpenSubsNavbar() {
                 {navbarItems.map((navbarItem, index) => {
                     return (
                         <li key={index}>
-                            <Link to={`/opensubs/${navbarItem.url}`}>
+                            <NavLink to={`/opensubs/${navbarItem.url}`}>
                                 {navbarItem.label}
-                            </Link>
+                            </NavLink>
                         </li>
                     );
                 })}
