@@ -111,42 +111,15 @@ async function isTokenReclaimable(contract: Contract, tokenId: BigNumber, addres
 }
 
 async function mintToken(contract: Contract, provider: providers.Web3Provider) {
-    // Récupérer le prix de base
     const contentSubscriptionPrice = await contract.contentSubscriptionPrice();
 
-    console.log("cont", contentSubscriptionPrice);
-
-    // Récupérer le rate de chainlink
     const {rate, decimals} = await getChainlinkEthUsdPriceFeed(provider)
 
-    console.log("rate classqiue", rate.toString());
+    const rateWithDecimalsBN = rate.div(BigNumber.from((10 ** decimals).toString()));
 
-    console.log("rate", rate.div(10 ** decimals).toString());
+    const amountToSend = BigNumber.from(contentSubscriptionPrice).mul(BigNumber.from((10 ** 18).toString())).div(rateWithDecimalsBN).div(100);
 
-    console.log("rate2", rate / 10 ** decimals);
-
-    const rateWithDecimalsBN = rate.div(BigNumber.from((10 ** decimals).toString())); // Perte des digits du rate/
-
-    const bonprixenWeiBN = BigNumber.from(contentSubscriptionPrice).mul(BigNumber.from((10**18).toString())).div(rateWithDecimalsBN).div(100);
-    console.log("bonprixenwei BN", bonprixenWeiBN.toString()) // Netflix ne touchera jamais 15.49 mais 15.00
-
-    const bonprixenWeiBN2 = BigNumber.from(contentSubscriptionPrice).div(100).mul(BigNumber.from((10**18).toString())).div(rateWithDecimalsBN);
-    console.log("bonprixenwei BN2", bonprixenWeiBN.toString())
-
-    const bonPrixEnEth = (contentSubscriptionPrice / 100) / rate  / 10 ** decimals; // * 10^18 pour du wei
-    console.log("bonprix en wei", (bonPrixEnEth * 10 ** 18).toString().replaceAll('.', '')); // 15.49$ en Wei
-
-
-
-    // Un bon pattern doit être d'avoir un backend qui fixe pour chaque roundId de chainlink
-    // une valeur en wei qu'il calcule en JS afin d'avoir le prix exact, a chaque requete le roundId est comparé
-    // avec celui onChain et mis à jour si nécessaire
-
-    // Calculer le prix
-    // Divide per 100 because contentSubscriptionPrice is USD cents
-    const mintPriceOld = Math.floor(rate * contentSubscriptionPrice / 100);
-
-    console.log("mintPriceOld", mintPriceOld.toString());
+    await contract.mint({value: amountToSend});
 }
 
 export {
