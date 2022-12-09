@@ -9,8 +9,10 @@ import {
 } from "../utils/SubscriptionUtil";
 
 import CONTENT_JSON from "../apps-content/spooftify.json";
-import SpooftifyContent from "./spooftify/SpooftifyContent";
 import SpooftifyHeader from "./spooftify/SpooftifyHeader";
+import {Navigate, Route, Routes } from "react-router-dom";
+import SpooftifyHome from "./spooftify/SpooftifyHome";
+import SpooftifyMint from "./spooftify/SpooftifyMint";
 
 type ContentItem = {
     /**
@@ -39,12 +41,16 @@ type AppContent = ContentItem[];
 type SelectedItem = [number, ContentItem];
 
 type SpooftifyAppContext = {
+    address: string,
+    isContentAvailable: boolean | null,
     content: AppContent;
     selectedItem: SelectedItem | null;
     selectItem: (id: number | null) => any;
 }
 
 export const spooftifyAppContext = createContext<SpooftifyAppContext>({
+    address: '',
+    isContentAvailable: null,
     content: [],
     selectedItem: null,
     selectItem: () => {},
@@ -186,27 +192,20 @@ function SpooftifyApp() {
                              provider={provider}
             />
 
-            {address &&
-            <>
-                {isContentAvailable === null &&
-                <p>Verifying your tokens...</p>
-                }
+            <spooftifyAppContext.Provider value={{
+                address,
+                isContentAvailable,
+                content: appContent,
+                selectedItem,
+                selectItem,
+            }}>
+                <Routes>
+                    <Route path="/" element={<SpooftifyHome/>}/>
+                    <Route path="/mint" element={<SpooftifyMint/>}/>
 
-                {isContentAvailable === false &&
-                <p>You are not authorized to access content</p>
-                }
-
-                {isContentAvailable === true &&
-                <spooftifyAppContext.Provider value={{
-                    content: appContent,
-                    selectedItem,
-                    selectItem,
-                }}>
-                    <SpooftifyContent/>
-                </spooftifyAppContext.Provider>
-                }
-            </>
-            }
+                    <Route path="*" element={<Navigate to="/spooftify" replace/>}/>
+                </Routes>
+            </spooftifyAppContext.Provider>
         </div>
 
     )
