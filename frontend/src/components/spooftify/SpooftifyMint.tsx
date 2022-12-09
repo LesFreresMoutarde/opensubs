@@ -41,7 +41,7 @@ function SpooftifyMint() {
                 }
             }
         });
-    }, [subscription]);
+    }, [subscription, address]);
 
     const mint = useCallback(async () => {
         if (!subscription) {
