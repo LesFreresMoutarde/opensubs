@@ -7,6 +7,7 @@ import {
     getUsedTokensByUser, isRentingExpired, isTokenReclaimable, isTokenRentable
 } from "../../utils/SubscriptionUtil";
 import {BigNumber} from "ethers";
+import { Link } from "react-router-dom";
 
 type Token = {
     tokenId: BigNumber,
@@ -114,7 +115,11 @@ function OpenSubsMyTokens() {
                     })();
 
                     return (
-                        <li key={index}>{`${token.service}#${token.tokenId} (${status})`}</li>
+                        <li key={index}>
+                            <Link to={`/opensubs/${token.service}/${token.tokenId}`}>
+                                {`${token.service}#${token.tokenId} (${status})`}
+                            </Link>
+                        </li>
                     );
                 })}
             </ul>
@@ -127,7 +132,11 @@ function OpenSubsMyTokens() {
                     const status: TokenStatus = "borrowed";
 
                     return (
-                        <li key={index}>{`${token.service}#${token.tokenId} (${status})`}</li>
+                        <li key={index}>
+                            <Link to={`/opensubs/${token.service}/${token.tokenId}`}>
+                                {`${token.service}#${token.tokenId} (${status})`}
+                            </Link>
+                        </li>
                     );
                 })}
             </ul>
