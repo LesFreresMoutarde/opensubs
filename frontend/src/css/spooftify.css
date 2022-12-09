@@ -246,6 +246,17 @@ body {
     background-color: #1db954;
 }
 
+.spooftify-app .please-subscribe {
+    display: flex;
+    justify-content: center;
+    font-size: 1.2em;
+    margin-top: 10vh;
+}
+
+.spooftify-app .please-subscribe a {
+    color: #1db954;
+}
+
 .spooftify-app .mint-page {
     display: flex;
     flex-direction: column;
