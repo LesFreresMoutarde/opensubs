@@ -176,7 +176,7 @@ function OpenSubsApp() {
     }
 
     return (
-        <div>
+        <div className="opensubs-app">
             <OpenSubsHeader address={address}
                             changeAddress={setAddress}
                             provider={provider}

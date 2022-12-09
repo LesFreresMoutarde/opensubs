@@ -186,7 +186,7 @@ function SpooftifyApp() {
     }
 
     return (
-        <div>
+        <div className="spooftify-app">
             <SpooftifyHeader address={address}
                              changeAddress={setAddress}
                              provider={provider}

@@ -195,7 +195,7 @@ function FakeflixApp() {
     }
 
     return (
-        <div>
+        <div className="fakeflix-app">
             <FakeflixHeader address={address}
                             changeAddress={setAddress}
                             provider={provider}

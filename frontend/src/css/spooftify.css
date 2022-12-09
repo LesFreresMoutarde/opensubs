@@ -2,6 +2,10 @@ body {
     background-color: #121212;
 }
 
+.spooftify-app a {
+    color: white;
+}
+
 .spooftify-app-header .connect-wallet-button {
     background-color: #1ed760;
     color: #000;
@@ -26,6 +30,39 @@ body {
 
 .spooftify-app-header .header-logo {
     display: flex;
+}
+
+.spooftify-app-header nav {
+    display: flex;
+    align-items: center;
+    margin-left: 2em;
+}
+
+.spooftify-app-header nav ul {
+    display: flex;
+    align-items: center;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: 0.5em;
+}
+
+.spooftify-app-header nav li a {
+    display: inline-block;
+    padding: 0.75em 0.75em;
+    color: inherit;
+    text-decoration: none;
+    font-size: 1.1em;
+    font-weight: 700;
+
+    border-radius: 0.25em;
+
+    transition: background-color 0.1s ease-out;
+}
+
+.spooftify-app-header nav li a:hover,
+.spooftify-app-header nav li a.active {
+     background-color: #1ed760;
 }
 
 .spooftify-app-header .header-right {
