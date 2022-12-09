@@ -4,9 +4,6 @@ import {Contract, providers} from "ethers";
 import {autoLogin, isChainIdSupported} from "../utils/ProviderUtils";
 import {
     getSubscriptionContract,
-    getBalanceOfOwnedTokens,
-    getOwnedTokensByUser,
-    getBalanceOfUsedTokens, getUsedTokensByUser, isTokenRentable, isTokenReclaimable
 } from "../utils/SubscriptionUtil";
 import OpenSubsHeader from "./openSubs/OpenSubsHeader";
 import {Navigate, Route, Routes } from "react-router-dom";
