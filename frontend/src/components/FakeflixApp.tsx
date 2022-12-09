@@ -1,12 +1,60 @@
-import {useEffect, useState} from "react";
+import {createContext, useCallback, useEffect, useState} from "react";
 import {Contract, providers} from "ethers";
-import ConnectButton from "./common/ConnectButton";
 import {autoLogin, isChainIdSupported} from "../utils/ProviderUtils";
 import {
     getSubscriptionContract,
     getBalanceOfOwnedTokens,
     getOwnedTokensByUser, getBalanceOfUsedTokens, getUsedTokensByUser, isContentAvailableFromToken, mintToken
 } from "../utils/SubscriptionUtil";
+import FakeflixHeader from "./fakeflix/FakeflixHeader";
+import "../css/fakeflix.css";
+
+import CONTENT_JSON from "../apps-content/fakeflix.json";
+import FakeflixContent from "./fakeflix/FakeflixContent";
+
+type ContentItem = {
+    /**
+     * The movie title
+     */
+    title: string;
+
+    /**
+     * The movie director
+     */
+    director: string;
+
+    /**
+     * Notable actors
+     */
+    actors: string[];
+
+    /**
+     * The URL to a cover image
+     */
+    coverUrl: string;
+
+    /**
+     * The URL to a video file
+     */
+    movieUrl: string;
+}
+
+type AppContent = ContentItem[];
+
+type SelectedItem = [number, ContentItem];
+
+type FakeflixAppContext = {
+    content: AppContent;
+    selectedItem: SelectedItem | null;
+    selectItem: (id: number | null) => any;
+}
+
+export const fakeflixAppContext = createContext<FakeflixAppContext>({
+    content: [],
+    selectedItem: null,
+    selectItem: () => {},
+});
+
 function FakeflixApp() {
 
     const [provider, setProvider] = useState<providers.Web3Provider | null | undefined>(undefined);
@@ -18,6 +66,10 @@ function FakeflixApp() {
     const [subscription, setSubscription] = useState<Contract | null>(null);
 
     const [isContentAvailable, setIsContentAvailable] = useState<boolean | null>(null);
+
+    const [appContent, setAppContent] = useState<AppContent>([]);
+
+    const [selectedItem, setSelectedItem] = useState<SelectedItem | null>(null);
 
     useEffect(() => {
         (async () => {
@@ -33,6 +85,11 @@ function FakeflixApp() {
                 }
 
                 window.ethereum.on('accountsChanged', (accounts: any) => {
+                    if (accounts.length === 0) {
+                        setAddress('');
+                        return;
+                    }
+
                     setAddress(String(accounts[0]));
                 });
 
@@ -94,6 +151,24 @@ function FakeflixApp() {
 
     }, [address, subscription]);
 
+    useEffect(() => {
+        if (isContentAvailable) {
+            setAppContent(CONTENT_JSON);
+            return;
+        }
+
+        setAppContent([]);
+    }, [isContentAvailable]);
+
+    const selectItem = useCallback((itemId: number | null) => {
+        if (itemId === null) {
+            setSelectedItem(null);
+            return;
+        }
+
+        setSelectedItem([itemId, appContent[itemId]]);
+    }, [appContent]);
+
     if (provider === undefined) {
         return (
             <div>Loading...</div>
@@ -114,9 +189,10 @@ function FakeflixApp() {
 
     return (
         <div>
-            <p>Fakeflix ! tudum</p>
-            <p>{address}</p>
-            <ConnectButton changeAddress={setAddress} provider={provider}/>
+            <FakeflixHeader address={address}
+                            changeAddress={setAddress}
+                            provider={provider}
+            />
 
             {address &&
             <>
@@ -129,7 +205,13 @@ function FakeflixApp() {
                 }
 
                 {isContentAvailable === true &&
-                <p>TODO App content</p>
+                <fakeflixAppContext.Provider value={{
+                    content: appContent,
+                    selectedItem,
+                    selectItem,
+                }}>
+                    <FakeflixContent/>
+                </fakeflixAppContext.Provider>
                 }
             </>
             }

@@ -1,3 +1,4 @@
+import "../css/opensubs.css";
 import {useEffect, useState} from "react";
 import {Contract, providers} from "ethers";
 import ConnectButton from "./common/ConnectButton";
@@ -8,6 +9,8 @@ import {
     getOwnedTokensByUser,
     getBalanceOfUsedTokens, getUsedTokensByUser, isTokenRentable, isTokenReclaimable
 } from "../utils/SubscriptionUtil";
+import OpenSubsHeader from "./openSubs/OpenSubsHeader";
+import {Route, Routes } from "react-router-dom";
 
 type ContractDescription = {
     /**
@@ -43,6 +46,19 @@ function OpenSubsApp() {
     const [contracts, setContracts] = useState<ContractsList | null>(null);
 
     useEffect(() => {
+        const initialBackgroundColor = document.body.style.backgroundColor;
+        const initialColor = document.body.style.color;
+
+        document.body.style.backgroundColor = "#f8f8f8";
+        document.body.style.color = "#080808";
+
+        return (() => {
+            document.body.style.backgroundColor = initialBackgroundColor;
+            document.body.style.color = initialColor;
+        });
+    });
+
+    useEffect(() => {
         (async () => {
             if (window.ethereum) {
                 const web3Provider = new providers.Web3Provider(window.ethereum);
@@ -56,6 +72,11 @@ function OpenSubsApp() {
                 }
 
                 window.ethereum.on('accountsChanged', (accounts: any) => {
+                    if (accounts.length === 0) {
+                        setAddress('');
+                        return;
+                    }
+
                     setAddress(String(accounts[0]));
                 });
 
@@ -156,9 +177,14 @@ function OpenSubsApp() {
 
     return (
         <div>
-            <p>OpenSubs !! !</p>
-            <p>{address}</p>
-            <ConnectButton changeAddress={setAddress} provider={provider}/>
+            <OpenSubsHeader address={address}
+                            changeAddress={setAddress}
+                            provider={provider}
+            />
+            <Routes>
+                <Route path="my-subscriptions" element={<p>My subscriptions</p>}/>
+                <Route path="subscriptions-for-rent" element={<p>Subscriptions for rent</p>}/>
+            </Routes>
         </div>
     )
 }
