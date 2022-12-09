@@ -117,7 +117,7 @@ async function deploySpooftify(
     return spooftify;
 }
 
-async function mintFixturesTokens(fakeflix: Subscription, spooftify: Subscription, {rate, decimals}, accounts: any) {
+async function mintFixturesTokens(fakeflix: Subscription, spooftify: Subscription, {rate, decimals}: {rate: BigNumber, decimals: number}, accounts: any) {
     const fakeflixContentSubscriptionPrice = await fakeflix.contentSubscriptionPrice();
 
     const rateWithDecimalsBN = rate.div(BigNumber.from((10 ** decimals).toString()));
