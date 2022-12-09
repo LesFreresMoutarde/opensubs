@@ -1,6 +1,7 @@
 import {providers} from "ethers";
 import {shortenAddress} from "../../utils/Util";
 import ConnectButton from "../common/ConnectButton";
+import OpenSubsNavbar from "./OpenSubsNavbar";
 
 interface OpenSubsHeaderProps {
     address: string;
@@ -14,6 +15,7 @@ function OpenSubsHeader({address, changeAddress, provider}: OpenSubsHeaderProps)
             <div className="header-logo">
                 <img src="/opensubs/opensubs-inline-logo.png" alt="Logo"/>
             </div>
+            <OpenSubsNavbar/>
             <div className="flex-spacer"/>
             <div className="header-right">
                 {address &&
