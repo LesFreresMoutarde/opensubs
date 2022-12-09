@@ -41,7 +41,7 @@ function FakeflixMint() {
                 }
             }
         });
-    }, [subscription]);
+    }, [subscription, address]);
 
     const mint = useCallback(async () => {
         if (!subscription) {
