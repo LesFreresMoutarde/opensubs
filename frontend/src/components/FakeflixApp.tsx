@@ -10,7 +10,9 @@ import FakeflixHeader from "./fakeflix/FakeflixHeader";
 import "../css/fakeflix.css";
 
 import CONTENT_JSON from "../apps-content/fakeflix.json";
-import FakeflixContent from "./fakeflix/FakeflixContent";
+import {Navigate, Route, Routes } from "react-router-dom";
+import FakeflixHome from "./fakeflix/FakeflixHome";
+import FakeflixMint from "./fakeflix/FakeflixMint";
 
 type ContentItem = {
     /**
@@ -44,12 +46,16 @@ type AppContent = ContentItem[];
 type SelectedItem = [number, ContentItem];
 
 type FakeflixAppContext = {
+    address: string,
+    isContentAvailable: boolean | null,
     content: AppContent;
     selectedItem: SelectedItem | null;
     selectItem: (id: number | null) => any;
 }
 
 export const fakeflixAppContext = createContext<FakeflixAppContext>({
+    address: '',
+    isContentAvailable: null,
     content: [],
     selectedItem: null,
     selectItem: () => {},
@@ -191,27 +197,20 @@ function FakeflixApp() {
                             provider={provider}
             />
 
-            {address &&
-            <>
-                {isContentAvailable === null &&
-                <p>Verifying your tokens...</p>
-                }
+            <fakeflixAppContext.Provider value={{
+                address,
+                isContentAvailable,
+                content: appContent,
+                selectedItem,
+                selectItem,
+            }}>
+                <Routes>
+                    <Route path="/" element={<FakeflixHome/>}/>
+                    <Route path="/mint" element={<FakeflixMint/>}/>
 
-                {isContentAvailable === false &&
-                <p>You are not authorized to access content</p>
-                }
-
-                {isContentAvailable === true &&
-                <fakeflixAppContext.Provider value={{
-                    content: appContent,
-                    selectedItem,
-                    selectItem,
-                }}>
-                    <FakeflixContent/>
-                </fakeflixAppContext.Provider>
-                }
-            </>
-            }
+                    <Route path="*" element={<Navigate to="/fakeflix" replace/>}/>
+                </Routes>
+            </fakeflixAppContext.Provider>
         </div>
     )
 }
