@@ -2,6 +2,7 @@ import {providers} from "ethers";
 import {shortenAddress} from "../../utils/Util";
 import ConnectButton from "../common/ConnectButton";
 import OpenSubsNavbar from "./OpenSubsNavbar";
+import {Link} from "react-router-dom";
 
 interface OpenSubsHeaderProps {
     address: string;
@@ -13,7 +14,9 @@ function OpenSubsHeader({address, changeAddress, provider}: OpenSubsHeaderProps)
     return (
         <header className="opensubs-app-header">
             <div className="header-logo">
-                <img src="/opensubs/opensubs-inline-logo.png" alt="Logo"/>
+                <Link to="/opensubs">
+                    <img src="/opensubs/opensubs-inline-logo.png" alt="Logo"/>
+                </Link>
             </div>
             <OpenSubsNavbar/>
             <div className="flex-spacer"/>
