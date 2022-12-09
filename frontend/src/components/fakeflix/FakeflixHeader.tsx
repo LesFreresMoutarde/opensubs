@@ -1,6 +1,7 @@
 import {providers} from "ethers";
 import ConnectButton from "../common/ConnectButton";
 import {shortenAddress} from "../../utils/Util";
+import ServiceAppNavbar from "../common/ServiceAppNavbar";
 
 interface SpooftifyHeaderProps {
     address: string;
@@ -14,6 +15,7 @@ function SpooftifyHeader({address, changeAddress, provider}: SpooftifyHeaderProp
             <div className="header-logo">
                 <img src="/fakeflix/img/fakeflix-logo.png" alt="Logo"/>
             </div>
+            <ServiceAppNavbar urlPrefix="/fakeflix/"/>
             <div className="flex-spacer"/>
             <div className="header-right">
                 {address &&
