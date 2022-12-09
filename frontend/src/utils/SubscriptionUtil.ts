@@ -1,6 +1,7 @@
 import {BigNumber, Contract, ethers, providers} from "ethers";
 import SUBSCRIPTION_JSON from "../artifacts/contracts/Subscription.sol/Subscription.json";
 import {getChainlinkEthUsdPriceFeed} from "./OracleUtils";
+import {areAdressesEqual} from "./Util";
 
 function getSubscriptionContract(provider: providers.Web3Provider, address: string): Contract {
     return new ethers.Contract(address, SUBSCRIPTION_JSON.abi, provider.getSigner());
@@ -71,6 +72,7 @@ async function isContentAvailableFromToken(contract: Contract, tokenId: BigNumbe
     return true;
 }
 
+// Returns true if token owner can create a renting offer
 async function isTokenRentable(contract: Contract, tokenId: BigNumber, address: string) {
     const ownerOf = await contract.ownerOf(tokenId);
 
@@ -87,6 +89,35 @@ async function isTokenRentable(contract: Contract, tokenId: BigNumber, address: 
     const userOf = await contract.userOf(tokenId);
 
     if (userOf !== ethers.constants.AddressZero) {
+        return false;
+    }
+
+    return true;
+}
+
+// Returns true if user can borrow token
+async function isTokenBorrowable(contract: Contract, tokenId: BigNumber, address: string) {
+    const ownerOf = await contract.ownerOf(tokenId);
+
+    if (areAdressesEqual(address, ownerOf)) {
+        return false;
+    }
+
+    // Check that token subscription will not expire before renting expiration
+
+    const subscriptionExpiration = await contract.expiresAt(tokenId) * 1000;
+
+    const rentingConditions = await contract.getRentingConditions(tokenId);
+
+    if (rentingConditions.createdAt.eq(0)) {
+        return false;
+    }
+
+    const rentingDuration = await rentingConditions.duration.mul(1000);
+
+    const rentingExpiration: BigNumber = rentingDuration.add(Date.now());
+
+    if (rentingExpiration.gt(subscriptionExpiration)) {
         return false;
     }
 
@@ -140,6 +171,7 @@ export {
     isRentingExpired,
     isContentAvailableFromToken,
     isTokenRentable,
+    isTokenBorrowable,
     isTokenReclaimable,
     getSubscriptionPrice,
     mintToken
