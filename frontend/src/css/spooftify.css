@@ -245,3 +245,32 @@ body {
     height: 100%;
     background-color: #1db954;
 }
+
+.spooftify-app .mint-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 30vh;
+}
+
+.spooftify-app .mint-page .text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.spooftify-app .mint-page button {
+    background-color: #1ed760;
+    color: #000;
+    font-size: 1.3em;
+    font-weight: 700;
+    padding: 0.5em 1em;
+    border-radius: 0.5em;
+
+    transition: background-color 0.1s ease-out;
+}
+
+.spooftify-app .mint-page button:hover {
+    cursor: pointer;
+    background-color: #fff;
+}

@@ -110,8 +110,12 @@ async function isTokenReclaimable(contract: Contract, tokenId: BigNumber, addres
     return true;
 }
 
+async function getSubscriptionPrice(contract: Contract) {
+    return await contract.contentSubscriptionPrice();
+}
+
 async function mintToken(contract: Contract, provider: providers.Web3Provider) {
-    const contentSubscriptionPrice = await contract.contentSubscriptionPrice();
+    const contentSubscriptionPrice = await getSubscriptionPrice(contract);
 
     const {rate, decimals} = await getChainlinkEthUsdPriceFeed(provider)
 
@@ -131,5 +135,6 @@ export {
     isContentAvailableFromToken,
     isTokenRentable,
     isTokenReclaimable,
+    getSubscriptionPrice,
     mintToken
 }
