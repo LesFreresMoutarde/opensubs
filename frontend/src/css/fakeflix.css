@@ -2,6 +2,10 @@ body {
     background-color: #121212;
 }
 
+.fakeflix-app a {
+    color: white;
+}
+
 .fakeflix-app-header .connect-wallet-button {
     background-color: #dc1a28;
     color: #000;

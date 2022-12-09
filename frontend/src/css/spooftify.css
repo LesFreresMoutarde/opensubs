@@ -2,6 +2,10 @@ body {
     background-color: #121212;
 }
 
+.spooftify-app a {
+    color: white;
+}
+
 .spooftify-app-header .connect-wallet-button {
     background-color: #1ed760;
     color: #000;
