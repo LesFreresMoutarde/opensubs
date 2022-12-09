@@ -10,7 +10,9 @@ import FakeflixHeader from "./fakeflix/FakeflixHeader";
 import "../css/fakeflix.css";
 
 import CONTENT_JSON from "../apps-content/fakeflix.json";
-import FakeflixContent from "./fakeflix/FakeflixContent";
+import {Navigate, Route, Routes } from "react-router-dom";
+import FakeflixHome from "./fakeflix/FakeflixHome";
+import FakeflixMint from "./fakeflix/FakeflixMint";
 
 type ContentItem = {
     /**
@@ -44,15 +46,23 @@ type AppContent = ContentItem[];
 type SelectedItem = [number, ContentItem];
 
 type FakeflixAppContext = {
+    address: string,
+    isContentAvailable: boolean | null,
     content: AppContent;
     selectedItem: SelectedItem | null;
     selectItem: (id: number | null) => any;
+    subscription: Contract | null;
+    provider: providers.Web3Provider | null;
 }
 
 export const fakeflixAppContext = createContext<FakeflixAppContext>({
+    address: '',
+    isContentAvailable: null,
     content: [],
     selectedItem: null,
     selectItem: () => {},
+    subscription: null,
+    provider: null
 });
 
 function FakeflixApp() {
@@ -149,28 +159,6 @@ function FakeflixApp() {
     }, [address, subscription]);
 
     useEffect(() => {
-        if (!subscription) {
-            return;
-        }
-
-        subscription.on('Transfer', (address, to, tokenId) => {
-            console.log("from, to, tokenId", address, to, tokenId)
-            console.log("closeMosdal");
-            console.log("push metadata");
-        })
-    }, [subscription]);
-
-    const mint = useCallback(async () => {
-        console.log("showModal");
-
-        if (!subscription) {
-            return;
-        }
-
-        await mintToken(subscription, provider!);
-    }, [subscription, provider]);
-
-    useEffect(() => {
         if (isContentAvailable) {
             setAppContent(CONTENT_JSON);
             return;
@@ -213,28 +201,21 @@ function FakeflixApp() {
                             provider={provider}
             />
 
-            {address &&
-            <>
-                {isContentAvailable === null &&
-                <p>Verifying your tokens...</p>
-                }
-
-                {isContentAvailable === false &&
-                <p>You are not authorized to access content</p>
-                }
-
-                {isContentAvailable === true &&
-                <fakeflixAppContext.Provider value={{
-                    content: appContent,
-                    selectedItem,
-                    selectItem,
-                }}>
-                    <button onClick={mint}>Mint</button>
-                    <FakeflixContent/>
-                </fakeflixAppContext.Provider>
-                }
-            </>
-            }
+            <fakeflixAppContext.Provider value={{
+                address,
+                isContentAvailable,
+                content: appContent,
+                selectedItem,
+                selectItem,
+                subscription,
+                provider
+            }}>
+                <Routes>
+                    <Route path="/" element={<FakeflixHome/>}/>
+                    <Route path="/mint" element={<FakeflixMint/>}/>
+                    <Route path="*" element={<Navigate to="/fakeflix" replace/>}/>
+                </Routes>
+            </fakeflixAppContext.Provider>
         </div>
     )
 }
