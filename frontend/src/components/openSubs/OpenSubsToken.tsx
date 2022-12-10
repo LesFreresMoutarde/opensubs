@@ -1,9 +1,15 @@
 import {Navigate, useParams} from "react-router-dom";
-import {useCallback, useContext, useEffect, useState} from "react";
+import React, {useCallback, useContext, useEffect, useRef, useState} from "react";
 import {BigNumber, ethers} from "ethers";
 import {openSubsAppContext, ServiceName} from "../OpenSubsApp";
 import {areAdressesEqual, fireToast, getMetadataUrl, SubscriptionMetadata} from "../../utils/Util";
-import {isTokenBorrowable, isTokenReclaimable, isTokenRentable, reclaimToken} from "../../utils/SubscriptionUtil";
+import {
+    getMinimumRentingConditions,
+    isTokenBorrowable, isTokenOfferCancellable,
+    isTokenReclaimable,
+    isTokenRentable, MinRentingConditions, offerForRent,
+    reclaimToken
+} from "../../utils/SubscriptionUtil";
 import LoadingModal from "../common/LoadingModal";
 
 function OpenSubsToken() {
@@ -21,6 +27,10 @@ function OpenSubsToken() {
     const [isReclaimable, setIsReclaimable] = useState(false);
 
     const [metadata, setMetadata] = useState<SubscriptionMetadata | null>(null);
+    const [minRentingConditions, setMinRentingConditions] = useState<MinRentingConditions | null>(null);
+
+    const priceInputRef = useRef<HTMLInputElement | null>(null);
+    const durationInputRef = useRef<HTMLInputElement | null>(null);
 
     useEffect(() => {
         if (!contracts) {
@@ -52,6 +62,8 @@ function OpenSubsToken() {
 
             const contract = contracts[platform as ServiceName].contract;
 
+            setMinRentingConditions(await getMinimumRentingConditions(contract));
+
             setIsRentable(await isTokenRentable(contract, tokenIdBn, address));
             setIsBorrowable(await isTokenBorrowable(contract, tokenIdBn, address));
             setIsReclaimable(await isTokenReclaimable(contract, tokenIdBn, address));
@@ -70,9 +82,17 @@ function OpenSubsToken() {
             return;
         }
 
+        if (!address) {
+            return;
+        }
+
+        if (!owner) {
+            return;
+        }
+
         const contract = contracts[platform as ServiceName].contract;
 
-        const handler = async (eventTokenId: BigNumber, user: string) => {
+        const updateUserHandler = async (eventTokenId: BigNumber, user: string) => {
             if (!BigNumber.from(tokenId).eq(eventTokenId)) {
                 return;
             }
@@ -94,12 +114,52 @@ function OpenSubsToken() {
             fireToast('success', 'You have successfully reclaimed your subscription');
         }
 
-        contract.on('UpdateUser', handler);
+        const rentOfferCreatedHandler = async (eventTokenId: BigNumber) => {
+            if (!BigNumber.from(tokenId).eq(eventTokenId)) {
+                return;
+            }
+
+            if (!areAdressesEqual(address, String(owner))) {
+                return;
+            }
+
+            setIsRentable(await isTokenRentable(contract, eventTokenId, address));
+
+            setShowModal(false);
+
+            fireToast('success', 'You have successfully created a renting offer');
+        }
+
+        contract.on('UpdateUser', updateUserHandler);
+
+        contract.on('RentOfferCreated', rentOfferCreatedHandler);
 
         return (() => {
-            contract.off('UpdateUser', handler);
+            contract.off('UpdateUser', updateUserHandler);
+
+            contract.off('RentOfferCreated', rentOfferCreatedHandler);
         })
     }, [contracts, platform, tokenId, address, owner]);
+
+    const createOfferForRent = useCallback(async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!contracts) {
+            return;
+        }
+
+        if (!priceInputRef || !durationInputRef) {
+            return;
+        }
+
+        const price = parseInt(priceInputRef.current!.value) * 100 || minRentingConditions!.minPrice * 100;
+
+        const duration = parseInt(durationInputRef.current!.value) || minRentingConditions!.minDuration;
+
+        await offerForRent(contracts[platform as ServiceName].contract, BigNumber.from(tokenId), price, duration);
+
+        setShowModal(true);
+    }, [tokenId, contracts, priceInputRef, durationInputRef]);
 
     const reclaim = useCallback(async () => {
         if (!isReclaimable) {
@@ -114,7 +174,7 @@ function OpenSubsToken() {
             return;
         }
 
-        await reclaimToken(contracts[platform as ServiceName].contract, provider, BigNumber.from(tokenId));
+        await reclaimToken(contracts[platform as ServiceName].contract, BigNumber.from(tokenId));
 
         setShowModal(true);
     }, [provider, isReclaimable, contracts, tokenId, platform])
@@ -159,7 +219,38 @@ function OpenSubsToken() {
                     <p>{metadata.description}</p>
 
                     {isRentable &&
-                    <div>Interactions pour créer une offre</div>
+                    <div>
+                        <h3>Offer for rent</h3>
+                        <form onSubmit={createOfferForRent}>
+                            <div className="form-group">
+                                <label htmlFor="renting-conditions-price">Price ($)</label>
+                                <input type="number"
+                                       className="form-control"
+                                       id="renting-conditions-price"
+                                       placeholder="Price"
+                                       min={minRentingConditions!.minPrice}
+                                       step="0.01"
+                                       ref={priceInputRef}
+                                       required
+                                />
+                            </div>
+                            <div className="form-group mt-2">
+                                <label htmlFor="renting-conditions-duration">Duration (seconds)</label>
+                                <input type="number"
+                                       className="form-control"
+                                       id="renting-conditions-duration"
+                                       placeholder="Duration"
+                                       min={minRentingConditions!.minDuration}
+                                       ref={durationInputRef}
+                                       required
+                                />
+                            </div>
+                            <div className="mt-3">
+                                <button type="submit" className="btn btn-primary">Create offer</button>
+                            </div>
+                        </form>
+                    </div>
+
                     }
 
                     {isBorrowable &&
