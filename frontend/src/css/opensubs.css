@@ -79,11 +79,13 @@
     padding: 0.25em 0.75em;
 }
 
-.my-tokens-page {
+.my-tokens-page,
+.gallery-page {
     margin-top: 1em;
 }
 
-.my-tokens-page .filters-container {
+.my-tokens-page .filters-container,
+.gallery-page .filters-container {
     height: 100%;
     padding: 0.75em;
 
@@ -92,35 +94,37 @@
     gap: 0.5em;
 }
 
-.my-tokens-page .filters-container .btn {
+.my-tokens-page .filters-container .btn,
+.gallery-page .filters-container .btn {
     width: 100%;
     border: 1px solid #ffbd59;
 }
 
-.my-tokens-page .filters-container .btn.active {
+.my-tokens-page .filters-container .btn.active,
+.gallery-page .filters-container .btn.active {
     background-color: #ffbd59;
 }
 
-.my-tokens-page .token-cards-container {
+.token-cards-container {
     display: flex;
     flex-wrap: wrap;
     gap: 1em;
 }
 
-.my-tokens-page .token-cards-container .card {
+.token-cards-container .card {
     width: calc(25% - 1em);
     box-sizing: border-box;
 }
 
-.my-tokens-page .token-cards-container .card h5::first-letter {
+.token-cards-container .card h5::first-letter {
     text-transform: uppercase;
 }
 
-.my-tokens-page .token-cards-container .card h5 span {
+.token-cards-container .card h5 span {
     font-size: 0.85em;
 }
 
-.my-tokens-page .token-cards-container .card .img-container {
+.token-cards-container .card .img-container {
     height: 10em;
     width: 100%;
     display: flex;
@@ -129,22 +133,22 @@
     padding: 1em;
 }
 
-.my-tokens-page .token-cards-container .card .img-container img {
+.token-cards-container .card .img-container img {
     max-width: 100%;
     max-height: 100%;
 }
 
-.my-tokens-page .token-cards-container .card .card-footer {
+.token-cards-container .card .card-footer {
     border: none;
     background-color: transparent;
 }
 
-.my-tokens-page .token-cards-container .card .btn {
+.token-cards-container .card .btn {
     background-color: #ffbd59;
     border: 1px solid #ef9d24;
 }
 
-.my-tokens-page .token-cards-container .card .btn:hover {
+.token-cards-container .card .btn:hover {
     background-color: #faae3a;
 }
 
@@ -172,6 +176,7 @@
     align-items: center;
     justify-content: center;
     max-width: 400px;
+    min-height: 300px;
     padding: 2em;
 }
 
