@@ -162,6 +162,10 @@ async function mintToken(contract: Contract, provider: providers.Web3Provider) {
     await contract.mint({value: amountToSend});
 }
 
+async function reclaimToken(contract: Contract, provider: providers.Web3Provider, tokenId: BigNumber) {
+    await contract.reclaim(tokenId);
+}
+
 export {
     getSubscriptionContract,
     getBalanceOfOwnedTokens,
@@ -174,5 +178,6 @@ export {
     isTokenBorrowable,
     isTokenReclaimable,
     getSubscriptionPrice,
-    mintToken
+    mintToken,
+    reclaimToken,
 }

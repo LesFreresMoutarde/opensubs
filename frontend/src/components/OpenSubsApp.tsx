@@ -36,11 +36,13 @@ const contractAddresses: {[key in ServiceName]: string} = {
 type OpenSubsAppContext = {
     address: string,
     contracts: ContractsList | null,
+    provider: providers.Web3Provider | undefined,
 }
 
 export const openSubsAppContext = createContext<OpenSubsAppContext>({
     address: '',
     contracts: null,
+    provider: undefined,
 });
 
 function OpenSubsApp() {
@@ -141,6 +143,7 @@ function OpenSubsApp() {
             <openSubsAppContext.Provider value={{
                 address,
                 contracts,
+                provider,
             }}>
                 <OpenSubsHeader address={address}
                                 changeAddress={setAddress}
