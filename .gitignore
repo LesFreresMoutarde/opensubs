@@ -9,3 +9,4 @@ typechain-types
 #Hardhat files
 cache
 frontend/src/artifacts/
+ethereum/.openzeppelin/unknown-*.json
