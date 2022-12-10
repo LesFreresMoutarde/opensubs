@@ -10,6 +10,9 @@ function OpenSubsGallery() {
         // Sort per createdAt
     }, []);
 
+    return (
+        <p>Gallery</p>
+    );
 }
 
 export default OpenSubsGallery

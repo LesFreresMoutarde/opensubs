@@ -9,6 +9,7 @@ import OpenSubsHeader from "./openSubs/OpenSubsHeader";
 import {Navigate, Route, Routes } from "react-router-dom";
 import OpenSubsMyTokens from "./openSubs/OpenSubsMyTokens";
 import OpenSubsToken from "./openSubs/OpenSubsToken";
+import OpenSubsGallery from "./openSubs/OpenSubsGallery";
 
 type ContractDescription = {
     /**
@@ -150,7 +151,7 @@ function OpenSubsApp() {
                                 provider={provider}
                 />
                 <Routes>
-                    <Route path="/" element={<p>Marketplace</p>}/>
+                    <Route path="/" element={<OpenSubsGallery/>}/>
                     <Route path="my-subscriptions" element={<OpenSubsMyTokens/>}/>
                     <Route path="/token/:platform/:tokenId" element={<OpenSubsToken/>}/>
 
