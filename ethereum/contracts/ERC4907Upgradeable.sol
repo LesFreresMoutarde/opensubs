@@ -6,6 +6,10 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "./IERC4907.sol";
 
+/**
+ * @dev Implementation of https://eips.ethereum.org/EIPS/eip-4907[ERC4907]
+ * @author alexisljn & EmileCalixte
+ */
 contract ERC4907Upgradeable is Initializable, IERC4907, ERC721Upgradeable {
 
     struct UserInfo {
