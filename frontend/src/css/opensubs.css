@@ -147,3 +147,39 @@
 .my-tokens-page .token-cards-container .card .btn:hover {
     background-color: #faae3a;
 }
+
+.token-details-page {
+    display: flex;
+    justify-content: center;
+}
+
+.token-details-page h1 a {
+    font-size: 0.5em;
+    color: #606060;
+    position: relative;
+    top: -2px;
+}
+
+.token-details-page .token-details {
+    margin-top: 2em;
+
+    display: flex;
+    gap: 2em;
+}
+
+.token-details-page .token-details .token-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-width: 400px;
+    padding: 2em;
+}
+
+.token-details-page .token-details .token-image img {
+    max-width: 300px;
+    max-height: 300px;
+}
+
+.token-details-page .token-details h1::first-letter {
+    text-transform: uppercase;
+}
