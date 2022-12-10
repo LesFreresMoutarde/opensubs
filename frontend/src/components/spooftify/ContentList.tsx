@@ -29,7 +29,7 @@ function ContentList() {
                                 <div className="index">
                                     {(() => {
                                         if (selectedItem && selectedItem[0] === index) {
-                                            return "▶";
+                                            return <i className="fa-solid fa-play"/>;
                                         }
 
                                         return index + 1;
@@ -38,10 +38,10 @@ function ContentList() {
                                 <div className="play-button">
                                     {(() => {
                                         if (selectedItem && selectedItem[0] === index) {
-                                            return "◼";
+                                            return <i className="fa-solid fa-stop"/>;
                                         }
 
-                                        return "▶";
+                                        return <i className="fa-solid fa-play"/>
                                     })()}
                                 </div>
                             </td>
