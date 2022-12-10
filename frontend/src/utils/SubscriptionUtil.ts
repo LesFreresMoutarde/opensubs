@@ -200,12 +200,35 @@ async function getMinimumRentingConditions(contract: Contract): Promise<MinRenti
     return {minPrice, minDuration};
 }
 
+export interface RentingConditions {
+    price: number;
+    duration: BigNumber;
+    createdAd: BigNumber;
+}
+async function getRentingConditions(contract: Contract, tokenId: BigNumber): Promise<RentingConditions> {
+    const rentingConditions = await contract.getRentingConditions(tokenId);
+
+    return {price: rentingConditions.price, duration: rentingConditions.duration, createdAd: rentingConditions.createdAt}
+}
+
 async function offerForRent(contract: Contract, tokenId: BigNumber, price: number, duration: number) {
     await contract.offerForRent(tokenId, price, duration);
 }
 
 async function cancelOffer(contract: Contract, tokenId: BigNumber) {
     await contract.cancelOfferForRent(tokenId);
+}
+
+async function rentToken(contract: Contract, provider: providers.Web3Provider, tokenId: BigNumber) {
+    const {price} = await getRentingConditions(contract, tokenId);
+
+    const {rate, decimals} = await getChainlinkEthUsdPriceFeed(provider);
+
+    const rateWithDecimalsBN = rate.div(BigNumber.from((10 ** decimals).toString()));
+
+    const amountToSend = BigNumber.from(price).mul(BigNumber.from((10 ** 18).toString())).div(rateWithDecimalsBN).div(100);
+
+    await contract.rent(tokenId, {value: amountToSend});
 }
 
 export {
@@ -224,6 +247,8 @@ export {
     mintToken,
     reclaimToken,
     getMinimumRentingConditions,
+    getRentingConditions,
     offerForRent,
-    cancelOffer
+    cancelOffer,
+    rentToken
 }
