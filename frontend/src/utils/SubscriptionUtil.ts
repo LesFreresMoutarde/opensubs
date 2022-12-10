@@ -92,6 +92,12 @@ async function isTokenRentable(contract: Contract, tokenId: BigNumber, address: 
         return false;
     }
 
+    const rentingConditions = await contract.getRentingConditions(tokenId);
+
+    if (!rentingConditions.createdAt.eq(0)) {
+        return false;
+    }
+
     return true;
 }
 
@@ -178,6 +184,10 @@ async function getMinimumRentingConditions(contract: Contract): Promise<MinRenti
     return {minPrice, minDuration};
 }
 
+async function offerForRent(contract: Contract, tokenId: BigNumber, price: number, duration: number) {
+    await contract.offerForRent(tokenId, price, duration);
+}
+
 export {
     getSubscriptionContract,
     getBalanceOfOwnedTokens,
@@ -193,4 +203,5 @@ export {
     mintToken,
     reclaimToken,
     getMinimumRentingConditions,
+    offerForRent
 }
