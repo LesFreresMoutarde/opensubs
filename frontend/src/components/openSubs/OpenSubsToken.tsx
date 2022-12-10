@@ -5,16 +5,16 @@ import {openSubsAppContext, ServiceName} from "../OpenSubsApp";
 import {areAdressesEqual, fireToast, getMetadataUrl, SubscriptionMetadata} from "../../utils/Util";
 import {
     cancelOffer,
-    getMinimumRentingConditions,
+    getMinimumRentingConditions, getRentingConditions,
     isTokenBorrowable, isTokenOfferCancellable,
     isTokenReclaimable,
     isTokenRentable, MinRentingConditions, offerForRent,
-    reclaimToken
+    reclaimToken, RentingConditions, rentToken
 } from "../../utils/SubscriptionUtil";
 import LoadingModal from "../common/LoadingModal";
 
 function OpenSubsToken() {
-    const {address, contracts} = useContext(openSubsAppContext);
+    const {address, contracts, provider} = useContext(openSubsAppContext);
 
     const {platform, tokenId} = useParams();
 
@@ -23,6 +23,7 @@ function OpenSubsToken() {
     const [showModal, setShowModal] = useState<boolean>(false);
 
     const [owner, setOwner] = useState<string | null>(null);
+    const [borrower, setBorrower] = useState<string>(ethers.constants.AddressZero);
     const [isRentable, setIsRentable] = useState(false);
     const [isBorrowable, setIsBorrowable] = useState(false);
     const [isReclaimable, setIsReclaimable] = useState(false);
@@ -30,6 +31,7 @@ function OpenSubsToken() {
 
     const [metadata, setMetadata] = useState<SubscriptionMetadata | null>(null);
     const [minRentingConditions, setMinRentingConditions] = useState<MinRentingConditions | null>(null);
+    const [rentingConditions, setRentingConditions] = useState<RentingConditions | null>(null);
 
     const priceInputRef = useRef<HTMLInputElement | null>(null);
     const durationInputRef = useRef<HTMLInputElement | null>(null);
@@ -65,6 +67,7 @@ function OpenSubsToken() {
             const contract = contracts[platform as ServiceName].contract;
 
             setMinRentingConditions(await getMinimumRentingConditions(contract));
+            setRentingConditions(await getRentingConditions(contract, tokenIdBn));
 
             setIsRentable(await isTokenRentable(contract, tokenIdBn, address));
             setIsBorrowable(await isTokenBorrowable(contract, tokenIdBn, address));
@@ -73,6 +76,10 @@ function OpenSubsToken() {
             try {
                 const owner = await contract.ownerOf(tokenIdBn);
                 setOwner(owner);
+
+                const borrower = await contract.userOf(tokenIdBn);
+
+                setBorrower(borrower);
             } catch {
                 setNotFound(true);
             }
@@ -101,19 +108,26 @@ function OpenSubsToken() {
                 return;
             }
 
-            if (user !== ethers.constants.AddressZero) {
-                return;
+            if (areAdressesEqual(user, ethers.constants.AddressZero)) {
+                if (!areAdressesEqual(address, String(owner))) {
+                    return;
+                }
+
+                await refreshTokenStates(contract, tokenIdBn);
+
+                setShowModal(false);
+
+                fireToast('success', 'You have successfully reclaimed your subscription');
             }
 
-            if (!areAdressesEqual(address, String(owner))) {
-                return;
+            if (areAdressesEqual(address, user)) {
+                await refreshTokenStates(contract, tokenIdBn);
+
+                setShowModal(false);
+
+                fireToast('success', 'You have successfully borrowed this subscription');
+
             }
-
-            await refreshTokenStates(contract, tokenIdBn);
-
-            setShowModal(false);
-
-            fireToast('success', 'You have successfully reclaimed your subscription');
         }
 
         const rentOfferCreatedHandler = async (eventTokenId: BigNumber) => {
@@ -128,6 +142,7 @@ function OpenSubsToken() {
             }
 
             await refreshTokenStates(contract, tokenIdBn);
+            await getRentingConditions(contract, tokenIdBn);
 
             setShowModal(false);
 
@@ -225,6 +240,20 @@ function OpenSubsToken() {
         setShowModal(true);
     }, [isReclaimable, contracts, tokenId, platform])
 
+    const borrow = useCallback(async () => {
+        if (!contracts) {
+            return;
+        }
+
+        if (!provider) {
+            return;
+        }
+
+        await rentToken(contracts[platform as ServiceName].contract, provider, BigNumber.from(tokenId));
+
+        setShowModal(true);
+    }, [contracts, provider])
+
     if (notFound) {
         return (
             <Navigate to="/opensubs" replace/>
@@ -261,6 +290,11 @@ function OpenSubsToken() {
                                 <span> (you)</span>
                             }
                         </p>
+                        {!areAdressesEqual(borrower, ethers.constants.AddressZero) &&
+                            <p>
+                                Borrower: {borrower} {areAdressesEqual(borrower, address) &&  <span> (you)</span>}
+                            </p>
+                        }
 
                         <p>{metadata.description}</p>
 
@@ -306,7 +340,16 @@ function OpenSubsToken() {
                         }
 
                         {isBorrowable &&
-                            <div>Interactions pour emprunter le token</div>
+                            <div>
+                                <h3>Borrow subscription</h3>
+                                <div>
+                                    <span>{`Price: ${rentingConditions!.price / 100}$`}</span>
+                                    <span className="ms-2">{`Duration: ${rentingConditions!.duration}s`}</span>
+                                </div>
+                                <div className="mt-2">
+                                    <button className="btn btn-primary" onClick={borrow}>Borrow</button>
+                                </div>
+                            </div>
                         }
 
                         {isReclaimable &&
