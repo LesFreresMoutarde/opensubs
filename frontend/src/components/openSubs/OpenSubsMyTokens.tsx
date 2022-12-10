@@ -7,22 +7,26 @@ import {
     getUsedTokensByUser, isRentingExpired, isTokenReclaimable, isTokenRentable
 } from "../../utils/SubscriptionUtil";
 import {BigNumber} from "ethers";
-import { Link } from "react-router-dom";
+import MyTokensTokenCard from "./MyTokensTokenCard";
 
-type Token = {
+export type Token = {
     tokenId: BigNumber,
     isRentable: boolean,
     isReclaimable: boolean,
     service: ServiceName,
 };
 
-type TokenStatus = "owned" | "rented" | "reclaimable" | "borrowed"
+export type TokenStatus = "owned" | "rented" | "reclaimable" | "borrowed";
+
+type DisplayCategory = "owned" | "borrowed";
 
 function OpenSubsMyTokens() {
     const {address, contracts} = useContext(openSubsAppContext)
 
     const [ownedTokens, setOwnedTokens] = useState<Token[]>([]);
     const [usedTokens, setUsedTokens] = useState<Token[]>([]);
+
+    const [displayCategory, setDisplayCategory] = useState<DisplayCategory>("owned");
 
     useEffect(() => {
         if (address === '') {
@@ -97,49 +101,68 @@ function OpenSubsMyTokens() {
 
 
     return (
-        <div className="my-tokens-page">
-            <h2>Owned</h2>
+        <div className="my-tokens-page container-fluid">
+            <div className="row">
+                <div className="col-xl-2 col-lg-3">
+                    <div className="filters-container">
+                        <div>
+                            <button className={`btn ${displayCategory === "owned" ? "active" : ""}`}
+                                    onClick={() => setDisplayCategory("owned")}
+                            >
+                                My tokens
+                            </button>
+                        </div>
+                        <div>
+                            <button className={`btn ${displayCategory === "borrowed" ? "active" : ""}`}
+                                    onClick={() => setDisplayCategory("borrowed")}
+                            >
+                                Borrowed tokens
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div className="col-xl-10 col-lg-9">
+                    {displayCategory === "owned" &&
+                    <>
+                        <h2 className="mb-4">Owned</h2>
 
-            <ul>
-                {ownedTokens.map((token, index) => {
-                    const status: TokenStatus = ((): TokenStatus => {
-                        if (token.isReclaimable) {
-                            return "reclaimable";
-                        }
+                        <div className="token-cards-container">
+                            {ownedTokens.map((token, index) => {
+                                const status: TokenStatus = ((): TokenStatus => {
+                                    if (token.isReclaimable) {
+                                        return "reclaimable";
+                                    }
 
-                        if (token.isRentable) {
-                            return "owned";
-                        }
+                                    if (token.isRentable) {
+                                        return "owned";
+                                    }
 
-                        return "rented";
-                    })();
+                                    return "rented";
+                                })();
 
-                    return (
-                        <li key={index}>
-                            <Link to={`/opensubs/${token.service}/${token.tokenId}`}>
-                                {`${token.service}#${token.tokenId} (${status})`}
-                            </Link>
-                        </li>
-                    );
-                })}
-            </ul>
+                                return (
+                                    <MyTokensTokenCard token={token} status={status} key={index}/>
+                                );
+                            })}
+                        </div>
+                    </>
+                    }
 
+                    {displayCategory === "borrowed" &&
+                    <>
+                        <h2 className="mb-4">Borrowed</h2>
 
-            <h2>Borrowed</h2>
-
-            <ul>
-                {usedTokens.map((token, index) => {
-                    const status: TokenStatus = "borrowed";
-
-                    return (
-                        <li key={index}>
-                            <Link to={`/opensubs/${token.service}/${token.tokenId}`}>
-                                {`${token.service}#${token.tokenId} (${status})`}
-                            </Link>
-                        </li>
-                    );
-                })}
-            </ul>
+                        <div className="token-cards-container">
+                            {usedTokens.map((token, index) => {
+                                return (
+                                    <MyTokensTokenCard token={token} status={"borrowed"} key={index}/>
+                                );
+                            })}
+                        </div>
+                    </>
+                    }
+                </div>
+            </div>
         </div>
     );
 }

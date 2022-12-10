@@ -78,3 +78,40 @@
     border-radius: 2em;
     padding: 0.25em 0.75em;
 }
+
+.my-tokens-page {
+    margin-top: 1em;
+}
+
+.my-tokens-page .filters-container {
+    height: 100%;
+    padding: 0.75em;
+
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+}
+
+.my-tokens-page .filters-container .btn {
+    width: 100%;
+    border: 1px solid #ffbd59;
+}
+
+.my-tokens-page .filters-container .btn.active {
+    background-color: #ffbd59;
+}
+
+.my-tokens-page .token-cards-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1em;
+}
+
+.my-tokens-page .token-cards-container .card .btn {
+    background-color: #ffbd59;
+    border: 1px solid #ef9d24;
+}
+
+.my-tokens-page .token-cards-container .card .btn:hover {
+    background-color: #faae3a;
+}
