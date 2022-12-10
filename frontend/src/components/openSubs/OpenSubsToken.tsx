@@ -1,9 +1,10 @@
 import {Navigate, useParams} from "react-router-dom";
 import React, {useCallback, useContext, useEffect, useRef, useState} from "react";
-import {BigNumber, ethers} from "ethers";
+import {BigNumber, Contract, ethers, providers} from "ethers";
 import {openSubsAppContext, ServiceName} from "../OpenSubsApp";
 import {areAdressesEqual, fireToast, getMetadataUrl, SubscriptionMetadata} from "../../utils/Util";
 import {
+    cancelOffer,
     getMinimumRentingConditions,
     isTokenBorrowable, isTokenOfferCancellable,
     isTokenReclaimable,
@@ -13,7 +14,7 @@ import {
 import LoadingModal from "../common/LoadingModal";
 
 function OpenSubsToken() {
-    const {address, contracts, provider} = useContext(openSubsAppContext);
+    const {address, contracts} = useContext(openSubsAppContext);
 
     const {platform, tokenId} = useParams();
 
@@ -25,6 +26,7 @@ function OpenSubsToken() {
     const [isRentable, setIsRentable] = useState(false);
     const [isBorrowable, setIsBorrowable] = useState(false);
     const [isReclaimable, setIsReclaimable] = useState(false);
+    const [isOfferCancellable, setIsOfferCancellable] = useState(false);
 
     const [metadata, setMetadata] = useState<SubscriptionMetadata | null>(null);
     const [minRentingConditions, setMinRentingConditions] = useState<MinRentingConditions | null>(null);
@@ -67,7 +69,7 @@ function OpenSubsToken() {
             setIsRentable(await isTokenRentable(contract, tokenIdBn, address));
             setIsBorrowable(await isTokenBorrowable(contract, tokenIdBn, address));
             setIsReclaimable(await isTokenReclaimable(contract, tokenIdBn, address));
-
+            setIsOfferCancellable(await isTokenOfferCancellable(contract, tokenIdBn, address));
             try {
                 const owner = await contract.ownerOf(tokenIdBn);
                 setOwner(owner);
@@ -93,7 +95,9 @@ function OpenSubsToken() {
         const contract = contracts[platform as ServiceName].contract;
 
         const updateUserHandler = async (eventTokenId: BigNumber, user: string) => {
-            if (!BigNumber.from(tokenId).eq(eventTokenId)) {
+            const tokenIdBn = BigNumber.from(tokenId);
+
+            if (!tokenIdBn.eq(eventTokenId)) {
                 return;
             }
 
@@ -105,9 +109,7 @@ function OpenSubsToken() {
                 return;
             }
 
-            setIsRentable(await isTokenRentable(contract, eventTokenId, address));
-            setIsBorrowable(await isTokenBorrowable(contract, eventTokenId, address));
-            setIsReclaimable(await isTokenReclaimable(contract, eventTokenId, address));
+            await refreshTokenStates(contract, tokenIdBn);
 
             setShowModal(false);
 
@@ -115,7 +117,9 @@ function OpenSubsToken() {
         }
 
         const rentOfferCreatedHandler = async (eventTokenId: BigNumber) => {
-            if (!BigNumber.from(tokenId).eq(eventTokenId)) {
+            const tokenIdBn = BigNumber.from(tokenId);
+
+            if (!tokenIdBn.eq(eventTokenId)) {
                 return;
             }
 
@@ -123,23 +127,55 @@ function OpenSubsToken() {
                 return;
             }
 
-            setIsRentable(await isTokenRentable(contract, eventTokenId, address));
+            await refreshTokenStates(contract, tokenIdBn);
 
             setShowModal(false);
 
             fireToast('success', 'You have successfully created a renting offer');
         }
 
+        const rentOfferCancelledHandler = async (eventTokenId: BigNumber) => {
+            const tokenIdBn = BigNumber.from(tokenId);
+
+            if (!tokenIdBn.eq(eventTokenId)) {
+                return;
+            }
+
+            if (!areAdressesEqual(address, String(owner))) {
+                return;
+            }
+
+            await refreshTokenStates(contract, tokenIdBn);
+
+            setShowModal(false);
+
+            fireToast('success', 'You have successfully cancelled your renting offer');
+        }
+
         contract.on('UpdateUser', updateUserHandler);
 
         contract.on('RentOfferCreated', rentOfferCreatedHandler);
+
+        contract.on('RentOfferCancelled', rentOfferCancelledHandler);
 
         return (() => {
             contract.off('UpdateUser', updateUserHandler);
 
             contract.off('RentOfferCreated', rentOfferCreatedHandler);
+
+            contract.off('RentOfferCancelled', rentOfferCancelledHandler);
         })
     }, [contracts, platform, tokenId, address, owner]);
+
+    const refreshTokenStates = useCallback(async (contract: Contract, tokenId: BigNumber) => {
+        setIsRentable(await isTokenRentable(contract, tokenId, address));
+
+        setIsBorrowable(await isTokenBorrowable(contract, tokenId, address));
+
+        setIsReclaimable(await isTokenReclaimable(contract, tokenId, address));
+
+        setIsOfferCancellable(await isTokenOfferCancellable(contract, tokenId, address));
+    }, [address]);
 
     const createOfferForRent = useCallback(async (e: React.FormEvent) => {
         e.preventDefault();
@@ -161,12 +197,22 @@ function OpenSubsToken() {
         setShowModal(true);
     }, [tokenId, contracts, priceInputRef, durationInputRef]);
 
-    const reclaim = useCallback(async () => {
-        if (!isReclaimable) {
+    const cancelOfferForRent = useCallback(async () => {
+        if (!isOfferCancellable) {
             return;
         }
 
-        if (!provider) {
+        if (!contracts) {
+            return;
+        }
+
+        await cancelOffer(contracts[platform as ServiceName].contract, BigNumber.from(tokenId));
+
+        setShowModal(true);
+    }, [isOfferCancellable, contracts, tokenId]);
+
+    const reclaim = useCallback(async () => {
+        if (!isReclaimable) {
             return;
         }
 
@@ -177,7 +223,7 @@ function OpenSubsToken() {
         await reclaimToken(contracts[platform as ServiceName].contract, BigNumber.from(tokenId));
 
         setShowModal(true);
-    }, [provider, isReclaimable, contracts, tokenId, platform])
+    }, [isReclaimable, contracts, tokenId, platform])
 
     if (notFound) {
         return (
@@ -190,82 +236,88 @@ function OpenSubsToken() {
             {showModal && <LoadingModal showModal={showModal} closeModal={() => setShowModal(false)}/>}
 
             {!metadata &&
-            <p>Loading...</p>
+                <p>Loading...</p>
             }
 
             {metadata &&
-            <div className="token-details">
-                <div className="token-image" style={{
-                    backgroundColor: metadata.background_color,
-                }}>
-                    <img src={metadata.image} alt="Logo"/>
-                </div>
+                <div className="token-details">
+                    <div className="token-image" style={{
+                        backgroundColor: metadata.background_color,
+                    }}>
+                        <img src={metadata.image} alt="Logo"/>
+                    </div>
 
-                <div className="token-data">
-                    <h1>
-                        {platform}#{tokenId} <a href={metadata.content_url} target="_blank">
+                    <div className="token-data">
+                        <h1>
+                            {platform}#{tokenId} <a href={metadata.content_url} target="_blank">
                             <i className="fa-solid fa-arrow-up-right-from-square"/>
                         </a>
 
-                    </h1>
-                    <p>
-                        Owner: {owner}
+                        </h1>
+                        <p>
+                            Owner: {owner}
 
-                        {owner && areAdressesEqual(owner, address) &&
-                        <span> (you)</span>
+                            {owner && areAdressesEqual(owner, address) &&
+                                <span> (you)</span>
+                            }
+                        </p>
+
+                        <p>{metadata.description}</p>
+
+                        {isRentable &&
+                            <div>
+                                <h3>Offer for rent</h3>
+                                <form onSubmit={createOfferForRent}>
+                                    <div className="form-group">
+                                        <label htmlFor="renting-conditions-price">Price ($)</label>
+                                        <input type="number"
+                                               className="form-control"
+                                               id="renting-conditions-price"
+                                               placeholder="Price"
+                                               min={minRentingConditions!.minPrice}
+                                               step="0.01"
+                                               ref={priceInputRef}
+                                               required
+                                        />
+                                    </div>
+                                    <div className="form-group mt-2">
+                                        <label htmlFor="renting-conditions-duration">Duration (seconds)</label>
+                                        <input type="number"
+                                               className="form-control"
+                                               id="renting-conditions-duration"
+                                               placeholder="Duration"
+                                               min={minRentingConditions!.minDuration}
+                                               ref={durationInputRef}
+                                               required
+                                        />
+                                    </div>
+                                    <div className="mt-3">
+                                        <button type="submit" className="btn btn-primary">Create offer</button>
+                                    </div>
+                                </form>
+                            </div>
+
                         }
-                    </p>
 
-                    <p>{metadata.description}</p>
+                        {isOfferCancellable &&
+                            <div>
+                                <button className="btn btn-danger" onClick={cancelOfferForRent}>Cancel offer</button>
+                            </div>
+                        }
 
-                    {isRentable &&
-                    <div>
-                        <h3>Offer for rent</h3>
-                        <form onSubmit={createOfferForRent}>
-                            <div className="form-group">
-                                <label htmlFor="renting-conditions-price">Price ($)</label>
-                                <input type="number"
-                                       className="form-control"
-                                       id="renting-conditions-price"
-                                       placeholder="Price"
-                                       min={minRentingConditions!.minPrice}
-                                       step="0.01"
-                                       ref={priceInputRef}
-                                       required
-                                />
+                        {isBorrowable &&
+                            <div>Interactions pour emprunter le token</div>
+                        }
+
+                        {isReclaimable &&
+                            <div>
+                                <button className="btn btn-success" onClick={reclaim}>
+                                    Reclaim
+                                </button>
                             </div>
-                            <div className="form-group mt-2">
-                                <label htmlFor="renting-conditions-duration">Duration (seconds)</label>
-                                <input type="number"
-                                       className="form-control"
-                                       id="renting-conditions-duration"
-                                       placeholder="Duration"
-                                       min={minRentingConditions!.minDuration}
-                                       ref={durationInputRef}
-                                       required
-                                />
-                            </div>
-                            <div className="mt-3">
-                                <button type="submit" className="btn btn-primary">Create offer</button>
-                            </div>
-                        </form>
+                        }
                     </div>
-
-                    }
-
-                    {isBorrowable &&
-                    <div>Interactions pour emprunter le token</div>
-                    }
-
-                    {isReclaimable &&
-                    <div>
-                        <button className="btn btn-success" onClick={reclaim}>
-                            Reclaim
-                        </button>
-                    </div>
-                    }
                 </div>
-            </div>
             }
         </div>
     );
