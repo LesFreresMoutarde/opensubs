@@ -28,7 +28,7 @@ function FakeflixMint() {
             return;
         }
 
-        subscription.on('Transfer', async (from, to, tokenId) => {
+        const transferHandler = async (from: string, to: string, tokenId: number) => {
             if (to === ethers.utils.getAddress(address)) {
                 setShowModal(false);
 
@@ -40,7 +40,13 @@ function FakeflixMint() {
                     await pushMetadata(tokenId, 'fakeflix');
                 }
             }
-        });
+        }
+
+        subscription.on('Transfer', transferHandler);
+
+        return () => {
+            subscription.off('Transfer', transferHandler);
+        }
     }, [subscription, address]);
 
     const mint = useCallback(async () => {

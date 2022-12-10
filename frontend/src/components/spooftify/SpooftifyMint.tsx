@@ -28,7 +28,7 @@ function SpooftifyMint() {
             return;
         }
 
-        subscription.on('Transfer', async (from, to, tokenId) => {
+        const transferHandler = async (from: string, to: string, tokenId: number) => {
             if (to === ethers.utils.getAddress(address)) {
                 setShowModal(false);
 
@@ -40,7 +40,14 @@ function SpooftifyMint() {
                     await pushMetadata(tokenId, 'spooftify');
                 }
             }
-        });
+        }
+
+        subscription.on('Transfer', transferHandler);
+
+        return () => {
+            subscription.off('Transfer', transferHandler);
+        }
+
     }, [subscription, address]);
 
     const mint = useCallback(async () => {
