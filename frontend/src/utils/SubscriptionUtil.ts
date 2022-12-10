@@ -152,6 +152,22 @@ async function isTokenReclaimable(contract: Contract, tokenId: BigNumber, addres
     return true;
 }
 
+async function isTokenOfferCancellable(contract: Contract, tokenId: BigNumber, address: string): Promise<boolean> {
+    const ownerOf = await contract.ownerOf(tokenId);
+
+    if (!areAdressesEqual(ownerOf, address)) {
+        return false;
+    }
+
+    const rentingConditions = await contract.getRentingConditions(tokenId);
+
+    if (rentingConditions.createdAt!.eq(0)) {
+        return false;
+    }
+
+    return true;
+}
+
 async function getSubscriptionPrice(contract: Contract) {
     return await contract.contentSubscriptionPrice();
 }
@@ -188,6 +204,10 @@ async function offerForRent(contract: Contract, tokenId: BigNumber, price: numbe
     await contract.offerForRent(tokenId, price, duration);
 }
 
+async function cancelOffer(contract: Contract, tokenId: BigNumber) {
+    await contract.cancelOfferForRent(tokenId);
+}
+
 export {
     getSubscriptionContract,
     getBalanceOfOwnedTokens,
@@ -197,11 +217,13 @@ export {
     isRentingExpired,
     isContentAvailableFromToken,
     isTokenRentable,
+    isTokenOfferCancellable,
     isTokenBorrowable,
     isTokenReclaimable,
     getSubscriptionPrice,
     mintToken,
     reclaimToken,
     getMinimumRentingConditions,
-    offerForRent
+    offerForRent,
+    cancelOffer
 }
