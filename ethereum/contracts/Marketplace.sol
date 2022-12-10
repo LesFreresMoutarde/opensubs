@@ -27,6 +27,8 @@ contract Marketplace is Initializable, ERC4907EnumerableUpgradeable {
     // Mapping from token ID to position in the allAvailable array
     mapping(uint256 => uint256) private _allAvailableForRentingIndex;
 
+    uint256[49] private __gap;
+
     event RentOfferCreated(uint256 tokenId);
 
     event RentOfferCancelled(uint256 tokenId);

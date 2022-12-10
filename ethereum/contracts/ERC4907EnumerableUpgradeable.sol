@@ -22,6 +22,8 @@ contract ERC4907EnumerableUpgradeable is Initializable, ERC4907Upgradeable {
     // Mapping from address to its number of used tokens
     mapping(address => uint256) internal _usedBalances;
 
+    uint256[49] private __gap;
+
     /**
      * @dev Initializes the contract by calling ERC4907Upgradeable initializer.
      */
