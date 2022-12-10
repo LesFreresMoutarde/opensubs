@@ -1,5 +1,6 @@
 import Swal from 'sweetalert2';
 import {getStorage, getDownloadURL, ref, uploadString} from "firebase/storage";
+import {ethers} from "ethers";
 
 function shortenAddress(address: string, firstCharactersCount: number = 3, lastCharactersCount: number = 3): string {
     if (!address.startsWith("0x")) {
@@ -10,6 +11,10 @@ function shortenAddress(address: string, firstCharactersCount: number = 3, lastC
     const lastCharacters = address.slice(lastCharactersCount * -1);
 
     return firstCharacters + "…" + lastCharacters;
+}
+
+function areAdressesEqual(address1: string, address2: string): boolean {
+    return ethers.utils.getAddress(address1) === ethers.utils.getAddress(address2);
 }
 
 type toastType = "success" | "error" | "warning"
@@ -31,7 +36,7 @@ function fireToast(type: toastType, text: string) {
     });
 }
 
-interface SubscriptionMetadata {
+export interface SubscriptionMetadata {
     "description": string;
     "external_url": string;
     "image": string;
@@ -39,6 +44,7 @@ interface SubscriptionMetadata {
     "level": string;
     "content_url": string;
 }
+
 async function pushMetadata(tokenId: number, platform: 'spooftify' | 'fakeflix') {
     const mappingData = {
         fakeflix: {
@@ -59,7 +65,7 @@ async function pushMetadata(tokenId: number, platform: 'spooftify' | 'fakeflix')
 
     const metadata: SubscriptionMetadata = {
         description: `1 month subscription for ${mappingData[platform].label}`,
-        external_url: `${process.env.REACT_APP_FIREBASE_MARKETPLACE_URL}/${tokenId}`,
+        external_url: `${process.env.REACT_APP_MARKETPLACE_URL}/token/${platform}/${tokenId}`,
         image: mappingData[platform].logo,
         background_color: '#000',
         level: 'standard',
@@ -69,12 +75,12 @@ async function pushMetadata(tokenId: number, platform: 'spooftify' | 'fakeflix')
     await uploadString(metadataRef, JSON.stringify(metadata));
 }
 
-async function getMetadata(tokenId: number, platform: 'spooftify' | 'fakeflix') {
+async function getMetadataUrl(tokenId: number, platform: 'spooftify' | 'fakeflix'): Promise<string> {
     const storage = getStorage();
 
     const metadataRef = ref(storage, `metadata/${platform}/${tokenId}.json`);
 
-    await getDownloadURL(metadataRef);
+    return await getDownloadURL(metadataRef);
 }
 
-export {shortenAddress, fireToast, pushMetadata, getMetadata}
+export {shortenAddress, areAdressesEqual, fireToast, pushMetadata, getMetadataUrl}

@@ -78,3 +78,113 @@
     border-radius: 2em;
     padding: 0.25em 0.75em;
 }
+
+.my-tokens-page,
+.gallery-page {
+    margin-top: 1em;
+}
+
+.my-tokens-page .filters-container,
+.gallery-page .filters-container {
+    height: 100%;
+    padding: 0.75em;
+
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+}
+
+.my-tokens-page .filters-container .btn,
+.gallery-page .filters-container .btn {
+    width: 100%;
+    border: 1px solid #ffbd59;
+}
+
+.my-tokens-page .filters-container .btn.active,
+.gallery-page .filters-container .btn.active {
+    background-color: #ffbd59;
+}
+
+.token-cards-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1em;
+}
+
+.token-cards-container .card {
+    width: calc(25% - 1em);
+    box-sizing: border-box;
+}
+
+.token-cards-container .card h5::first-letter {
+    text-transform: uppercase;
+}
+
+.token-cards-container .card h5 span {
+    font-size: 0.85em;
+}
+
+.token-cards-container .card .img-container {
+    height: 10em;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1em;
+}
+
+.token-cards-container .card .img-container img {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.token-cards-container .card .card-footer {
+    border: none;
+    background-color: transparent;
+}
+
+.token-cards-container .card .btn {
+    background-color: #ffbd59;
+    border: 1px solid #ef9d24;
+}
+
+.token-cards-container .card .btn:hover {
+    background-color: #faae3a;
+}
+
+.token-details-page {
+    display: flex;
+    justify-content: center;
+}
+
+.token-details-page h1 a {
+    font-size: 0.5em;
+    color: #606060;
+    position: relative;
+    top: -2px;
+}
+
+.token-details-page .token-details {
+    margin-top: 2em;
+
+    display: flex;
+    gap: 2em;
+}
+
+.token-details-page .token-details .token-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-width: 400px;
+    min-height: 300px;
+    padding: 2em;
+}
+
+.token-details-page .token-details .token-image img {
+    max-width: 300px;
+    max-height: 300px;
+}
+
+.token-details-page .token-details h1::first-letter {
+    text-transform: uppercase;
+}

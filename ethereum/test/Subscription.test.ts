@@ -702,7 +702,7 @@ describe("Subscription smart contract test", () => {
                 .div(rateWithDecimalsBN)
                 .div(100);
 
-            await expect(userConnectedSubscription.rent(tokenId, {value: Math.floor(amountToSend / 2)}))
+            await expect(userConnectedSubscription.rent(tokenId, {value: amountToSend.div(2)}))
                 .to.be.revertedWith("Too much slippage");
         });
 
