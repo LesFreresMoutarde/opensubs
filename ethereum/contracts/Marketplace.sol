@@ -4,9 +4,8 @@ pragma solidity 0.8.17;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
-import "./ERC4907EnumerableUpgradeable.sol";
 
-contract Marketplace is Initializable, ERC4907EnumerableUpgradeable {
+contract Marketplace is Initializable {
     struct RentingConditions {
         uint32 price; // Renting price in $ cents
         uint128 duration; // Renting duration in seconds
@@ -39,8 +38,6 @@ contract Marketplace is Initializable, ERC4907EnumerableUpgradeable {
     }
 
     function offerForRent(uint256 tokenId, uint32 price, uint128 duration) public virtual {
-        require(_isApprovedOrOwner(_msgSender(), tokenId), "Caller is not token owner or approved");
-        require(userOf(tokenId) == address(0), "Already used");
         require(price >= minRentPrice, "Price too low");
         require(duration >= minRentDuration, "Duration too low");
 
@@ -53,9 +50,7 @@ contract Marketplace is Initializable, ERC4907EnumerableUpgradeable {
         emit RentOfferCreated(tokenId);
     }
 
-    function cancelOfferForRent(uint256 tokenId) public {
-        require(_isApprovedOrOwner(_msgSender(), tokenId), "Caller is not token owner or approved");
-
+    function cancelOfferForRent(uint256 tokenId) public virtual {
         _deleteRentingConditions(tokenId);
 
         emit RentOfferCancelled(tokenId);
