@@ -5,6 +5,11 @@ pragma solidity 0.8.17;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "./ERC4907Upgradeable.sol";
 
+/**
+ * @dev This implements an optional extension of {ERC4907} that adds enumerability
+ * of all the token ids in the contract as well as all token ids used by each account.
+ * @author alexisljn & EmileCalixte
+ */
 contract ERC4907EnumerableUpgradeable is Initializable, ERC4907Upgradeable {
 
     // Mapping from user to list of used (borrowed) token IDs
@@ -52,9 +57,9 @@ contract ERC4907EnumerableUpgradeable is Initializable, ERC4907Upgradeable {
         return tokenId;
     }
 
-/**
-* @dev See {ERC4907Upgradeable-setUser}
-    */
+    /**
+     * @dev See {ERC4907Upgradeable-setUser}
+     */
     function setUser(uint256 tokenId, address user, uint64 expires) public virtual override {
         _beforeTokenUse(user, tokenId);
 
