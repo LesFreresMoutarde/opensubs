@@ -8,9 +8,11 @@ import {
 } from "../../utils/SubscriptionUtil";
 import {BigNumber} from "ethers";
 import MyTokensTokenCard from "./MyTokensTokenCard";
+import {getMetadataUrl, SubscriptionMetadata} from "../../utils/Util";
 
 export type Token = {
     tokenId: BigNumber,
+    metadata: SubscriptionMetadata,
     isRentable: boolean,
     isReclaimable: boolean,
     service: ServiceName,
@@ -70,20 +72,24 @@ function OpenSubsMyTokens() {
                                     }
                                 }
 
+                                const metadataUrl = await getMetadataUrl(tokenId, serviceName as ServiceName);
+                                const metadata = await (await fetch(metadataUrl)).json()
+
                                 const isRentable = await isTokenRentable(contracts[serviceName as ServiceName].contract, tokenId, address);
                                 const isReclaimable = await isTokenReclaimable(contracts[serviceName as ServiceName].contract, tokenId, address);
 
-                                const toto: Token = {
+                                const token: Token = {
                                     tokenId,
+                                    metadata,
                                     isRentable,
                                     isReclaimable,
                                     service: serviceName as ServiceName,
                                 }
 
                                 if (type === "owned") {
-                                    ownedTokens.push(toto);
+                                    ownedTokens.push(token);
                                 } else {
-                                    usedTokens.push(toto)
+                                    usedTokens.push(token)
                                 }
                             }
                         }

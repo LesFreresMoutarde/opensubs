@@ -36,7 +36,7 @@ function fireToast(type: toastType, text: string) {
     });
 }
 
-interface SubscriptionMetadata {
+export interface SubscriptionMetadata {
     "description": string;
     "external_url": string;
     "image": string;
