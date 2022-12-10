@@ -83,7 +83,7 @@ function AudioPlayer() {
                     <div className="audio-control-buttons">
                         <button className="stop-button" onClick={() => selectItem(null)}>
                             <span className="inner">
-                                ◼
+                                <i className="fa-solid fa-stop"/>
                             </span>
                         </button>
                     </div>
