@@ -9,13 +9,25 @@ interface MyTokensTokenCardProps {
 function MyTokensTokenCard({token, status}: MyTokensTokenCardProps) {
     return (
         <div className="card">
-            <div className="img-container">
+            <div className="img-container" style={{
+                backgroundColor: token.metadata.background_color,
+            }}>
                 <img src={token.metadata.image} alt="Logo"/>
             </div>
 
             <div className="card-body">
                 <h5 className="card-title">
-                    {`${token.service}#${token.tokenId} (${status})`}
+                    <>
+                        {token.service}#{token.tokenId.toString()}
+
+                        {status === "reclaimable" &&
+                        <span> - Reclaimable</span>
+                        }
+
+                        {status === "rented" &&
+                        <span> - Rented</span>
+                        }
+                    </>
                 </h5>
 
                 <p>{token.metadata.description}</p>

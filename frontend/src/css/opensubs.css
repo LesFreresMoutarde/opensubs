@@ -112,6 +112,14 @@
     box-sizing: border-box;
 }
 
+.my-tokens-page .token-cards-container .card h5::first-letter {
+    text-transform: uppercase;
+}
+
+.my-tokens-page .token-cards-container .card h5 span {
+    font-size: 0.85em;
+}
+
 .my-tokens-page .token-cards-container .card .img-container {
     height: 10em;
     width: 100%;
