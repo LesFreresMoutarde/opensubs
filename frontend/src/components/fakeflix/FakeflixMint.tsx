@@ -2,7 +2,7 @@ import {useCallback, useContext, useEffect, useState} from "react";
 import {getSubscriptionPrice, mintToken} from "../../utils/SubscriptionUtil";
 import {fakeflixAppContext} from "../FakeflixApp";
 import LoadingModal from "../common/LoadingModal";
-import {fireToast, getMetadata, pushMetadata} from "../../utils/Util";
+import {fireToast, getMetadataUrl, pushMetadata} from "../../utils/Util";
 import {ethers} from "ethers";
 
 function FakeflixMint() {
@@ -35,7 +35,7 @@ function FakeflixMint() {
                 fireToast('success', 'You have successfully minted a subscription NFT');
 
                 try {
-                    await getMetadata(tokenId, 'fakeflix');
+                    await getMetadataUrl(tokenId, 'fakeflix');
                 } catch (error) {
                     await pushMetadata(tokenId, 'fakeflix');
                 }

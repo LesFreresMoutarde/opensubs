@@ -1,6 +1,6 @@
 import {useCallback, useContext, useEffect, useState} from "react";
 import {ethers} from "ethers";
-import {fireToast, getMetadata, pushMetadata} from "../../utils/Util";
+import {fireToast, getMetadataUrl, pushMetadata} from "../../utils/Util";
 import {getSubscriptionPrice, mintToken} from "../../utils/SubscriptionUtil";
 import LoadingModal from "../common/LoadingModal";
 import {spooftifyAppContext} from "../SpooftifyApp";
@@ -35,7 +35,7 @@ function SpooftifyMint() {
                 fireToast('success', 'You have successfully minted a subscription NFT');
 
                 try {
-                    await getMetadata(tokenId, 'spooftify');
+                    await getMetadataUrl(tokenId, 'spooftify');
                 } catch (error) {
                     await pushMetadata(tokenId, 'spooftify');
                 }

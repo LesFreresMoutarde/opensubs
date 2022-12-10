@@ -75,12 +75,12 @@ async function pushMetadata(tokenId: number, platform: 'spooftify' | 'fakeflix')
     await uploadString(metadataRef, JSON.stringify(metadata));
 }
 
-async function getMetadata(tokenId: number, platform: 'spooftify' | 'fakeflix') {
+async function getMetadataUrl(tokenId: number, platform: 'spooftify' | 'fakeflix'): Promise<string> {
     const storage = getStorage();
 
     const metadataRef = ref(storage, `metadata/${platform}/${tokenId}.json`);
 
-    await getDownloadURL(metadataRef);
+    return await getDownloadURL(metadataRef);
 }
 
-export {shortenAddress, areAdressesEqual, fireToast, pushMetadata, getMetadata}
+export {shortenAddress, areAdressesEqual, fireToast, pushMetadata, getMetadataUrl}
