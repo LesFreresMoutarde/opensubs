@@ -203,12 +203,12 @@ async function getMinimumRentingConditions(contract: Contract): Promise<MinRenti
 export interface RentingConditions {
     price: number;
     duration: BigNumber;
-    createdAd: BigNumber;
+    createdAt: BigNumber;
 }
 async function getRentingConditions(contract: Contract, tokenId: BigNumber): Promise<RentingConditions> {
     const rentingConditions = await contract.getRentingConditions(tokenId);
 
-    return {price: rentingConditions.price, duration: rentingConditions.duration, createdAd: rentingConditions.createdAt}
+    return {price: rentingConditions.price, duration: rentingConditions.duration, createdAt: rentingConditions.createdAt}
 }
 
 async function offerForRent(contract: Contract, tokenId: BigNumber, price: number, duration: number) {
