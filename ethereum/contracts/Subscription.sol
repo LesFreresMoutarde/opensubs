@@ -118,6 +118,9 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
     }
 
     function offerForRent(uint256 tokenId, uint32 price, uint128 duration) public override {
+        require(_isApprovedOrOwner(_msgSender(), tokenId), "Caller is not token owner or approved");
+        require(userOf(tokenId) == address(0), "Already used");
+
         uint64 expires = uint64(block.timestamp + duration);
 
         uint256 subscriptionExpiration = _expirations[tokenId];
@@ -125,6 +128,12 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
         require(expires < subscriptionExpiration, "Subscription will expire before rent expires");
 
         super.offerForRent(tokenId, price, duration);
+    }
+
+    function cancelOfferForRent(uint256 tokenId) public override {
+        require(_isApprovedOrOwner(_msgSender(), tokenId), "Caller is not token owner or approved");
+
+        super.cancelOfferForRent(tokenId);
     }
 
     // Wrapper for setUser function called by a user who wants to use a token proposed for rental
