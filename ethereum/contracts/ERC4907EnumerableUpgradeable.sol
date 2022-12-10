@@ -52,9 +52,9 @@ contract ERC4907EnumerableUpgradeable is Initializable, ERC4907Upgradeable {
         return tokenId;
     }
 
-/**
-* @dev See {ERC4907Upgradeable-setUser}
-    */
+    /**
+     * @dev See {ERC4907Upgradeable-setUser}
+     */
     function setUser(uint256 tokenId, address user, uint64 expires) public virtual override {
         _beforeTokenUse(user, tokenId);
 
