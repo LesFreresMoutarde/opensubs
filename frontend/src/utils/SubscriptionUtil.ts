@@ -162,8 +162,20 @@ async function mintToken(contract: Contract, provider: providers.Web3Provider) {
     await contract.mint({value: amountToSend});
 }
 
-async function reclaimToken(contract: Contract, provider: providers.Web3Provider, tokenId: BigNumber) {
+async function reclaimToken(contract: Contract, tokenId: BigNumber) {
     await contract.reclaim(tokenId);
+}
+
+export interface MinRentingConditions {
+    minPrice: number;
+    minDuration: number;
+}
+async function getMinimumRentingConditions(contract: Contract): Promise<MinRentingConditions> {
+    const minPrice = await contract.minRentPrice() / 100;
+
+    const minDuration = await contract.minRentDuration();
+
+    return {minPrice, minDuration};
 }
 
 export {
@@ -180,4 +192,5 @@ export {
     getSubscriptionPrice,
     mintToken,
     reclaimToken,
+    getMinimumRentingConditions,
 }
