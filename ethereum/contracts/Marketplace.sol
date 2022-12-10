@@ -5,6 +5,10 @@ pragma solidity 0.8.17;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 
+/**
+ * @title Marketplace for a subscription
+ * @author alexisljn & EmileCalixte
+ */
 contract Marketplace is Initializable {
     struct RentingConditions {
         uint32 price; // Renting price in $ cents
