@@ -18,7 +18,7 @@ function MyTokensTokenCard({token, status}: MyTokensTokenCardProps) {
 
                 <p>Toto del tototi della totota del tototutu</p>
 
-                <Link to={`/opensubs/${token.service}/${token.tokenId}`} className="btn">
+                <Link to={`/opensubs/token/${token.service}/${token.tokenId}`} className="btn">
                     View
                 </Link>
             </div>

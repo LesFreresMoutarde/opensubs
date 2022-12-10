@@ -65,7 +65,7 @@ async function pushMetadata(tokenId: number, platform: 'spooftify' | 'fakeflix')
 
     const metadata: SubscriptionMetadata = {
         description: `1 month subscription for ${mappingData[platform].label}`,
-        external_url: `${process.env.REACT_APP_FIREBASE_MARKETPLACE_URL}/token/${platform}/${tokenId}`,
+        external_url: `${process.env.REACT_APP_MARKETPLACE_URL}/token/${platform}/${tokenId}`,
         image: mappingData[platform].logo,
         background_color: '#000',
         level: 'standard',

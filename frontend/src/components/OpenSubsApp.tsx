@@ -149,7 +149,7 @@ function OpenSubsApp() {
                 <Routes>
                     <Route path="/" element={<p>Marketplace</p>}/>
                     <Route path="my-subscriptions" element={<OpenSubsMyTokens/>}/>
-                    <Route path="/:platform/:tokenId" element={<OpenSubsToken/>}/>
+                    <Route path="/token/:platform/:tokenId" element={<OpenSubsToken/>}/>
 
                     <Route path="*" element={<Navigate to="/opensubs" replace/>}/>
                 </Routes>
