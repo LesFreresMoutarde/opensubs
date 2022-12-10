@@ -27,6 +27,10 @@ function MyTokensTokenCard({token, status}: MyTokensTokenCardProps) {
                         {status === "rented" &&
                         <span> - Rented</span>
                         }
+
+                        {status === "offeredForRent" &&
+                        <span> - Offered for rent</span>
+                        }
                     </>
                 </h5>
 

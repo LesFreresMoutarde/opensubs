@@ -4,7 +4,7 @@ import {
     getBalanceOfOwnedTokens,
     getBalanceOfUsedTokens,
     getOwnedTokensByUser,
-    getUsedTokensByUser, isRentingExpired, isTokenReclaimable, isTokenRentable
+    getUsedTokensByUser, isRentingExpired, isTokenOfferCancellable, isTokenReclaimable, isTokenRentable
 } from "../../utils/SubscriptionUtil";
 import {BigNumber} from "ethers";
 import MyTokensTokenCard from "./MyTokensTokenCard";
@@ -15,10 +15,11 @@ export type Token = {
     metadata: SubscriptionMetadata,
     isRentable: boolean,
     isReclaimable: boolean,
+    isOfferCancellable: boolean,
     service: ServiceName,
 };
 
-export type TokenStatus = "owned" | "rented" | "reclaimable" | "borrowed";
+export type TokenStatus = "owned" | "rented" | "reclaimable" | "offeredForRent" | "borrowed";
 
 type DisplayCategory = "owned" | "borrowed";
 
@@ -77,12 +78,14 @@ function OpenSubsMyTokens() {
 
                                 const isRentable = await isTokenRentable(contracts[serviceName as ServiceName].contract, tokenId, address);
                                 const isReclaimable = await isTokenReclaimable(contracts[serviceName as ServiceName].contract, tokenId, address);
+                                const isOfferCancellable = await isTokenOfferCancellable(contracts[serviceName as ServiceName].contract, tokenId, address);
 
                                 const token: Token = {
                                     tokenId,
                                     metadata,
                                     isRentable,
                                     isReclaimable,
+                                    isOfferCancellable,
                                     service: serviceName as ServiceName,
                                 }
 
@@ -141,6 +144,10 @@ function OpenSubsMyTokens() {
 
                                     if (token.isRentable) {
                                         return "owned";
+                                    }
+
+                                    if (token.isOfferCancellable) {
+                                        return "offeredForRent";
                                     }
 
                                     return "rented";
