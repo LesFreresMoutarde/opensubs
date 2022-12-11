@@ -190,7 +190,7 @@ describe("Subscription smart contract test", () => {
             expect(netflixBalanceAfterWithdraw).to.equal(0);
         });
 
-        it("Should emit event if withdraw after token minting", async () => {
+        it("Should revert when trying to withdraw without having funds in balances", async () => {
             const {subscription, netflix, marketplace, otherAccounts} = await loadFixture(deploySubscriptionFixture);
 
             const connectedSubscription = subscription.connect(otherAccounts[0]);
