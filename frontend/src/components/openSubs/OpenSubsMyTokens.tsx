@@ -217,6 +217,12 @@ function OpenSubsMyTokens() {
         setShowWithdrawModal(true);
     }, [contracts, etherBalance])
 
+    if (!address) {
+        return(
+            <p className="mt-3">Connect wallet to see subscriptions</p>
+        );
+    }
+
     return (
         <div className="my-tokens-page container-fluid">
             {showConfirmationWithdrawModal &&

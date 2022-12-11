@@ -21,7 +21,7 @@ function FakeflixMint() {
         (async () => {
             setSubscriptionPrice(await getSubscriptionPrice(subscription));
         })();
-    }, [subscription]);
+    }, [subscription, address]);
 
     useEffect(() => {
         if (!subscription) {
@@ -66,13 +66,24 @@ function FakeflixMint() {
     return (
         <div className="mint-page">
             {showModal && <LoadingModal showModal={showModal} closeModal={closeModal}/>}
+
+            {!address &&
             <div className="text">
-                <h1>Unlimited movies, series and much more.</h1>
-                <p>Wherever you are. Cancel at any time. Only {subscriptionPrice / 100}$ for 30 days</p>
+                <h2>Connect wallet to mint a subscription</h2>
             </div>
-            <div className="mint-button-container">
-                <button onClick={mint}>Subscribe</button>
-            </div>
+            }
+
+            {address &&
+            <>
+                <div className="text">
+                    <h1>Unlimited movies, series and much more.</h1>
+                    <p>Wherever you are. Cancel at any time. Only {subscriptionPrice / 100}$ for 30 days</p>
+                </div>
+                <div className="mint-button-container">
+                    <button onClick={mint}>Subscribe</button>
+                </div>
+            </>
+            }
         </div>
     );
 }
