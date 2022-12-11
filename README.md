@@ -76,14 +76,14 @@ docker compose exec hardhat npx hardhat coverage --network hardhat
 make run
 
 # Without Make
-docker compose exec hardhat npx hardhat run ./scripts/deploy.ts --network localhost
+docker compose exec hardhat npx hardhat run ./scripts/deploy-dev.ts --network localhost
 ```
 
 ##### On testnet/mainnet
 
 ```shell
 # With Make
-make run NETWORK=<network>
+make run SCRIPT="./scripts/deploy.ts" NETWORK=<network>
 
 # Without Make
 docker compose exec hardhat npx hardhat run ./scripts/deploy.ts --network <network>
