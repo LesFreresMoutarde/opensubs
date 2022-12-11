@@ -90,6 +90,16 @@ function SpooftifyApp() {
     }, []);
 
     useEffect(() => {
+        const initialTitle = document.title;
+
+        document.title = "Spooftify";
+
+        return (() => {
+            document.title = initialTitle;
+        })
+    }, []);
+
+    useEffect(() => {
         (async () => {
             if (window.ethereum) {
                 const web3Provider = new providers.Web3Provider(window.ethereum);
