@@ -14,6 +14,25 @@ This project is composed of a hardhat local blockchain, and a react application 
 
 ## Project initialization
 
+### Metadata storage / Firebase
+
+You will need a storage solution to fetch and push metadata at NFT minting.
+For this project we used Firebase Storage solution, and you have to
+reproduce this to make applications run. 
+
+You have to set up your own Firebase Storage and fill 
+environment variables (see below). These variables will be loaded 
+in `frontend/src/firebaseConfig.ts` then the configuration is used 
+to initialize Firebase app in `frontend/src/App.tsx`.
+
+Your storage should have this structure:
+
+- `metadata/`
+  - `fakeflix/`
+  - `spooftify/`
+
+The other resources like logos or services content are freely available.
+
 ### Environment variables
 
 After cloning the repository
