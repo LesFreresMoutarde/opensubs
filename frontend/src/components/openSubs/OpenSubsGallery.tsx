@@ -150,6 +150,10 @@ function OpenSubsGallery() {
                 <div className="col-xl-10 col-lg-9">
                     <h2>Subscriptions available for renting</h2>
 
+                    {displayedAvailableTokens.length === 0 &&
+                    <p>No subscription is available for renting now</p>
+                    }
+
                     <div className="token-cards-container">
                         {displayedAvailableTokens.map((token, index) => {
                             return (
