@@ -70,17 +70,23 @@ function OpenSubsApp() {
     }, []);
     
     useEffect(() => {
+        const initialTitle = document.title;
+
         const initialBackgroundColor = document.body.style.backgroundColor;
         const initialColor = document.body.style.color;
+
+        document.title = "OpenSubs";
 
         document.body.style.backgroundColor = "#f8f8f8";
         document.body.style.color = "#080808";
 
         return (() => {
+            document.title = initialTitle;
+
             document.body.style.backgroundColor = initialBackgroundColor;
             document.body.style.color = initialColor;
         });
-    });
+    }, []);
 
     useEffect(() => {
         (async () => {
