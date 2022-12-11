@@ -5,6 +5,8 @@ By tokenizing the subscriptions of streaming platforms, OpenSubs will allow user
 
 People without a subscription will be able to rent a subscription to have access to the platform for a given time. People with a subscription who rent it can earn passive income during the time they are not using their subscription. Streaming platforms, like OpenSubs, will receive a commission for each rental between users.
 
+This project is composed of a hardhat local blockchain, and a react application containing a marketplace and two clones of popular digital service platforms.
+
 ## Requirements
 
 - Docker Compose
