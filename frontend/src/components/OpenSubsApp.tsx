@@ -1,5 +1,5 @@
 import "../css/opensubs.css";
-import {createContext, useEffect, useState} from "react";
+import {createContext, useCallback, useEffect, useState} from "react";
 import {Contract, providers} from "ethers";
 import {autoLogin, isChainIdSupported} from "../utils/ProviderUtils";
 import {
@@ -55,19 +55,54 @@ function OpenSubsApp() {
     const [chainId, setChainId] = useState<number | null>(null);
 
     const [contracts, setContracts] = useState<ContractsList | null>(null);
+    
+    const accountsChangedHandler = useCallback((accounts: any) => {
+        if (accounts.length === 0) {
+            setAddress('');
+            return;
+        }
+
+        setAddress(String(accounts[0]));
+    }, []);
+
+    const chainChangedHandler = useCallback(() =>{
+        window.location.reload();
+    }, []);
 
     useEffect(() => {
+        const initialLink = document.querySelector("head link[rel=icon]") as HTMLLinkElement;
+
+        const newLink: HTMLLinkElement = document.createElement("link");
+        newLink.rel = "icon";
+        newLink.href = "/ico/opensubs.ico";
+
+        document.head.removeChild(initialLink);
+        document.head.appendChild(newLink);
+
+        return (() => {
+            document.head.removeChild(newLink);
+            document.head.appendChild(initialLink);
+        });
+    }, []);
+    
+    useEffect(() => {
+        const initialTitle = document.title;
+
         const initialBackgroundColor = document.body.style.backgroundColor;
         const initialColor = document.body.style.color;
+
+        document.title = "OpenSubs";
 
         document.body.style.backgroundColor = "#f8f8f8";
         document.body.style.color = "#080808";
 
         return (() => {
+            document.title = initialTitle;
+
             document.body.style.backgroundColor = initialBackgroundColor;
             document.body.style.color = initialColor;
         });
-    });
+    }, []);
 
     useEffect(() => {
         (async () => {
@@ -81,23 +116,21 @@ function OpenSubsApp() {
                 if (loggedAddress) {
                     setAddress(loggedAddress);
                 }
-
-                window.ethereum.on('accountsChanged', (accounts: any) => {
-                    if (accounts.length === 0) {
-                        setAddress('');
-                        return;
-                    }
-
-                    setAddress(String(accounts[0]));
-                });
-
-                window.ethereum.on('chainChanged', () => {
-                    window.location.reload();
-                })
             } else {
                 setProvider(null);
             }
         })();
+
+        window.ethereum.on('accountsChanged', accountsChangedHandler);
+
+        window.ethereum.on('chainChanged', chainChangedHandler);
+
+        return () => {
+            window.ethereum.off('accountsChanged', accountsChangedHandler);
+
+            window.ethereum.off('chainChanged', chainChangedHandler);
+        }
+        
     }, []);
 
     useEffect(() => {

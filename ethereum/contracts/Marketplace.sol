@@ -5,6 +5,10 @@ pragma solidity 0.8.17;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 
+/**
+ * @title Marketplace for a subscription
+ * @author alexisljn & EmileCalixte
+ */
 contract Marketplace is Initializable {
     struct RentingConditions {
         uint32 price; // Renting price in $ cents
@@ -18,6 +22,7 @@ contract Marketplace is Initializable {
     // The minimum price an owner can set for a renting
     uint32 public minRentPrice;
 
+    // The minimum duration an owner can set for a renting
     uint32 public minRentDuration;
 
     // Array with all token IDs available for renting
@@ -28,15 +33,25 @@ contract Marketplace is Initializable {
 
     uint256[49] private __gap;
 
+    // Logged when a token owner creates a rent offer
+    /// @notice when the owner of `tokenId` creates a rent offer for this token
     event RentOfferCreated(uint256 tokenId);
 
+    // Logged when the rent offer of a token is deleted
+    /// @notice when the owner of `tokenId` cancels a rent offer for this token
     event RentOfferCancelled(uint256 tokenId);
 
+    /**
+     * @dev Initializes the contract by setting a `minRentPrice` and a `minRentDuration`.
+     */
     function __Marketplace_init(uint32 minRentPrice_, uint32 minRentDuration_) internal onlyInitializing {
         minRentPrice = minRentPrice_;
         minRentDuration = minRentDuration_;
     }
 
+    /**
+     * @dev Creates an offer for rent for `tokenId` with a `price` and a rental `duration`.
+     */
     function offerForRent(uint256 tokenId, uint32 price, uint128 duration) public virtual {
         require(price >= minRentPrice, "Price too low");
         require(duration >= minRentDuration, "Duration too low");
@@ -50,24 +65,40 @@ contract Marketplace is Initializable {
         emit RentOfferCreated(tokenId);
     }
 
+    /**
+     * @dev Cancels the offer for rent for `tokenId` by deleting values in `_rentingConditions[tokenId]`.
+     */
     function cancelOfferForRent(uint256 tokenId) public virtual {
         _deleteRentingConditions(tokenId);
 
         emit RentOfferCancelled(tokenId);
     }
 
+    /**
+     * @dev Returns the number of tokenIds in `_allAvailableForRenting`.
+     */
     function getAvailableTokenCount() public view returns (uint256) {
         return _allAvailableForRenting.length;
     }
 
+    /**
+     * @dev Returns a token ID available for renting at a given `index` of available token list.
+     * Use along with {getAvailableTokenCount} to enumerate all available tokens.
+     */
     function getAvailableTokenIdAtIndex(uint256 index) public view returns (uint256) {
         return _allAvailableForRenting[index];
     }
 
+    /**
+     * @dev Returns a RentingConditions struct for given `tokenId`.
+     */
     function getRentingConditions(uint256 tokenId) public view returns (RentingConditions memory) {
         return _rentingConditions[tokenId];
     }
 
+    /**
+     * @dev Deletes values in `_rentingConditions[tokenId]` and removes `tokenId` from all available token list.
+     */
     function _deleteRentingConditions(uint256 tokenId) internal {
         delete _rentingConditions[tokenId];
         _removeTokenFromAvailableTokensEnumeration(tokenId);

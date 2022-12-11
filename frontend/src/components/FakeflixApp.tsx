@@ -81,6 +81,45 @@ function FakeflixApp() {
 
     const [selectedItem, setSelectedItem] = useState<SelectedItem | null>(null);
 
+    const accountsChangedHandler = useCallback((accounts: any) => {
+        if (accounts.length === 0) {
+            setAddress('');
+            return;
+        }
+
+        setAddress(String(accounts[0]));
+    }, []);
+
+    const chainChangedHandler = useCallback(() =>{
+        window.location.reload();
+    }, []);
+
+    useEffect(() => {
+        const initialLink = document.querySelector("head link[rel=icon]") as HTMLLinkElement;
+
+        const newLink: HTMLLinkElement = document.createElement("link");
+        newLink.rel = "icon";
+        newLink.href = "/ico/fakeflix.ico";
+
+        document.head.removeChild(initialLink);
+        document.head.appendChild(newLink);
+
+        return (() => {
+            document.head.removeChild(newLink);
+            document.head.appendChild(initialLink);
+        });
+    }, []);
+
+    useEffect(() => {
+        const initialTitle = document.title;
+
+        document.title = "Fakeflix";
+
+        return (() => {
+            document.title = initialTitle;
+        })
+    }, []);
+
     useEffect(() => {
         (async () => {
             if (window.ethereum) {
@@ -110,6 +149,16 @@ function FakeflixApp() {
                 setProvider(null);
             }
         })();
+
+        window.ethereum.on('accountsChanged', accountsChangedHandler);
+
+        window.ethereum.on('chainChanged', chainChangedHandler);
+
+        return () => {
+            window.ethereum.off('accountsChanged', accountsChangedHandler);
+
+            window.ethereum.off('chainChanged', chainChangedHandler);
+        }
     }, []);
 
     useEffect(() => {
@@ -190,7 +239,7 @@ function FakeflixApp() {
 
     if (chainId && !isChainIdSupported(chainId)) {
         return (
-            <div>Unsupported network</div>
+            <div style={{color: "#fff"}}>Unsupported network</div>
         )
     }
 

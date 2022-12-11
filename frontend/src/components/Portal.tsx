@@ -1,7 +1,18 @@
 import { Link } from "react-router-dom"
 import "../css/portal.css"
+import {useEffect} from "react";
 
 function Portal() {
+    useEffect(() => {
+        const initialTitle = document.title;
+
+        document.title = "Portal";
+
+        return (() => {
+            document.title = initialTitle;
+        })
+    }, []);
+
     return (
         <div id="portal">
 
