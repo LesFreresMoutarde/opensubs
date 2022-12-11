@@ -54,6 +54,10 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
      */
     string private _baseUri;
 
+    // Logged when calling address withdraws his balance
+    /// @notice when calling address has successfully withdrawn his balance
+    event Withdraw(address withdrawBy, string serviceName);
+
     /**
      * Initializes the contract by setting all the required values.
      */
@@ -250,6 +254,8 @@ contract Subscription is Initializable, ERC4907EnumerableUpgradeable, ERC721Enum
         (bool sent,) = msg.sender.call{value: value}("");
 
         require(sent, "Failed to send Ether");
+
+        emit Withdraw(msg.sender, name());
     }
 
     /**
