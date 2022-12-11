@@ -208,10 +208,6 @@ function OpenSubsMyTokens() {
         }
 
         for (const [serviceName, contractDescription] of Object.entries(contracts)) {
-            console.log("contractDesc", contractDescription);
-
-            console.log("balance, service", etherBalance[serviceName as ServiceName], serviceName);
-
             if (etherBalance[serviceName as ServiceName].gt(0)) {
                 await withdrawEther(contractDescription.contract);
             }
