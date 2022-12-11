@@ -21,7 +21,7 @@ function FakeflixMint() {
         (async () => {
             setSubscriptionPrice(await getSubscriptionPrice(subscription));
         })();
-    }, [subscription]);
+    }, [subscription, address]);
 
     useEffect(() => {
         if (!subscription) {
