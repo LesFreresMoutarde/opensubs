@@ -51,6 +51,78 @@ function OpenSubsMyTokens() {
     const [showWithdrawButton, setShowWithdrawButton] = useState(false);
     const [showWithdrawModal, setShowWithdrawModal] = useState(false);
 
+    const initiateBalances = useCallback(async () => {
+        const balances: any = {};
+        const tokenIds: any = {};
+        const etherBalance: any = {};
+
+        for (const [serviceName, contractDescription] of Object.entries(contracts!)) {
+            etherBalance[serviceName] = await getUserEtherBalance(contractDescription.contract, address);
+
+            balances[serviceName] = {owned: [], used: []};
+            tokenIds[serviceName]= {owned: [], used: []};
+
+            balances[serviceName].owned = await getBalanceOfOwnedTokens(contractDescription.contract, address);
+            tokenIds[serviceName].owned = await getOwnedTokensByUser(
+                contractDescription.contract,
+                address,
+                balances[serviceName].owned.toBigInt()
+            );
+
+            balances[serviceName].used = await getBalanceOfUsedTokens(contractDescription.contract, address);
+            tokenIds[serviceName].used = await getUsedTokensByUser(
+                contractDescription.contract,
+                address,
+                balances[serviceName].used.toBigInt()
+            );
+        }
+
+        return {tokenIds, etherBalance}
+    }, [contracts, address]);
+
+    const sortTokens = useCallback(async (tokenIds: any) => {
+        const ownedTokens: Token[] = [];
+        const usedTokens: Token[] = [];
+
+        for (const serviceName in tokenIds) {
+            for (const [type, tokens] of Object.entries<any>(tokenIds[serviceName])) {
+                if (tokens.length > 0) {
+                    for (const tokenId of tokens) {
+                        if (type === "used") {
+                            if (await isRentingExpired(contracts![serviceName as ServiceName].contract, tokenId)) {
+                                continue;
+                            }
+                        }
+
+                        const metadataUrl = await getMetadataUrl(tokenId, serviceName as ServiceName);
+                        const metadata = await (await fetch(metadataUrl)).json();
+
+                        const isRentable = await isTokenRentable(contracts![serviceName as ServiceName].contract, tokenId, address);
+                        const isReclaimable = await isTokenReclaimable(contracts![serviceName as ServiceName].contract, tokenId, address);
+                        const isOfferCancellable = await isTokenOfferCancellable(contracts![serviceName as ServiceName].contract, tokenId, address);
+
+                        const token: Token = {
+                            tokenId,
+                            metadata,
+                            isRentable,
+                            isReclaimable,
+                            isOfferCancellable,
+                            service: serviceName as ServiceName,
+                        }
+
+                        if (type === "owned") {
+                            ownedTokens.push(token);
+                        } else {
+                            usedTokens.push(token)
+                        }
+                    }
+                }
+            }
+        }
+
+        return {ownedTokens, usedTokens};
+    }, [contracts, address, ownedTokens, usedTokens]);
+
     useEffect(() => {
         if (address === '') {
             return;
@@ -61,69 +133,9 @@ function OpenSubsMyTokens() {
         }
 
         (async () => {
-            const balances: any = {};
-            const tokenIds: any = {};
-            const etherBalance: any = {};
+            const {tokenIds, etherBalance} = await initiateBalances();
 
-            for (const [serviceName, contractDescription] of Object.entries(contracts)) {
-                etherBalance[serviceName] = await getUserEtherBalance(contractDescription.contract, address);
-
-                balances[serviceName] = {owned: [], used: []};
-                tokenIds[serviceName]= {owned: [], used: []};
-
-                balances[serviceName].owned = await getBalanceOfOwnedTokens(contractDescription.contract, address);
-                tokenIds[serviceName].owned = await getOwnedTokensByUser(
-                    contractDescription.contract,
-                    address,
-                    balances[serviceName].owned.toBigInt()
-                );
-
-                balances[serviceName].used = await getBalanceOfUsedTokens(contractDescription.contract, address);
-                tokenIds[serviceName].used = await getUsedTokensByUser(
-                    contractDescription.contract,
-                    address,
-                    balances[serviceName].used.toBigInt()
-                );
-            }
-
-            const ownedTokens: Token[] = [];
-            const usedTokens: Token[] = [];
-
-            for (const serviceName in tokenIds) {
-                for (const [type, tokens] of Object.entries<any>(tokenIds[serviceName])) {
-                    if (tokens.length > 0) {
-                        for (const tokenId of tokens) {
-                            if (type === "used") {
-                                if (await isRentingExpired(contracts[serviceName as ServiceName].contract, tokenId)) {
-                                    continue;
-                                }
-                            }
-
-                            const metadataUrl = await getMetadataUrl(tokenId, serviceName as ServiceName);
-                            const metadata = await (await fetch(metadataUrl)).json()
-
-                            const isRentable = await isTokenRentable(contracts[serviceName as ServiceName].contract, tokenId, address);
-                            const isReclaimable = await isTokenReclaimable(contracts[serviceName as ServiceName].contract, tokenId, address);
-                            const isOfferCancellable = await isTokenOfferCancellable(contracts[serviceName as ServiceName].contract, tokenId, address);
-
-                            const token: Token = {
-                                tokenId,
-                                metadata,
-                                isRentable,
-                                isReclaimable,
-                                isOfferCancellable,
-                                service: serviceName as ServiceName,
-                            }
-
-                            if (type === "owned") {
-                                ownedTokens.push(token);
-                            } else {
-                                usedTokens.push(token)
-                            }
-                        }
-                    }
-                }
-            }
+            const {ownedTokens, usedTokens} = await sortTokens(tokenIds);
 
             let total = BigNumber.from(0);
 
@@ -136,6 +148,7 @@ function OpenSubsMyTokens() {
             if (total.gt(0)) {
                 setShowWithdrawButton(true);
             }
+
             setEtherBalance(etherBalance);
             setOwnedTokens(ownedTokens);
             setUsedTokens(usedTokens);
