@@ -68,6 +68,22 @@ function OpenSubsApp() {
     const chainChangedHandler = useCallback(() =>{
         window.location.reload();
     }, []);
+
+    useEffect(() => {
+        const initialLink = document.querySelector("head link[rel=icon]") as HTMLLinkElement;
+
+        const newLink: HTMLLinkElement = document.createElement("link");
+        newLink.rel = "icon";
+        newLink.href = "/ico/opensubs.ico";
+
+        document.head.removeChild(initialLink);
+        document.head.appendChild(newLink);
+
+        return (() => {
+            document.head.removeChild(newLink);
+            document.head.appendChild(initialLink);
+        });
+    }, []);
     
     useEffect(() => {
         const initialTitle = document.title;
