@@ -42,6 +42,8 @@ function OpenSubsMyTokens() {
     const [ownedTokens, setOwnedTokens] = useState<Token[]>([]);
     const [usedTokens, setUsedTokens] = useState<Token[]>([]);
 
+    const [isLoading, setIsLoading] = useState(true);
+
     const [displayCategory, setDisplayCategory] = useState<DisplayCategory>("owned");
 
     const [etherBalance, setEtherBalance] = useState<EtherBalanceWithTotal | null>(null);
@@ -137,6 +139,7 @@ function OpenSubsMyTokens() {
             setEtherBalance(etherBalance);
             setOwnedTokens(ownedTokens);
             setUsedTokens(usedTokens);
+            setIsLoading(false);
         })();
     }, [address, contracts, showWithdrawModal]);
 
@@ -205,7 +208,6 @@ function OpenSubsMyTokens() {
         setShowWithdrawModal(true);
     }, [contracts, etherBalance])
 
-
     return (
         <div className="my-tokens-page container-fluid">
             {showConfirmationWithdrawModal &&
@@ -248,29 +250,41 @@ function OpenSubsMyTokens() {
                     <>
                         <h2 className="mb-4">Owned</h2>
 
-                        <div className="token-cards-container">
-                            {ownedTokens.map((token, index) => {
-                                const status: TokenStatus = ((): TokenStatus => {
-                                    if (token.isReclaimable) {
-                                        return "reclaimable";
-                                    }
+                        {isLoading &&
+                        <p>Loading...</p>
+                        }
 
-                                    if (token.isRentable) {
-                                        return "owned";
-                                    }
+                        {!isLoading &&
+                        <>
+                            {ownedTokens.length === 0 &&
+                            <p>You don't have any subscription</p>
+                            }
 
-                                    if (token.isOfferCancellable) {
-                                        return "offeredForRent";
-                                    }
+                            <div className="token-cards-container">
+                                {ownedTokens.map((token, index) => {
+                                    const status: TokenStatus = ((): TokenStatus => {
+                                        if (token.isReclaimable) {
+                                            return "reclaimable";
+                                        }
 
-                                    return "rented";
-                                })();
+                                        if (token.isRentable) {
+                                            return "owned";
+                                        }
 
-                                return (
-                                    <MyTokensTokenCard token={token} status={status} key={index}/>
-                                );
-                            })}
-                        </div>
+                                        if (token.isOfferCancellable) {
+                                            return "offeredForRent";
+                                        }
+
+                                        return "rented";
+                                    })();
+
+                                    return (
+                                        <MyTokensTokenCard token={token} status={status} key={index}/>
+                                    );
+                                })}
+                            </div>
+                        </>
+                        }
                     </>
                     }
 
@@ -278,13 +292,25 @@ function OpenSubsMyTokens() {
                     <>
                         <h2 className="mb-4">Borrowed</h2>
 
-                        <div className="token-cards-container">
-                            {usedTokens.map((token, index) => {
-                                return (
-                                    <MyTokensTokenCard token={token} status={"borrowed"} key={index}/>
-                                );
-                            })}
-                        </div>
+                        {isLoading &&
+                        <p>Loading...</p>
+                        }
+
+                        {!isLoading &&
+                        <>
+                            {usedTokens.length === 0 &&
+                            <p>You are not borrowing any subscription</p>
+                            }
+
+                            <div className="token-cards-container">
+                                {usedTokens.map((token, index) => {
+                                    return (
+                                        <MyTokensTokenCard token={token} status={"borrowed"} key={index}/>
+                                    );
+                                })}
+                            </div>
+                        </>
+                        }
                     </>
                     }
                 </div>
