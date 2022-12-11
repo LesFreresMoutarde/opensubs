@@ -151,6 +151,77 @@ describe("Subscription smart contract test", () => {
             expect(netflixBalanceAfterRenting).equal(netflixBalanceBeforeRenting.add(netflixRevenue));
         });
 
+        it("Should emit event if withdraw after token minting", async () => {
+            const {subscription, netflix, marketplace, otherAccounts} = await loadFixture(deploySubscriptionFixture);
+
+            const connectedSubscription = subscription.connect(otherAccounts[0]);
+
+            const provider = ethers.getDefaultProvider("http://localhost:8545");
+
+            const priceFeed = new ethers.Contract(chainlinkGoerliPriceFeedForEthUsdAddress, aggregatorV3InterfaceABI, provider);
+
+            const roundData = await priceFeed.latestRoundData();
+
+            const contentSubscriptionPrice = await connectedSubscription.contentSubscriptionPrice();
+
+            const decimals = await priceFeed.decimals();
+
+            const rateWithDecimalsBN = roundData.answer.div(BigNumber.from((10 ** decimals).toString()));
+
+            const amountToSend = BigNumber.from(contentSubscriptionPrice).mul(BigNumber.from((10**18).toString())).div(rateWithDecimalsBN).div(100);
+
+            // Send transaction to mint token
+
+            await connectedSubscription.mint({value: amountToSend});
+
+            // Withdraw with Netflix account
+
+            const netflixConnectedSubscription = subscription.connect(netflix);
+
+            await expect(netflixConnectedSubscription.withdraw())
+                .to
+                .emit(netflixConnectedSubscription, 'Withdraw')
+                .withArgs(netflix.address, "Fakeflix");
+
+            // Check balance equals 0 after withdraw
+
+            const netflixBalanceAfterWithdraw = await netflixConnectedSubscription.balances(netflix.address);
+
+            expect(netflixBalanceAfterWithdraw).to.equal(0);
+        });
+
+        it("Should emit event if withdraw after token minting", async () => {
+            const {subscription, netflix, marketplace, otherAccounts} = await loadFixture(deploySubscriptionFixture);
+
+            const connectedSubscription = subscription.connect(otherAccounts[0]);
+
+            const provider = ethers.getDefaultProvider("http://localhost:8545");
+
+            const priceFeed = new ethers.Contract(chainlinkGoerliPriceFeedForEthUsdAddress, aggregatorV3InterfaceABI, provider);
+
+            const roundData = await priceFeed.latestRoundData();
+
+            const contentSubscriptionPrice = await connectedSubscription.contentSubscriptionPrice();
+
+            const decimals = await priceFeed.decimals();
+
+            const rateWithDecimalsBN = roundData.answer.div(BigNumber.from((10 ** decimals).toString()));
+
+            const amountToSend = BigNumber.from(contentSubscriptionPrice).mul(BigNumber.from((10**18).toString())).div(rateWithDecimalsBN).div(100);
+
+            // Send transaction to mint token
+
+            await connectedSubscription.mint({value: amountToSend});
+
+            // Withdraw with Netflix account
+
+            const netflixConnectedSubscription = subscription.connect(netflix);
+
+            await netflixConnectedSubscription.withdraw();
+
+            await expect(netflixConnectedSubscription.withdraw()).to.be.revertedWith('Nothing to withdraw');
+        });
+
         it("Should mint a token when value sent is higher than required one but still in slippage interval", async () => {
             const {subscription, otherAccounts} = await loadFixture(deploySubscriptionFixture);
 
