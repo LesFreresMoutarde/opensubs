@@ -68,19 +68,41 @@ function OpenSubsApp() {
     const chainChangedHandler = useCallback(() =>{
         window.location.reload();
     }, []);
+
+    useEffect(() => {
+        const initialLink = document.querySelector("head link[rel=icon]") as HTMLLinkElement;
+
+        const newLink: HTMLLinkElement = document.createElement("link");
+        newLink.rel = "icon";
+        newLink.href = "/ico/opensubs.ico";
+
+        document.head.removeChild(initialLink);
+        document.head.appendChild(newLink);
+
+        return (() => {
+            document.head.removeChild(newLink);
+            document.head.appendChild(initialLink);
+        });
+    }, []);
     
     useEffect(() => {
+        const initialTitle = document.title;
+
         const initialBackgroundColor = document.body.style.backgroundColor;
         const initialColor = document.body.style.color;
+
+        document.title = "OpenSubs";
 
         document.body.style.backgroundColor = "#f8f8f8";
         document.body.style.color = "#080808";
 
         return (() => {
+            document.title = initialTitle;
+
             document.body.style.backgroundColor = initialBackgroundColor;
             document.body.style.color = initialColor;
         });
-    });
+    }, []);
 
     useEffect(() => {
         (async () => {
