@@ -81,6 +81,19 @@ function FakeflixApp() {
 
     const [selectedItem, setSelectedItem] = useState<SelectedItem | null>(null);
 
+    const accountsChangedHandler = useCallback((accounts: any) => {
+        if (accounts.length === 0) {
+            setAddress('');
+            return;
+        }
+
+        setAddress(String(accounts[0]));
+    }, []);
+
+    const chainChangedHandler = useCallback(() =>{
+        window.location.reload();
+    }, []);
+
     useEffect(() => {
         (async () => {
             if (window.ethereum) {
@@ -110,6 +123,16 @@ function FakeflixApp() {
                 setProvider(null);
             }
         })();
+
+        window.ethereum.on('accountsChanged', accountsChangedHandler);
+
+        window.ethereum.on('chainChanged', chainChangedHandler);
+
+        return () => {
+            window.ethereum.off('accountsChanged', accountsChangedHandler);
+
+            window.ethereum.off('chainChanged', chainChangedHandler);
+        }
     }, []);
 
     useEffect(() => {
