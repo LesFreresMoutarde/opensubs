@@ -21,6 +21,10 @@ async function getOwnedTokensByUser(contract: Contract, address: string, balance
     return tokenIds;
 }
 
+async function getUserEtherBalance(contract: Contract, address: string): Promise<BigNumber> {
+    return await contract.balances(address);
+}
+
 async function getBalanceOfUsedTokens(contract: Contract, address: string): Promise<BigNumber> {
     return await contract.usedBalanceOf(address);
 }
@@ -231,12 +235,17 @@ async function rentToken(contract: Contract, provider: providers.Web3Provider, t
     await contract.rent(tokenId, {value: amountToSend});
 }
 
+async function withdrawEther(contract:Contract) {
+    await contract.withdraw();
+}
+
 export {
     getSubscriptionContract,
     getBalanceOfOwnedTokens,
     getBalanceOfUsedTokens,
     getUsedTokensByUser,
     getOwnedTokensByUser,
+    getUserEtherBalance,
     isRentingExpired,
     isContentAvailableFromToken,
     isTokenRentable,
@@ -250,5 +259,6 @@ export {
     getRentingConditions,
     offerForRent,
     cancelOffer,
-    rentToken
+    rentToken,
+    withdrawEther
 }
