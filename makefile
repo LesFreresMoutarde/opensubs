@@ -29,4 +29,4 @@ console:
 	docker compose exec hardhat npx hardhat console --network $(NETWORK)
 
 coverage:
-	docker compose exec hardhat npx hardhat coverage --network hardhat
+	docker compose exec hardhat npx hardhat coverage --network hardhat --solcoverjs ./.solcover.js
