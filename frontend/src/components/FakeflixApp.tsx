@@ -95,6 +95,22 @@ function FakeflixApp() {
     }, []);
 
     useEffect(() => {
+        const initialLink = document.querySelector("head link[rel=icon]") as HTMLLinkElement;
+
+        const newLink: HTMLLinkElement = document.createElement("link");
+        newLink.rel = "icon";
+        newLink.href = "/ico/fakeflix.ico";
+
+        document.head.removeChild(initialLink);
+        document.head.appendChild(newLink);
+
+        return (() => {
+            document.head.removeChild(newLink);
+            document.head.appendChild(initialLink);
+        });
+    }, []);
+
+    useEffect(() => {
         const initialTitle = document.title;
 
         document.title = "Fakeflix";
