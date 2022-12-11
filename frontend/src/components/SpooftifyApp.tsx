@@ -185,7 +185,7 @@ function SpooftifyApp() {
 
     if (chainId && !isChainIdSupported(chainId)) {
         return (
-            <div>Unsupported network</div>
+            <div style={{color: "#fff"}}>Unsupported network</div>
         )
     }
 

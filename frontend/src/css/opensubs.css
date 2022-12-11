@@ -97,8 +97,14 @@
 .my-tokens-page .filters-container .btn,
 .gallery-page .filters-container .btn {
     width: 100%;
+
+}
+
+.my-tokens-page .filters-container .btn:not(.btn-primary),
+.gallery-page .filters-container .btn {
     border: 1px solid #ffbd59;
 }
+
 
 .my-tokens-page .filters-container .btn.active,
 .gallery-page .filters-container .btn.active {
