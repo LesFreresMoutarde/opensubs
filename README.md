@@ -87,6 +87,14 @@ make run NETWORK=<network>
 docker compose exec hardhat npx hardhat run ./scripts/deploy.ts --network <network>
 ```
 
+#### Restart react application
+
+A restart is needed after changing values in `frontend/.env` file:
+
+```shell
+docker compose restart react
+```
+
 #### Start hardhat console
 
 ```shell
