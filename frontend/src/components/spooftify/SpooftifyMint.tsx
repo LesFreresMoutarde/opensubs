@@ -21,7 +21,7 @@ function SpooftifyMint() {
         (async () => {
             setSubscriptionPrice(await getSubscriptionPrice(subscription));
         })();
-    }, [subscription]);
+    }, [subscription, address]);
 
     useEffect(() => {
         if (!subscription) {
@@ -67,13 +67,24 @@ function SpooftifyMint() {
     return (
         <div className="mint-page">
             {showModal && <LoadingModal showModal={showModal} closeModal={closeModal}/>}
+
+            {!address &&
             <div className="text">
-                <h1>Enjoy ad-free music listening, offline playback, and more.</h1>
-                <p>Cancel anytime. Only {subscriptionPrice / 100}$ for 30 days</p>
+                <h2>Connect wallet to mint a subscription</h2>
             </div>
-            <div className="mint-button-container">
-                <button onClick={mint}>Subscribe</button>
-            </div>
+            }
+
+            {address &&
+            <>
+                <div className="text">
+                    <h1>Enjoy ad-free music listening, offline playback, and more.</h1>
+                    <p>Cancel anytime. Only {subscriptionPrice / 100}$ for 30 days</p>
+                </div>
+                <div className="mint-button-container">
+                    <button onClick={mint}>Subscribe</button>
+                </div>
+            </>
+            }
         </div>
     );
 }

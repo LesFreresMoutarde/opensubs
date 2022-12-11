@@ -121,6 +121,12 @@ function OpenSubsGallery() {
         return displayedAvailableTokens;
     }, [availableTokens, displayPlatform]);
 
+    if (!address) {
+        return(
+            <p className="mt-3">Connect wallet to see available subscriptions</p>
+        );
+    }
+
     return (
         <div className="gallery-page container-fluid">
             <div className="row">
