@@ -69,7 +69,7 @@ async function pushMetadata(tokenId: number, platform: 'spooftify' | 'fakeflix')
         image: mappingData[platform].logo,
         background_color: '#000',
         level: 'standard',
-        content_url: String(mappingData[platform].url)
+        content_url: String(mappingData[platform].url) + "/",
     }
 
     await uploadString(metadataRef, JSON.stringify(metadata));
