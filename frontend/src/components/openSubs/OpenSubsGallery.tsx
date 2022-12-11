@@ -27,6 +27,8 @@ function OpenSubsGallery() {
 
     const {address, contracts} = useContext(openSubsAppContext)
 
+    const [isLoading, setIsLoading] = useState(true);
+
     const [availableTokens, setAvailableTokens] = useState<AvailableTokensPerPlatform | null>(null);
 
     const [displayPlatform, setDisplayPlatform] = useState<DisplayPlatform>("all");
@@ -85,6 +87,7 @@ function OpenSubsGallery() {
             }
 
             setAvailableTokens(availableTokens as AvailableTokensPerPlatform);
+            setIsLoading(false);
         })();
     }, [contracts, address]);
 
@@ -150,17 +153,25 @@ function OpenSubsGallery() {
                 <div className="col-xl-10 col-lg-9">
                     <h2>Subscriptions available for renting</h2>
 
-                    {displayedAvailableTokens.length === 0 &&
-                    <p>No subscription is available for renting now</p>
+                    {isLoading &&
+                    <p>Loading...</p>
                     }
 
-                    <div className="token-cards-container">
-                        {displayedAvailableTokens.map((token, index) => {
-                            return (
-                                <GalleryTokenCard key={index} token={token} isOwner={!token.isBorrowable}/>
-                            );
-                        })}
-                    </div>
+                    {!isLoading &&
+                    <>
+                        {displayedAvailableTokens.length === 0 &&
+                        <p>No subscription is available for renting now</p>
+                        }
+
+                        <div className="token-cards-container">
+                            {displayedAvailableTokens.map((token, index) => {
+                                return (
+                                    <GalleryTokenCard key={index} token={token} isOwner={!token.isBorrowable}/>
+                                );
+                            })}
+                        </div>
+                    </>
+                    }
                 </div>
             </div>
         </div>
