@@ -105,10 +105,6 @@ function OpenSubsMyTokens() {
         }
     }, [address, contracts]);
 
-    console.log("owned", ownedTokens);
-    console.log("used", usedTokens);
-
-
     return (
         <div className="my-tokens-page container-fluid">
             <div className="row">
@@ -134,6 +130,10 @@ function OpenSubsMyTokens() {
                     {displayCategory === "owned" &&
                     <>
                         <h2 className="mb-4">Owned</h2>
+
+                        {ownedTokens.length === 0 &&
+                        <p>You don't have any subscription</p>
+                        }
 
                         <div className="token-cards-container">
                             {ownedTokens.map((token, index) => {
@@ -164,6 +164,10 @@ function OpenSubsMyTokens() {
                     {displayCategory === "borrowed" &&
                     <>
                         <h2 className="mb-4">Borrowed</h2>
+
+                        {usedTokens.length === 0 &&
+                        <p>You are not borrowing any subscription</p>
+                        }
 
                         <div className="token-cards-container">
                             {usedTokens.map((token, index) => {
